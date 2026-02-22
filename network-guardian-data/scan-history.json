@@ -1,0 +1,1539 @@
+{
+  "scans": [
+    {
+      "networkInfo": {
+        "interface": "en0",
+        "localIP": "192.168.1.250",
+        "networkRange": "192.168.1.0/24",
+        "subnet": "0xffffff00"
+      },
+      "devices": [
+        {
+          "ip": "192.168.1.66",
+          "mac": "1C:AF:4A:3A:24:40",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.70",
+          "mac": "A2:9F:54:73:9D:F2",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.71",
+          "mac": "7C:72:E4:90:8E:4C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.92",
+          "mac": "1E:B0:FC:19:AB:94",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.107",
+          "mac": "1C:F6:4C:45:49:B4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.146",
+          "mac": "76:00:11:E4:DC:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.161",
+          "mac": "AA:13:6E:01:CA:D5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.164",
+          "mac": "46:67:5E:B0:54:C1",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.216",
+          "mac": "48:A6:B8:41:99:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.220",
+          "mac": "00:04:4B:72:B4:7A",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.228",
+          "mac": "00:17:88:22:7D:9B",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.244",
+          "mac": "62:C9:FF:5D:15:E0",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.245",
+          "mac": "52:1A:DD:58:A6:40",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.250",
+          "mac": "A4:FC:14:0E:B7:B5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "40:E1:E4:9E:1D:82",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "224.0.0.251",
+          "mac": "01:00:5E:00:00:FB",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "239.255.255.250",
+          "mac": "01:00:5E:7F:FF:FA",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "Unknown",
+          "vendor": "Unknown",
+          "hostname": "dsldevice.attlocal.net",
+          "ports": [],
+          "method": "nmap",
+          "source": [
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap"
+          ]
+        }
+      ],
+      "scanTime": "2026-02-22T13:40:13.278Z",
+      "aiAnalysis": {
+        "raw": ""
+      },
+      "unknownCount": 18
+    },
+    {
+      "networkInfo": {
+        "interface": "en0",
+        "localIP": "192.168.1.96",
+        "networkRange": "192.168.1.0/24",
+        "subnet": "0xffffff00"
+      },
+      "devices": [
+        {
+          "ip": "169.254.8.197",
+          "mac": "A2:9F:54:73:9D:F2",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "169.254.17.74",
+          "mac": "18:B4:30:1A:8C:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "169.254.33.82",
+          "mac": "1C:F6:4C:48:3C:6A",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "169.254.127.109",
+          "mac": "52:1A:DD:58:A6:40",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "169.254.160.125",
+          "mac": "1C:F6:4C:45:49:B4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "169.254.191.146",
+          "mac": "BE:09:BF:3F:A6:C4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "169.254.200.57",
+          "mac": "D6:A5:31:5F:EF:88",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.92",
+          "mac": "1E:B0:FC:19:AB:94",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.94",
+          "mac": "6A:66:92:18:61:20",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.96",
+          "mac": "A4:FC:14:0E:B7:B5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.99",
+          "mac": "02:30:64:A3:7B:E4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.103",
+          "mac": "12:21:3A:F0:34:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.119",
+          "mac": "DA:D2:9A:2D:DA:2E",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.132",
+          "mac": "4C:B0:4A:12:15:1F",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.146",
+          "mac": "76:00:11:E4:DC:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.161",
+          "mac": "AA:13:6E:01:CA:D5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.162",
+          "mac": "1C:AF:4A:3A:24:40",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.164",
+          "mac": "46:67:5E:B0:54:C1",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.216",
+          "mac": "48:A6:B8:41:99:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.220",
+          "mac": "00:04:4B:72:B4:7A",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.228",
+          "mac": "00:17:88:22:7D:9B",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.244",
+          "mac": "62:C9:FF:5D:15:E0",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "40:E1:E4:9E:1D:82",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.255",
+          "mac": "FF:FF:FF:FF:FF:FF",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "224.0.0.251",
+          "mac": "01:00:5E:00:00:FB",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "239.255.255.250",
+          "mac": "01:00:5E:7F:FF:FA",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        }
+      ],
+      "scanTime": "2026-02-22T11:38:39.713Z",
+      "aiAnalysis": {
+        "error": "getaddrinfo ENOTFOUND api.anthropic.com"
+      },
+      "unknownCount": 26
+    },
+    {
+      "networkInfo": {
+        "interface": "en0",
+        "localIP": "192.168.1.96",
+        "networkRange": "192.168.1.0/24",
+        "subnet": "0xffffff00"
+      },
+      "devices": [
+        {
+          "ip": "169.254.163.39",
+          "mac": "AA:13:6E:01:CA:D5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.0",
+          "mac": "FF:FF:FF:FF:FF:FF",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.92",
+          "mac": "1E:B0:FC:19:AB:94",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.94",
+          "mac": "6A:66:92:18:61:20",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.96",
+          "mac": "A4:FC:14:0E:B7:B5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.99",
+          "mac": "02:30:64:A3:7B:E4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.103",
+          "mac": "12:21:3A:F0:34:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.105",
+          "mac": "32:99:A4:1B:15:1C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.107",
+          "mac": "1C:F6:4C:45:49:B4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.112",
+          "mac": "18:B4:30:1A:8C:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.119",
+          "mac": "DA:D2:9A:2D:DA:2E",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.127",
+          "mac": "CE:1E:E1:67:8A:3C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.132",
+          "mac": "4C:B0:4A:12:15:1F",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.133",
+          "mac": "B8:7B:D4:E6:23:27",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.146",
+          "mac": "76:00:11:E4:DC:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.162",
+          "mac": "1C:AF:4A:3A:24:40",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.164",
+          "mac": "46:67:5E:B0:54:C1",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.182",
+          "mac": "B8:2C:A0:AA:0B:F9",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.216",
+          "mac": "48:A6:B8:41:99:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.218",
+          "mac": "04:A1:51:4B:A3:52",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.220",
+          "mac": "00:04:4B:72:B4:7A",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.226",
+          "mac": "00:1D:C0:64:C6:9E",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.228",
+          "mac": "00:17:88:22:7D:9B",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.229",
+          "mac": "D0:03:DF:E3:0B:28",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.230",
+          "mac": "7C:72:E4:90:8E:4C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.244",
+          "mac": "62:C9:FF:5D:15:E0",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.249",
+          "mac": "00:21:B7:25:EB:13",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.250",
+          "mac": "9C:76:13:F9:63:26",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "40:E1:E4:9E:1D:82",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "224.0.0.251",
+          "mac": "01:00:5E:00:00:FB",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "239.255.255.250",
+          "mac": "01:00:5E:7F:FF:FA",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "Unknown",
+          "vendor": "Unknown",
+          "hostname": "dsldevice.attlocal.net",
+          "ports": [],
+          "method": "nmap",
+          "source": [
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap"
+          ]
+        }
+      ],
+      "scanTime": "2026-02-22T09:46:49.182Z",
+      "aiAnalysis": {
+        "raw": ""
+      },
+      "unknownCount": 32
+    },
+    {
+      "networkInfo": {
+        "interface": "en0",
+        "localIP": "192.168.1.96",
+        "networkRange": "192.168.1.0/24",
+        "subnet": "0xffffff00"
+      },
+      "devices": [
+        {
+          "ip": "169.254.163.39",
+          "mac": "AA:13:6E:01:CA:D5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.0",
+          "mac": "FF:FF:FF:FF:FF:FF",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.92",
+          "mac": "1E:B0:FC:19:AB:94",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.94",
+          "mac": "6A:66:92:18:61:20",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.96",
+          "mac": "A4:FC:14:0E:B7:B5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.99",
+          "mac": "02:30:64:A3:7B:E4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.103",
+          "mac": "12:21:3A:F0:34:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.105",
+          "mac": "32:99:A4:1B:15:1C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.107",
+          "mac": "1C:F6:4C:45:49:B4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.112",
+          "mac": "18:B4:30:1A:8C:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.119",
+          "mac": "DA:D2:9A:2D:DA:2E",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.127",
+          "mac": "CE:1E:E1:67:8A:3C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.132",
+          "mac": "4C:B0:4A:12:15:1F",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.133",
+          "mac": "B8:7B:D4:E6:23:27",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.146",
+          "mac": "76:00:11:E4:DC:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.162",
+          "mac": "1C:AF:4A:3A:24:40",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.164",
+          "mac": "46:67:5E:B0:54:C1",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.182",
+          "mac": "B8:2C:A0:AA:0B:F9",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.216",
+          "mac": "48:A6:B8:41:99:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.218",
+          "mac": "04:A1:51:4B:A3:52",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.220",
+          "mac": "00:04:4B:72:B4:7A",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.226",
+          "mac": "00:1D:C0:64:C6:9E",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.228",
+          "mac": "00:17:88:22:7D:9B",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.229",
+          "mac": "D0:03:DF:E3:0B:28",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.230",
+          "mac": "7C:72:E4:90:8E:4C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.244",
+          "mac": "62:C9:FF:5D:15:E0",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.249",
+          "mac": "00:21:B7:25:EB:13",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.250",
+          "mac": "9C:76:13:F9:63:26",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "40:E1:E4:9E:1D:82",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "224.0.0.251",
+          "mac": "01:00:5E:00:00:FB",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "239.255.255.250",
+          "mac": "01:00:5E:7F:FF:FA",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "Unknown",
+          "vendor": "Unknown",
+          "hostname": "dsldevice",
+          "ports": [],
+          "method": "nmap",
+          "source": [
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap"
+          ]
+        }
+      ],
+      "scanTime": "2026-02-22T09:39:07.518Z",
+      "aiAnalysis": {
+        "raw": ""
+      },
+      "unknownCount": 32
+    },
+    {
+      "networkInfo": {
+        "interface": "en0",
+        "localIP": "192.168.1.96",
+        "networkRange": "192.168.1.0/24",
+        "subnet": "0xffffff00"
+      },
+      "devices": [
+        {
+          "ip": "169.254.163.39",
+          "mac": "AA:13:6E:01:CA:D5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.92",
+          "mac": "1E:B0:FC:19:AB:94",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.94",
+          "mac": "6A:66:92:18:61:20",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.96",
+          "mac": "A4:FC:14:0E:B7:B5",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.99",
+          "mac": "02:30:64:A3:7B:E4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.103",
+          "mac": "12:21:3A:F0:34:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.105",
+          "mac": "32:99:A4:1B:15:1C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.107",
+          "mac": "1C:F6:4C:45:49:B4",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.119",
+          "mac": "DA:D2:9A:2D:DA:2E",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.127",
+          "mac": "CE:1E:E1:67:8A:3C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.132",
+          "mac": "4C:B0:4A:12:15:1F",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.146",
+          "mac": "76:00:11:E4:DC:79",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.162",
+          "mac": "1C:AF:4A:3A:24:40",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.164",
+          "mac": "46:67:5E:B0:54:C1",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.216",
+          "mac": "48:A6:B8:41:99:F8",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.220",
+          "mac": "00:04:4B:72:B4:7A",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.228",
+          "mac": "00:17:88:22:7D:9B",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.230",
+          "mac": "7C:72:E4:90:8E:4C",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.233",
+          "mac": "A4:38:CC:9A:BB:00",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.244",
+          "mac": "62:C9:FF:5D:15:E0",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "40:E1:E4:9E:1D:82",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.255",
+          "mac": "FF:FF:FF:FF:FF:FF",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "224.0.0.251",
+          "mac": "01:00:5E:00:00:FB",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "239.255.255.250",
+          "mac": "01:00:5E:7F:FF:FA",
+          "vendor": "Unknown",
+          "method": "arp",
+          "source": [
+            "arp-scan"
+          ]
+        },
+        {
+          "ip": "192.168.1.254",
+          "mac": "Unknown",
+          "vendor": "Unknown",
+          "hostname": "dsldevice",
+          "ports": [],
+          "method": "nmap",
+          "source": [
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap",
+            "nmap"
+          ]
+        }
+      ],
+      "scanTime": "2026-02-22T08:34:46.298Z",
+      "aiAnalysis": {
+        "error": "ANTHROPIC_API_KEY not set"
+      },
+      "unknownCount": 25
+    }
+  ]
+}

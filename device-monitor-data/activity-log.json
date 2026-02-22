@@ -1,0 +1,67 @@
+[
+  {
+    "sessionId": "192.168.1.96-1771751565380",
+    "deviceIP": "192.168.1.96",
+    "deviceMAC": "AA:BB:CC:DD:EE:FF",
+    "deviceName": "Test Device",
+    "startTime": 1771751565380,
+    "endTime": 1771751582409,
+    "duration": 17029,
+    "stats": {
+      "totalQueries": 6,
+      "categories": {
+        "Unknown": 6
+      },
+      "apps": {
+        "api.wheniwork.com": 2,
+        "events.launchdarkly.com": 1,
+        "example.com": 2,
+        "crl.ngrok-agent.com": 1
+      }
+    },
+    "topActivity": [
+      {
+        "timestamp": 1771751576876,
+        "domain": "crl.ngrok-agent.com",
+        "app": "crl.ngrok-agent.com",
+        "category": "Unknown",
+        "icon": "❓"
+      },
+      {
+        "timestamp": 1771751573109,
+        "domain": "example.com",
+        "app": "example.com",
+        "category": "Unknown",
+        "icon": "❓"
+      },
+      {
+        "timestamp": 1771751573108,
+        "domain": "example.com",
+        "app": "example.com",
+        "category": "Unknown",
+        "icon": "❓"
+      },
+      {
+        "timestamp": 1771751567491,
+        "domain": "events.launchdarkly.com",
+        "app": "events.launchdarkly.com",
+        "category": "Unknown",
+        "icon": "❓"
+      },
+      {
+        "timestamp": 1771751566782,
+        "domain": "api.wheniwork.com",
+        "app": "api.wheniwork.com",
+        "category": "Unknown",
+        "icon": "❓"
+      },
+      {
+        "timestamp": 1771751566782,
+        "domain": "api.wheniwork.com",
+        "app": "api.wheniwork.com",
+        "category": "Unknown",
+        "icon": "❓"
+      }
+    ]
+  }
+]

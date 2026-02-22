@@ -1,0 +1,2937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumen Cortex - AI Security Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ff41;
+            --secondary: #0abdc6;
+            --danger: #ff0040;
+            --warning: #ffaa00;
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-input: #1a1a25;
+            --text: #e0e0e0;
+            --text-dim: #666;
+            --border: #2a2a3a;
+            --glow: rgba(0, 255, 65, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+        }
+
+        /* Matrix rain background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.08;
+        }
+
+        /* Scanlines effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1),
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px 30px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px var(--glow);
+            letter-spacing: 4px;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 1px); }
+            94% { transform: translate(2px, -1px); }
+            96% { transform: translate(-1px, 2px); }
+            98% { transform: translate(1px, -2px); }
+        }
+
+        .tagline {
+            color: var(--secondary);
+            margin-top: 10px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        .footnote {
+            color: var(--text-dim);
+            margin-top: 15px;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        /* Main grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 25px;
+            align-items: start;
+            width: 100%;
+        }
+
+        /* Chat panel */
+        .chat-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--primary); }
+            50% { opacity: 0.5; box-shadow: 0 0 5px var(--primary); }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--bg-dark);
+        }
+
+        .message.ai .message-content {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+        }
+
+        .message-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--glow);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 8px;
+            padding: 15px 25px;
+            color: var(--bg-dark);
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px var(--glow);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Voice button */
+        .voice-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .voice-btn:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(10, 189, 198, 0.3);
+        }
+
+        .voice-btn.listening {
+            background: linear-gradient(135deg, #ff0040, #ff4444);
+            animation: pulse-voice 1s infinite;
+            border-color: #ff0040;
+        }
+
+        @keyframes pulse-voice {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Input hints */
+        .input-hints {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-hints span {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .input-hints span:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .input-hints span.active {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-color: var(--primary);
+        }
+
+        /* AI Message styling */
+        .message.ai .message-content {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+        }
+
+        .message.ai .message-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .message.ai .message-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+
+        .message.ai .message-content h1,
+        .message.ai .message-content h2,
+        .message.ai .message-content h3 {
+            color: var(--secondary);
+            margin-top: 15px;
+        }
+
+        .message.ai .message-content ul,
+        .message.ai .message-content ol {
+            padding-left: 20px;
+        }
+
+        .message.ai .message-content a {
+            color: var(--secondary);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        /* Code highlighting in findings */
+        .finding-location {
+            background: rgba(255, 0, 64, 0.1);
+            border-left: 3px solid #ff0040;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+
+        .finding-location .file {
+            color: var(--secondary);
+        }
+
+        .finding-location .line {
+            color: #ff0040;
+        }
+
+        /* Side panel */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding-right: 5px;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .side-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .side-panel::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        .side-panel::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        
+        .side-panel::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        .panel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '▸';
+            color: var(--secondary);
+        }
+
+        /* Active tools */
+        .tool-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-input);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .tool-item.ai-powered {
+            border-left: 2px solid var(--secondary);
+        }
+
+        .ai-badge {
+            font-size: 0.65rem;
+            background: linear-gradient(135deg, var(--secondary), #8b5cf6);
+            color: var(--bg-dark);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        .tool-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .tool-status.running {
+            background: var(--warning);
+            animation: pulse 1s infinite;
+        }
+
+        .tool-status.success {
+            background: var(--primary);
+        }
+
+        .tool-status.error {
+            background: var(--danger);
+        }
+
+        .tool-status.pending {
+            background: var(--text-dim);
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--bg-input);
+            border-radius: 6px;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        /* Risk indicator */
+        .risk-indicator {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .risk-indicator.low {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .risk-indicator.medium {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .risk-indicator.high {
+            background: rgba(255, 0, 64, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        /* Quick actions */
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .quick-btn {
+            padding: 8px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .quick-btn.attack-quick {
+            border-color: #ff0040;
+            color: #ff6666;
+        }
+
+        .quick-btn.attack-quick:hover {
+            border-color: #ff0040;
+            background: rgba(255, 0, 64, 0.2);
+            color: #ff0040;
+        }
+
+        .attack-btn {
+            background: linear-gradient(135deg, #0abdc6, #00ff41) !important;
+        }
+
+        .attack-btn:hover {
+            box-shadow: 0 0 30px rgba(255, 0, 64, 0.5) !important;
+        }
+
+        /* Results panel */
+        .results-panel {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: var(--bg-input);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+            font-size: 0.8rem;
+        }
+
+        .result-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .result-item.error {
+            border-left-color: var(--danger);
+        }
+
+        /* Loading animation */
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--bg-input);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            animation: loading 2s infinite;
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* ASCII art header */
+        .ascii-art {
+            font-size: 0.6rem;
+            color: var(--primary);
+            opacity: 0.5;
+            white-space: pre;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    <canvas class="matrix-bg" id="matrix"></canvas>
+
+    <div class="container">
+        <header>
+            <div class="ascii-art">
+    ██╗     ██╗   ██╗███╗   ███╗███████╗███╗   ██╗     ██████╗ ██████╗ ██████╗ ████████╗███████╗██╗  ██╗
+    ██║     ██║   ██║████╗ ████║██╔════╝████╗  ██║    ██╔════╝██╔═══██╗██╔══██╗╚══██╔══╝██╔════╝╚██╗██╔╝
+    ██║     ██║   ██║██╔████╔██║█████╗  ██╔██╗ ██║    ██║     ██║   ██║██████╔╝   ██║   █████╗   ╚███╔╝ 
+    ██║     ██║   ██║██║╚██╔╝██║██╔══╝  ██║╚██╗██║    ██║     ██║   ██║██╔══██╗   ██║   ██╔══╝   ██╔██╗ 
+    ███████╗╚██████╔╝██║ ╚═╝ ██║███████╗██║ ╚████║    ╚██████╗╚██████╔╝██║  ██║   ██║   ███████╗██╔╝ ██╗
+    ╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝     ╚═════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+            </div>
+            <h1 class="logo">LUMEN CORTEX</h1>
+            <p class="tagline">[ THE BRAIN BEHIND YOUR SECURITY ]</p>
+            <p class="footnote">Lumen AI Solutions featuring Luna Labs</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="chat-panel">
+                <div class="chat-header">
+                    <div class="status-indicator"></div>
+                    <span>Lumen Cortex • Online</span>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai">
+                        <div class="message-label">Lumen Cortex</div>
+                        <div class="message-content">
+                            Welcome to Lumen Cortex — your AI-powered security brain.<br><br>
+                            Tell me what you want to scan in natural language:<br>
+                            • "Scan example.com for vulnerabilities"<br>
+                            • "Check this APK for security issues"<br>
+                            • "Find secrets in my GitHub repo"<br>
+                            • "Full recon on target.com"<br><br>
+                            I'll intelligently select the right tools from 50+ enterprise scanners. 🧠
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <!-- STEP 1: Scan Mode Selection -->
+                    <div class="scan-mode-selector" id="scanModeSelector">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span style="color: #00ff41; font-weight: bold;">STEP 1:</span>
+                            <span style="color: #888;">Select scan mode</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="scan-mode-btn" onclick="selectScanMode('full_attack')" id="quickModeBtn" style="flex: 1; background: #1a1a25; border: 2px solid #00ff41; color: #00ff41; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                                <strong style="font-size: 16px;">⚡ QUICK SCAN</strong><br>
+                                <span style="font-size: 12px; opacity: 0.8;">~60 seconds • 4 tools • Fast health check</span>
+                            </button>
+                            <button class="scan-mode-btn" onclick="selectScanMode('deep_scan')" id="deepModeBtn" style="flex: 1; background: #1a1a25; border: 2px solid #ff6600; color: #ff6600; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                                <strong style="font-size: 16px;">🔬 DEEP SCAN</strong><br>
+                                <span style="font-size: 12px; opacity: 0.8;">~3 minutes • 7 tools • Thorough analysis</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- STEP 2: Enter URL -->
+                    <div style="display: flex; align-items: center; gap: 10px; margin: 15px 0 10px 0;">
+                        <span style="color: #0abdc6; font-weight: bold;">STEP 2:</span>
+                        <span style="color: #888;">Enter target URL and scan</span>
+                        <span id="selectedModeLabel" style="background: #2a2a3a; padding: 4px 10px; border-radius: 12px; font-size: 11px; color: #666;">No mode selected</span>
+                    </div>
+                    <div class="input-wrapper">
+                        <button class="voice-btn" onclick="toggleVoiceInput()" id="voiceBtn" title="Voice Input">
+                            🎤
+                        </button>
+                        <input type="text" class="chat-input" id="userInput" 
+                               placeholder="Enter target URL (e.g., https://example.com)" 
+                               onkeypress="handleInputKeypress(event)">
+                        <button class="send-btn" onclick="startSelectedScan()" id="sendBtn" style="background: #333; color: #666;" disabled>🔍 SCAN</button>
+                    </div>
+                    <div class="input-hints" style="margin-top: 10px;">
+                        <span style="color: #666; font-size: 11px;">After scan, ask me anything:</span>
+                        <span onclick="insertPrompt('explain the findings')">💡 Explain</span>
+                        <span onclick="insertPrompt('how to fix ')">🔧 Fix</span>
+                        <span onclick="showOwaspMapping()">📋 OWASP</span>
+                        <span onclick="toggleVoiceOutput()" id="voiceOutputToggle">🔊 Voice Off</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <!-- Monitoring Dashboard (First) -->
+                <div class="panel-card">
+                    <div class="panel-title">📡 Monitoring</div>
+                    <div id="monitoringList" style="max-height: 200px; overflow-y: auto;">
+                        <div class="tool-item" style="justify-content: space-between;">
+                            <span style="color: #666;">No sites monitored</span>
+                            <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
+                        </div>
+                    </div>
+                    <div id="addMonitoringForm" style="display: none; margin-top: 10px;">
+                        <input type="text" id="monitorUrl" placeholder="https://example.com" style="width: 100%; background: #1a1a25; border: 1px solid #2a2a3a; color: #e0e0e0; padding: 8px; margin-bottom: 5px; border-radius: 4px;">
+                        <div style="display: flex; gap: 5px;">
+                            <button class="quick-btn" onclick="addMonitoringSite()" style="flex: 1;">Add Site</button>
+                            <button class="quick-btn" onclick="hideAddMonitoring()" style="background: #333;">Cancel</button>
+                        </div>
+                    </div>
+                    <button class="quick-btn" onclick="checkAllMonitoring()" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #0abdc6, #00ff41);">🔄 Refresh</button>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-title">Quick Scans</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="quickScan('web')">🌐 Web</button>
+                        <button class="quick-btn" onclick="quickScan('recon')">🔍 Recon</button>
+                        <button class="quick-btn" onclick="quickScan('secrets')">🔑 Secrets</button>
+                        <button class="quick-btn" onclick="quickScan('code')">📝 Code</button>
+                        <button class="quick-btn" onclick="quickScan('github')">🐙 GitHub</button>
+                        <button class="quick-btn" onclick="quickScan('full')">⚡ Full</button>
+                    </div>
+                    <div class="quick-actions" style="margin-top: 8px;">
+                        <button class="quick-btn" onclick="quickScan('dork_aws')">🔴 AWS Keys</button>
+                        <button class="quick-btn" onclick="quickScan('dork_stripe')">💳 Stripe</button>
+                        <button class="quick-btn" onclick="quickScan('dork_openai')">🤖 OpenAI</button>
+                    </div>
+                </div>
+
+                <div class="panel-card" style="border: 1px solid #8b5cf6;">
+                    <div class="panel-title" style="color: #8b5cf6;">🔍 GitHub Secret Hunter</div>
+                    
+                    <!-- Scan specific repo -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="githubRepoUrl" placeholder="github.com/user/repo or paste URL" style="flex: 1; background: #1a1a25; border: 1px solid #8b5cf6; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                            <button class="quick-btn" onclick="scanGitHubRepo()" style="border-color: #8b5cf6; padding: 8px 12px;">🔍</button>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 10px; color: #666; margin-bottom: 8px;">Or hunt across all GitHub:</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="githubHunt('aws')" style="border-color: #ff9900;">☁️ AWS</button>
+                        <button class="quick-btn" onclick="githubHunt('google_api')" style="border-color: #4285f4;">📍 Google</button>
+                        <button class="quick-btn" onclick="githubHunt('firebase')" style="border-color: #ffca28;">🔥 Firebase</button>
+                        <button class="quick-btn" onclick="githubHunt('github_token')" style="border-color: #6e5494;">🐙 GitHub</button>
+                    </div>
+                    <div class="quick-actions" style="margin-top: 8px;">
+                        <button class="quick-btn" onclick="githubHunt('slack')" style="border-color: #e01e5a;">💬 Slack</button>
+                        <button class="quick-btn" onclick="githubHunt('discord')" style="border-color: #5865f2;">🎮 Discord</button>
+                        <button class="quick-btn" onclick="githubHunt('twilio')" style="border-color: #f22f46;">📱 Twilio</button>
+                        <button class="quick-btn" onclick="githubHunt('sendgrid')" style="border-color: #1a82e2;">📧 SendGrid</button>
+                    </div>
+                    <div class="quick-actions" style="margin-top: 8px;">
+                        <button class="quick-btn" onclick="githubHunt('mongodb')" style="border-color: #4db33d;">🍃 MongoDB</button>
+                        <button class="quick-btn" onclick="githubHunt('postgres')" style="border-color: #336791;">🐘 Postgres</button>
+                        <button class="quick-btn" onclick="githubHunt('anthropic')" style="border-color: #d4a574;">🤖 Anthropic</button>
+                        <button class="quick-btn" onclick="githubHunt('keys')" style="border-color: #ff0040;">🔑 ALL KEYS</button>
+                    </div>
+                </div>
+
+                <div class="panel-card" style="border: 1px solid #0abdc6;">
+                    <div class="panel-title" style="color: #0abdc6;">🛡️ Scan Modes</div>
+                    <div class="quick-actions" style="gap: 8px;">
+                        <button class="quick-btn" onclick="runScanMode('full_attack')" style="flex: 1; background: #00ff41; color: #0a0a0f; padding: 12px 8px;">
+                            <strong style="font-size: 14px;">⚡ QUICK SCAN</strong><br>
+                            <span style="font-size: 11px;">~60s • 4 tools</span>
+                        </button>
+                        <button class="quick-btn" onclick="runScanMode('deep_scan')" style="flex: 1; background: #ff6600; color: #0a0a0f; padding: 12px 8px;">
+                            <strong style="font-size: 14px;">🔬 DEEP SCAN</strong><br>
+                            <span style="font-size: 11px;">~3min • 7 tools</span>
+                        </button>
+                    </div>
+                    <div class="panel-title" style="color: #0abdc6; margin-top: 12px; font-size: 0.8em;">Targeted Checks</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn attack-quick" onclick="quickAttack('sqli')">💉 SQLi</button>
+                        <button class="quick-btn attack-quick" onclick="quickAttack('xss')">🔥 XSS</button>
+                        <button class="quick-btn attack-quick" onclick="quickAttack('fuzz')">🎯 Fuzzing</button>
+                        <button class="quick-btn attack-quick" onclick="quickAttack('exploit')">🔍 Critical</button>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-title">Active Tools</div>
+                    <div class="tool-list" id="toolList">
+                        <div class="tool-item">
+                            <div class="tool-status pending"></div>
+                            <span>No active scans</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-title">Scan Stats</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="toolCount">0</div>
+                            <div class="stat-label">Tools</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="aiToolCount">0</div>
+                            <div class="stat-label">AI-Powered</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="findingCount">0</div>
+                            <div class="stat-label">Findings</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="scanTime">0s</div>
+                            <div class="stat-label">Time</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-card" id="riskPanel" style="display:none;">
+                    <div class="panel-title">Risk Level</div>
+                    <div class="risk-indicator low" id="riskIndicator">
+                        Assessing...
+                    </div>
+                </div>
+
+                <!-- Scan Progress Panel -->
+                <div class="panel-card" id="scanProgressPanel" style="display: none; border-color: #ffaa00;">
+                    <div class="panel-title" style="color: #ffaa00;">⏳ Scan in Progress</div>
+                    <div id="scanProgressStatus" style="color: #0abdc6; margin-bottom: 10px; font-size: 12px;">
+                        Running security tools...
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 10px; height: 8px; overflow: hidden;">
+                        <div id="scanProgressBar" style="background: linear-gradient(90deg, #ffaa00, #00ff41); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: #666;">
+                        <span id="scanToolsProgress">0/0 tools</span> • <span id="scanElapsedTime">0s</span>
+                    </div>
+                </div>
+
+                <!-- AI Report Panel (shows when scan complete) -->
+                <div class="panel-card" id="aiReportPanel" style="display: none; border-color: #00ff41;">
+                    <div class="panel-title" style="color: #00ff41;">✅ Scan Complete</div>
+                    <div id="aiReportStatus" style="color: #0abdc6; margin-bottom: 10px; font-size: 12px;">
+                        Scan finished! Generate your security report.
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="quick-btn" onclick="generateAIReport()" id="generateReportBtn" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6);">📋 Generate Scan Results</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEDICATED REPORT SECTION (Outside chat, full width) -->
+    <div id="reportSection" style="display: none; margin: 20px auto; max-width: 1400px; padding: 0 20px;">
+        <div style="background: linear-gradient(135deg, #12121a, #1a1a25); border: 2px solid #00ff41; border-radius: 12px; overflow: hidden; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);">
+            <!-- Report Header -->
+            <div style="background: linear-gradient(135deg, #00ff41, #0abdc6); padding: 20px 30px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0; color: #0a0a0f; font-family: 'Orbitron', monospace; font-size: 1.5em;">🛡️ SECURITY ASSESSMENT REPORT</h2>
+                    <p style="margin: 5px 0 0; color: #0a0a0f; opacity: 0.8;" id="reportTarget">Target: -</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="exportPDF()" style="background: #0a0a0f; color: #00ff41; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'JetBrains Mono', monospace;">📄 Export PDF</button>
+                    <button onclick="closeReportSection()" style="background: transparent; color: #0a0a0f; border: 2px solid #0a0a0f; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                </div>
+            </div>
+            
+            <!-- Report Content -->
+            <div id="reportContent" style="padding: 30px; color: #e0e0e0; line-height: 1.8; max-height: 70vh; overflow-y: auto;">
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 3em; margin-bottom: 20px;">🔄</div>
+                    <p>Generating AI-powered security report...</p>
+                </div>
+            </div>
+            
+            <!-- Report Footer -->
+            <div style="background: #0a0a0f; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #2a2a3a;">
+                <span style="color: #666; font-size: 12px;">🧠 Lumen Cortex | AI-Powered Security Intelligence</span>
+                <span style="color: #666; font-size: 12px;" id="reportTimestamp">Generated: -</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Markdown parser for AI responses -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Syntax highlighting for code -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <script>
+        let currentScanId = null;
+        let pollInterval = null;
+        let currentScanMessageId = null;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // AI CHAT & VOICE - Phase 1, 2, 3, 4 Implementation
+        // ═══════════════════════════════════════════════════════════════════
+        
+        let sessionId = 'session-' + Date.now();
+        let isVoiceOutputEnabled = false;
+        let recognition = null;
+        let isListening = false;
+        let voiceSynth = window.speechSynthesis;
+
+        // Initialize marked for markdown parsing
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (typeof hljs !== 'undefined' && lang && hljs.getLanguage(lang)) {
+                        return hljs.highlight(code, { language: lang }).value;
+                    }
+                    return code;
+                },
+                breaks: true,
+                gfm: true
+            });
+        }
+
+        // Selected scan mode
+        let selectedScanMode = null;
+
+        // Select scan mode (Step 1)
+        function selectScanMode(mode) {
+            selectedScanMode = mode;
+            
+            // Update button styles
+            const quickBtn = document.getElementById('quickModeBtn');
+            const deepBtn = document.getElementById('deepModeBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            const modeLabel = document.getElementById('selectedModeLabel');
+            
+            // Reset both buttons
+            quickBtn.style.background = '#1a1a25';
+            deepBtn.style.background = '#1a1a25';
+            
+            if (mode === 'full_attack') {
+                quickBtn.style.background = '#00ff41';
+                quickBtn.style.color = '#0a0a0f';
+                deepBtn.style.color = '#ff6600';
+                modeLabel.textContent = '⚡ Quick Scan';
+                modeLabel.style.background = '#00ff41';
+                modeLabel.style.color = '#0a0a0f';
+            } else {
+                deepBtn.style.background = '#ff6600';
+                deepBtn.style.color = '#0a0a0f';
+                quickBtn.style.color = '#00ff41';
+                modeLabel.textContent = '🔬 Deep Scan';
+                modeLabel.style.background = '#ff6600';
+                modeLabel.style.color = '#0a0a0f';
+            }
+            
+            // Enable scan button
+            sendBtn.disabled = false;
+            sendBtn.style.background = 'linear-gradient(135deg, #0abdc6, #00ff41)';
+            sendBtn.style.color = '#0a0a0f';
+            
+            // Focus on input
+            document.getElementById('userInput').focus();
+        }
+
+        // Start scan with selected mode (Step 2)
+        async function startSelectedScan() {
+            if (!selectedScanMode) {
+                alert('Please select a scan mode first (Quick or Deep)');
+                return;
+            }
+            
+            // Reset to scan mode during active scanning
+            currentMode = 'scan';
+            
+            const input = document.getElementById('userInput');
+            let target = input.value.trim();
+            
+            if (!target) {
+                alert('Please enter a target URL');
+                input.focus();
+                return;
+            }
+            
+            // Ensure URL has protocol
+            if (!target.startsWith('http')) {
+                target = 'https://' + target;
+            }
+            
+            // Run the scan
+            await runScanMode(selectedScanMode);
+        }
+
+        // Handle input keypress - smart routing
+        function handleInputKeypress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                if (selectedScanMode) {
+                    startSelectedScan();
+                } else {
+                    sendChatMessage();
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🔄 DYNAMIC UI MODE SWITCHING (Enterprise UX)
+        // ═══════════════════════════════════════════════════════════════
+        
+        let currentMode = 'scan'; // 'scan' or 'qa'
+        let typewriterInterval = null;
+        let typewriterTimeout = null;
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ✨ TYPEWRITER PLACEHOLDER ANIMATION
+        // ═══════════════════════════════════════════════════════════════
+        
+        const scanSuggestions = [
+            'https://example.com',
+            'Scan my website for vulnerabilities...',
+            'github.com/user/repo',
+            'Check if my API is secure...',
+            'Run a penetration test on...',
+        ];
+        
+        const qaSuggestions = [
+            'What are the critical vulnerabilities?',
+            'How do I fix the SQL injection issue?',
+            'Explain the XSS findings in simple terms',
+            'Show me the OWASP Top 10 mapping',
+            'Generate a remediation plan',
+            'Is this site vulnerable to attacks?',
+            'What should I fix first?',
+            'Give me a summary of the findings',
+            'How severe are these vulnerabilities?',
+            'Write code to fix the security headers',
+            'Explain the risk to my business',
+            'What compliance standards are affected?',
+        ];
+        
+        function startTypewriterAnimation(suggestions) {
+            stopTypewriterAnimation();
+            
+            const input = document.getElementById('userInput');
+            if (!input) return;
+            
+            let suggestionIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+            let currentText = '';
+            
+            function animate() {
+                const currentSuggestion = suggestions[suggestionIndex];
+                
+                if (!isDeleting) {
+                    // Typing
+                    currentText = currentSuggestion.substring(0, charIndex + 1);
+                    charIndex++;
+                    
+                    if (charIndex === currentSuggestion.length) {
+                        // Pause at end before deleting
+                        isDeleting = true;
+                        typewriterTimeout = setTimeout(() => {
+                            typewriterInterval = setTimeout(animate, 50);
+                        }, 2000);
+                        input.placeholder = currentText + '|';
+                        return;
+                    }
+                } else {
+                    // Deleting
+                    currentText = currentSuggestion.substring(0, charIndex - 1);
+                    charIndex--;
+                    
+                    if (charIndex === 0) {
+                        isDeleting = false;
+                        suggestionIndex = (suggestionIndex + 1) % suggestions.length;
+                        typewriterTimeout = setTimeout(() => {
+                            typewriterInterval = setTimeout(animate, 100);
+                        }, 500);
+                        input.placeholder = '|';
+                        return;
+                    }
+                }
+                
+                // Show cursor effect
+                input.placeholder = currentText + (Date.now() % 1000 > 500 ? '|' : '');
+                
+                // Speed: typing slower than deleting
+                const speed = isDeleting ? 30 : 80;
+                typewriterInterval = setTimeout(animate, speed);
+            }
+            
+            // Start with a small delay
+            typewriterTimeout = setTimeout(animate, 500);
+        }
+        
+        function stopTypewriterAnimation() {
+            if (typewriterInterval) {
+                clearTimeout(typewriterInterval);
+                typewriterInterval = null;
+            }
+            if (typewriterTimeout) {
+                clearTimeout(typewriterTimeout);
+                typewriterTimeout = null;
+            }
+        }
+        
+        // Stop animation when user focuses on input
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('userInput');
+            if (input) {
+                input.addEventListener('focus', () => {
+                    stopTypewriterAnimation();
+                    if (currentMode === 'qa') {
+                        input.placeholder = 'Ask me anything about the scan...';
+                    } else {
+                        input.placeholder = 'Enter target URL...';
+                    }
+                });
+                
+                input.addEventListener('blur', () => {
+                    if (input.value === '') {
+                        if (currentMode === 'qa') {
+                            startTypewriterAnimation(qaSuggestions);
+                        } else {
+                            startTypewriterAnimation(scanSuggestions);
+                        }
+                    }
+                });
+                
+                // Start with scan suggestions
+                startTypewriterAnimation(scanSuggestions);
+            }
+        });
+        
+        // Switch to Q&A mode after scan completes
+        function switchToQAMode() {
+            currentMode = 'qa';
+            const input = document.getElementById('userInput');
+            const btn = document.getElementById('sendBtn');
+            
+            // Start typewriter animation with Q&A suggestions
+            if (input.value === '') {
+                startTypewriterAnimation(qaSuggestions);
+            }
+            
+            // Change button to "Ask Me"
+            btn.innerHTML = '💬 Ask Me';
+            btn.style.background = 'linear-gradient(135deg, #0abdc6, #00ff41)';
+            btn.style.color = '#0a0a0f';
+            btn.disabled = false;
+            
+            // Update button click handler
+            btn.onclick = sendChatMessage;
+            
+            // Add visual indicator
+            const modeLabel = document.getElementById('selectedModeLabel');
+            if (modeLabel) {
+                modeLabel.innerHTML = '🤖 <strong>AI Q&A Mode</strong> — Ask security questions';
+                modeLabel.style.background = 'linear-gradient(135deg, #0abdc620, #00ff4120)';
+                modeLabel.style.borderColor = '#00ff41';
+                modeLabel.style.color = '#00ff41';
+            }
+            
+            // Show helpful hints
+            const hintsDiv = document.querySelector('.input-hints');
+            if (hintsDiv) {
+                hintsDiv.innerHTML = `
+                    <span style="color: #00ff41; font-size: 11px;">✅ Scan complete! Try asking:</span>
+                    <span onclick="insertPrompt('What are the critical vulnerabilities?')" style="cursor: pointer;">🔴 Critical</span>
+                    <span onclick="insertPrompt('How do I fix these issues?')" style="cursor: pointer;">🔧 Remediation</span>
+                    <span onclick="insertPrompt('Show OWASP mapping')" style="cursor: pointer;">📋 OWASP</span>
+                    <span onclick="insertPrompt('Generate compliance report')" style="cursor: pointer;">📊 Compliance</span>
+                    <span onclick="switchToScanMode()" style="cursor: pointer; color: #ff6600;">🔄 New Scan</span>
+                `;
+            }
+            
+            console.log('🔄 Switched to Q&A mode');
+        }
+        
+        // Switch back to scan mode (for new scans)
+        function switchToScanMode() {
+            currentMode = 'scan';
+            const input = document.getElementById('userInput');
+            const btn = document.getElementById('sendBtn');
+            
+            // Reset to scan mode with typewriter animation
+            input.value = '';
+            startTypewriterAnimation(scanSuggestions);
+            
+            // Reset button
+            btn.innerHTML = '🔍 SCAN';
+            btn.style.background = '#333';
+            btn.style.color = '#666';
+            btn.disabled = true;
+            btn.onclick = startSelectedScan;
+            
+            // Reset mode label
+            const modeLabel = document.getElementById('selectedModeLabel');
+            if (modeLabel) {
+                modeLabel.innerHTML = 'No mode selected';
+                modeLabel.style.background = '#2a2a3a';
+                modeLabel.style.color = '#666';
+            }
+            
+            // Reset hints
+            const hintsDiv = document.querySelector('.input-hints');
+            if (hintsDiv) {
+                hintsDiv.innerHTML = `
+                    <span style="color: #666; font-size: 11px;">After scan, ask me anything:</span>
+                    <span onclick="insertPrompt('explain the findings')">💡 Explain</span>
+                    <span onclick="insertPrompt('how to fix ')">🔧 Fix</span>
+                    <span onclick="showOwaspMapping()">📋 OWASP</span>
+                    <span onclick="toggleVoiceOutput()" id="voiceOutputToggle">🔊 Voice Off</span>
+                `;
+            }
+            
+            console.log('🔄 Switched to Scan mode');
+        }
+
+        // Insert prompt helper
+        function insertPrompt(text) {
+            const input = document.getElementById('userInput');
+            input.value = text;
+            input.focus();
+        }
+
+        // Main chat function - routes to scan or AI chat
+        async function sendChatMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳';
+
+            // Add user message to chat
+            addMessage(message, true);
+            input.value = '';
+
+            // Check if this is a scan request
+            const urlMatch = message.match(/(https?:\/\/[^\s]+|[a-z0-9][-a-z0-9]*\.[a-z]{2,})/i);
+            const isScanRequest = /\b(scan|check|test|analyze|audit|security)\b/i.test(message) && urlMatch;
+
+            if (isScanRequest) {
+                // Route to security scan
+                const target = urlMatch[0].startsWith('http') ? urlMatch[0] : 'https://' + urlMatch[0];
+                await runSecurityScanWithChat(target, message);
+            } else {
+                // Route to AI chat
+                await sendToAIChat(message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = '💬 SEND';
+        }
+
+        // Send message to AI chat backend
+        async function sendToAIChat(message) {
+            // Show typing indicator
+            const typingId = addTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, sessionId })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator(typingId);
+
+                if (data.action === 'scan') {
+                    // AI wants to trigger a scan
+                    addMessage(data.message, false);
+                    await runSecurityScanWithChat(data.target, message);
+                } else {
+                    // Regular AI response
+                    addAIMessage(data.message);
+                    
+                    // Speak if voice output enabled
+                    if (isVoiceOutputEnabled) {
+                        speakText(data.message);
+                    }
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage(`❌ Error: ${error.message}`, false);
+            }
+        }
+
+        // Track the current scan progress message
+        let scanProgressMessageId = null;
+
+        // Run security scan and attach to chat context
+        async function runSecurityScanWithChat(target, originalMessage) {
+            addMessage(`🔍 Starting security scan of **${target}**...`, false);
+
+            try {
+                // Run the scan
+                const response = await fetch('/api/attack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target, attackType: 'full_attack' })
+                });
+
+                const data = await response.json();
+                currentScanId = data.scanId;
+
+                // Update stats
+                document.getElementById('toolCount').textContent = data.toolCount || data.tools.length;
+                document.getElementById('aiToolCount').textContent = data.aiToolCount || 0;
+
+                // Update Active Tools panel
+                const toolsWithInfo = data.tools.map(t => ({ tool: t, ai: false, status: 'running' }));
+                updateToolList(toolsWithInfo);
+
+                // Show risk panel
+                document.getElementById('riskPanel').style.display = 'block';
+                document.getElementById('riskIndicator').className = 'risk-indicator medium';
+                document.getElementById('riskIndicator').textContent = 'SCANNING';
+
+                // Store progress message ID so we can update it
+                scanProgressMessageId = addMessage(`
+                    <div style="border-left: 3px solid #0abdc6; padding-left: 15px;" id="scan-progress-content">
+                        <strong style="color: #0abdc6;">🛡️ SECURITY SCAN IN PROGRESS</strong><br><br>
+                        <strong>🎯 Target:</strong> ${target}<br>
+                        <strong>🔧 Tools:</strong> ${data.toolCount || data.tools.length} selected<br>
+                        <strong>⏳ Status:</strong> <span id="scan-status-text">Analyzing...</span><br><br>
+                        <div class="typing-indicator" id="scan-typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                `, false);
+
+                // Poll for completion
+                await pollScanAndChat(data.scanId, target, data.toolCount || data.tools.length);
+
+            } catch (error) {
+                addMessage(`❌ Scan Error: ${error.message}`, false);
+            }
+        }
+
+        // Poll scan status and trigger AI analysis when complete
+        async function pollScanAndChat(scanId, target, toolCount) {
+            return new Promise((resolve) => {
+                const poll = setInterval(async () => {
+                    try {
+                        const response = await fetch(`/api/attack/${scanId}`);
+                        const data = await response.json();
+
+                        // Update tool list with current status
+                        if (data.results && data.results.length > 0) {
+                            updateToolList(data.results);
+                        } else if (data.tools) {
+                            updateToolList(data.tools.map(t => ({ tool: t, status: 'running' })));
+                        }
+
+                        if (data.status === 'complete') {
+                            clearInterval(poll);
+
+                            // Update stats
+                            document.getElementById('findingCount').textContent = data.totalVulns || 0;
+                            document.getElementById('scanTime').textContent = `${Math.round(data.duration)}s`;
+
+                            // Update risk indicator
+                            const riskLevel = data.analysis?.riskLevel || 'LOW';
+                            document.getElementById('riskIndicator').className = `risk-indicator ${riskLevel.toLowerCase()}`;
+                            document.getElementById('riskIndicator').textContent = riskLevel;
+
+                            // Final tool list update with completion status
+                            if (data.results) {
+                                updateToolList(data.results.map(r => ({ ...r, status: r.status || 'success' })));
+                            }
+
+                            // Update the progress message to show COMPLETE
+                            const progressContent = document.getElementById('scan-progress-content');
+                            if (progressContent) {
+                                const riskColor = data.analysis?.riskLevel === 'CRITICAL' ? '#ff0040' : 
+                                                  data.analysis?.riskLevel === 'HIGH' ? '#ff4444' : 
+                                                  data.analysis?.riskLevel === 'MEDIUM' ? '#ffaa00' : '#00ff41';
+                                progressContent.innerHTML = `
+                                    <strong style="color: #00ff41;">✅ SECURITY SCAN COMPLETE</strong><br><br>
+                                    <strong>🎯 Target:</strong> ${target}<br>
+                                    <strong>🔧 Tools Used:</strong> ${toolCount}<br>
+                                    <strong>⏱️ Duration:</strong> ${Math.round(data.duration)}s<br>
+                                    <strong>🔍 Findings:</strong> <span style="color: ${riskColor}; font-weight: bold;">${data.totalVulns || 0}</span><br>
+                                    <strong>📊 Risk Level:</strong> <span style="color: ${riskColor}; font-weight: bold;">${data.analysis?.riskLevel || 'Unknown'}</span><br><br>
+                                    <button onclick="generateAIReport()" style="background: linear-gradient(135deg, #00ff41, #0abdc6); border: none; padding: 10px 20px; border-radius: 6px; color: #0a0a0f; font-weight: bold; cursor: pointer; font-family: inherit;">
+                                        📋 Generate Full Report
+                                    </button>
+                                `;
+                                progressContent.style.borderColor = riskColor;
+                            }
+
+                            // Attach scan to chat session
+                            const attachResponse = await fetch('/api/chat/attach-scan', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ sessionId, scanId })
+                            });
+
+                            const attachData = await attachResponse.json();
+
+                            // Show AI analysis
+                            addAIMessage(attachData.analysis || 'Scan complete! Ask me anything about the findings, or click "Generate Full Report" above.');
+
+                            // Speak summary if voice enabled
+                            if (isVoiceOutputEnabled && attachData.analysis) {
+                                speakText(attachData.analysis);
+                            }
+
+                            // 🔄 DYNAMIC UI CHANGE: Switch to Q&A mode after scan completes
+                            switchToQAMode();
+
+                            resolve();
+                        }
+                    } catch (error) {
+                        console.error('Poll error:', error);
+                    }
+                }, 2000);
+            });
+        }
+
+        // Add AI message with markdown formatting
+        function addAIMessage(content) {
+            const messagesDiv = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            
+            // Parse markdown
+            let htmlContent = content;
+            if (typeof marked !== 'undefined') {
+                htmlContent = marked.parse(content);
+            }
+
+            messageDiv.innerHTML = `
+                <div class="message-label">🧠 Cortex AI</div>
+                <div class="message-content">${htmlContent}</div>
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Apply syntax highlighting
+            if (typeof hljs !== 'undefined') {
+                messageDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
+        }
+
+        // Add typing indicator
+        function addTypingIndicator() {
+            const messagesDiv = document.querySelector('.chat-messages');
+            const id = 'typing-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'message ai';
+            div.innerHTML = `
+                <div class="message-label">🧠 Cortex AI</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return id;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PHASE 3: VOICE INPUT/OUTPUT
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Initialize speech recognition
+        function initVoiceInput() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    document.getElementById('voiceBtn').classList.add('listening');
+                    document.getElementById('voiceBtn').textContent = '🔴';
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    document.getElementById('voiceBtn').textContent = '🎤';
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = Array.from(event.results)
+                        .map(result => result[0].transcript)
+                        .join('');
+                    
+                    document.getElementById('userInput').value = transcript;
+
+                    // If final result, send the message
+                    if (event.results[event.results.length - 1].isFinal) {
+                        setTimeout(() => sendChatMessage(), 500);
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    isListening = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    document.getElementById('voiceBtn').textContent = '🎤';
+                };
+
+                console.log('✅ Voice input initialized');
+            } else {
+                console.log('❌ Speech recognition not supported');
+                document.getElementById('voiceBtn').style.display = 'none';
+            }
+        }
+
+        // Toggle voice input
+        function toggleVoiceInput() {
+            if (!recognition) {
+                initVoiceInput();
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        // Toggle voice output
+        function toggleVoiceOutput() {
+            isVoiceOutputEnabled = !isVoiceOutputEnabled;
+            const toggle = document.getElementById('voiceOutputToggle');
+            toggle.textContent = isVoiceOutputEnabled ? '🔊 Voice On' : '🔊 Voice Off';
+            toggle.classList.toggle('active', isVoiceOutputEnabled);
+        }
+
+        // Speak text using Web Speech API (fallback) or ElevenLabs
+        function speakText(text) {
+            // Strip markdown for speech
+            const plainText = text
+                .replace(/```[\s\S]*?```/g, 'code block omitted')
+                .replace(/`[^`]+`/g, '')
+                .replace(/\*\*([^*]+)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/#{1,6}\s/g, '')
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/[🔴🟠🟡🟢📍🔧🚨💡🎯🛡️⚠️✅❌]/g, '')
+                .slice(0, 500); // Limit length for speech
+
+            // Use Web Speech API
+            if (voiceSynth) {
+                voiceSynth.cancel(); // Stop any current speech
+                const utterance = new SpeechSynthesisUtterance(plainText);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                voiceSynth.speak(utterance);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PHASE 4: ADVANCED FEATURES
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Show OWASP mapping
+        async function showOwaspMapping() {
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+
+            addMessage('📋 Generate OWASP Top 10 mapping for current findings', true);
+            
+            const typingId = addTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat/owasp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+
+                const data = await response.json();
+                removeTypingIndicator(typingId);
+
+                if (data.error) {
+                    addMessage(`⚠️ ${data.error}. Run a scan first!`, false);
+                } else {
+                    addAIMessage(data.message);
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage(`❌ Error: ${error.message}`, false);
+            }
+
+            btn.disabled = false;
+        }
+
+        // Generate ticket
+        async function generateTicket(format = 'github') {
+            addMessage(`🎫 Generate ${format === 'jira' ? 'Jira' : 'GitHub'} ticket for findings`, true);
+            
+            const typingId = addTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat/ticket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId, format })
+                });
+
+                const data = await response.json();
+                removeTypingIndicator(typingId);
+
+                if (data.error) {
+                    addMessage(`⚠️ ${data.error}`, false);
+                } else {
+                    addAIMessage(data.message);
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage(`❌ Error: ${error.message}`, false);
+            }
+        }
+
+        // Clear conversation
+        async function clearConversation() {
+            try {
+                await fetch('/api/chat/clear', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+
+                // Clear UI
+                const messagesDiv = document.querySelector('.chat-messages');
+                messagesDiv.innerHTML = `
+                    <div class="message ai">
+                        <div class="message-label">🧠 Cortex AI</div>
+                        <div class="message-content">
+                            <strong>Welcome to Lumen Cortex AI Security Assistant!</strong><br><br>
+                            I can help you:<br>
+                            • <strong>Scan websites</strong> - "scan example.com"<br>
+                            • <strong>Explain findings</strong> - "what is this XSS vulnerability?"<br>
+                            • <strong>Recommend fixes</strong> - "how do I fix SQL injection?"<br>
+                            • <strong>Generate tickets</strong> - "create a GitHub issue"<br>
+                            • <strong>Map to standards</strong> - "show OWASP mapping"<br><br>
+                            🎤 Use voice input or type your question below!
+                        </div>
+                    </div>
+                `;
+
+                // Reset session
+                sessionId = 'session-' + Date.now();
+
+            } catch (error) {
+                console.error('Clear error:', error);
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initVoiceInput();
+            
+            // Show welcome message
+            const messagesDiv = document.querySelector('.chat-messages');
+            if (messagesDiv.children.length === 0) {
+                messagesDiv.innerHTML = `
+                    <div class="message ai">
+                        <div class="message-label">🧠 Cortex AI</div>
+                        <div class="message-content">
+                            <strong>Welcome to Lumen Cortex AI Security Scanner!</strong><br><br>
+                            <strong style="color: #00ff41;">How to scan:</strong><br>
+                            <strong>1.</strong> Select scan mode below: <strong style="color: #00ff41;">⚡ Quick</strong> (~60s) or <strong style="color: #ff6600;">🔬 Deep</strong> (~3min)<br>
+                            <strong>2.</strong> Enter target URL and click <strong>🔍 SCAN</strong><br>
+                            <strong>3.</strong> Review AI-powered results and ask follow-up questions<br><br>
+                            <strong style="color: #0abdc6;">After scan, I can help you:</strong><br>
+                            • Explain any finding in detail<br>
+                            • Show exactly how to fix vulnerabilities<br>
+                            • Generate tickets for your dev team<br>
+                            • Map findings to OWASP Top 10<br>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════════
+        // END AI CHAT IMPLEMENTATION
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = 'HEXSTRIKE0123456789ABCDEF';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        function addMessage(content, isUser = false, messageId = null) {
+            const messages = document.getElementById('chatMessages');
+            
+            // If messageId provided, try to update existing message
+            if (messageId) {
+                const existing = document.getElementById(messageId);
+                if (existing) {
+                    existing.querySelector('.message-content').innerHTML = content;
+                    messages.scrollTop = messages.scrollHeight;
+                    return messageId;
+                }
+            }
+            
+            // Create new message
+            const div = document.createElement('div');
+            const newId = messageId || 'msg-' + Date.now();
+            div.id = newId;
+            div.className = `message ${isUser ? 'user' : 'ai'}`;
+            div.innerHTML = `
+                <div class="message-label">${isUser ? 'You' : 'Lumen Cortex'}</div>
+                <div class="message-content">${content}</div>
+            `;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+            return newId;
+        }
+
+        function updateToolList(tools) {
+            const list = document.getElementById('toolList');
+            list.innerHTML = tools.map(t => {
+                const name = t.name || t.tool || t;
+                const isAI = t.ai || false;
+                const status = t.status || 'pending';
+                return `
+                    <div class="tool-item ${isAI ? 'ai-powered' : ''}">
+                        <div class="tool-status ${status}"></div>
+                        <span>${name}</span>
+                        ${isAI ? '<span class="ai-badge">AI</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('toolCount').textContent = tools.length;
+        }
+
+        function updateRisk(level) {
+            const panel = document.getElementById('riskPanel');
+            const indicator = document.getElementById('riskIndicator');
+            panel.style.display = 'block';
+            indicator.className = `risk-indicator ${level}`;
+            indicator.textContent = level.toUpperCase() + ' RISK';
+        }
+
+        async function startScan() {
+            const input = document.getElementById('userInput');
+            const request = input.value.trim();
+            if (!request) return;
+
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.textContent = 'SCANNING...';
+
+            addMessage(request, true);
+            input.value = '';
+
+            // Extract target from request
+            const urlMatch = request.match(/(https?:\/\/[^\s]+|[a-z0-9][-a-z0-9]*\.[a-z]{2,})/i);
+            const target = urlMatch ? urlMatch[0] : request.split(' ').pop();
+
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ request, target })
+                });
+                
+                const data = await response.json();
+                currentScanId = data.scanId;
+
+                // Show progress panel, hide report panel
+                document.getElementById('scanProgressPanel').style.display = 'block';
+                document.getElementById('aiReportPanel').style.display = 'none';
+                document.getElementById('scanToolsProgress').textContent = `0/${data.totalTools} tools`;
+                document.getElementById('scanProgressBar').style.width = '0%';
+                window.scanStartTime = Date.now();
+                window.scanTotalTools = data.totalTools;
+
+                currentScanMessageId = addMessage(`
+                    <strong>🎯 Target:</strong> ${target}<br>
+                    <strong>🔧 Tools:</strong> ${data.totalTools} selected (${data.aiToolCount} AI-powered)<br>
+                    <strong>🧠 Strategy:</strong> ${data.reason}<br>
+                    <strong>📊 Scan Type:</strong> ${data.scanType.toUpperCase()}<br><br>
+                    <div class="loading">
+                        <span>AI-Powered Scan in Progress</span>
+                        <div class="loading-bar"><div class="loading-progress"></div></div>
+                    </div>
+                `);
+
+                // Map tools with AI info
+                const toolsWithInfo = data.tools.map(t => {
+                    const aiTools = ['snyk', 'semgrep', 'gitguardian', 'socket', 'codeql', 'bearer'];
+                    return { tool: t, ai: aiTools.includes(t), status: 'running' };
+                });
+                updateToolList(toolsWithInfo);
+                updateRisk(data.riskLevel);
+                document.getElementById('aiToolCount').textContent = data.aiToolCount;
+
+                // Start polling
+                pollInterval = setInterval(pollScanStatus, 2000);
+            } catch (err) {
+                addMessage(`❌ Error: ${err.message}`);
+                btn.disabled = false;
+                btn.textContent = 'SCAN';
+            }
+        }
+
+        async function pollScanStatus() {
+            if (!currentScanId) return;
+
+            try {
+                const response = await fetch(`/api/scan/${currentScanId}`);
+                const data = await response.json();
+
+                updateToolList(data.results.length ? data.results : data.tools.map(t => ({ tool: t, status: 'running' })));
+
+                // Update progress panel
+                const completedTools = data.results ? data.results.filter(r => r.status === 'complete' || r.status === 'error').length : 0;
+                const totalTools = window.scanTotalTools || data.tools?.length || 1;
+                const progress = Math.round((completedTools / totalTools) * 100);
+                document.getElementById('scanProgressBar').style.width = `${progress}%`;
+                document.getElementById('scanToolsProgress').textContent = `${completedTools}/${totalTools} tools`;
+                const elapsed = Math.round((Date.now() - (window.scanStartTime || Date.now())) / 1000);
+                document.getElementById('scanElapsedTime').textContent = `${elapsed}s`;
+                document.getElementById('scanProgressStatus').textContent = data.results?.length > 0 
+                    ? `Running: ${data.results.filter(r => r.status === 'running').map(r => r.tool).join(', ') || 'Finalizing...'}`
+                    : 'Starting security tools...';
+
+                if (data.status === 'complete') {
+                    clearInterval(pollInterval);
+                    
+                    // Hide progress, show report panel
+                    document.getElementById('scanProgressPanel').style.display = 'none';
+                    document.getElementById('aiReportPanel').style.display = 'block';
+                    
+                    // Count findings
+                    let totalFindings = 0;
+                    data.results.forEach(r => {
+                        if (r.findingsCount) totalFindings += r.findingsCount;
+                    });
+                    document.getElementById('findingCount').textContent = totalFindings;
+                    document.getElementById('scanTime').textContent = `${Math.round(data.duration)}s`;
+
+                    // Build comprehensive results with AI analysis
+                    let resultHtml = '';
+                    
+                    // AI Analysis Summary (if available)
+                    if (data.analysis) {
+                        const a = data.analysis;
+                        const riskColors = {
+                            'CRITICAL': '#ff0040',
+                            'HIGH': '#ff4444',
+                            'MEDIUM': '#ffaa00',
+                            'LOW': '#00ff41'
+                        };
+                        const riskColor = riskColors[a.riskLevel] || '#00ff41';
+                        
+                        resultHtml += `<div style="background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(${a.riskLevel === 'CRITICAL' ? '255,0,64' : a.riskLevel === 'HIGH' ? '255,68,68' : a.riskLevel === 'MEDIUM' ? '255,170,0' : '0,255,65'},0.1)); border: 1px solid ${riskColor}; border-radius: 12px; padding: 15px; margin-bottom: 15px;">`;
+                        
+                        // Risk Score Header
+                        resultHtml += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">`;
+                        resultHtml += `<span style="font-size: 1.2em; font-weight: bold;">🤖 AI Security Analysis</span>`;
+                        resultHtml += `<span style="background: ${riskColor}; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em;">${a.riskLevel} RISK</span>`;
+                        resultHtml += `</div>`;
+                        
+                        // Risk Score Bar
+                        resultHtml += `<div style="background: rgba(0,0,0,0.3); border-radius: 10px; height: 20px; margin: 10px 0; overflow: hidden;">`;
+                        resultHtml += `<div style="background: linear-gradient(90deg, #00ff41, #ffaa00, #ff0040); width: ${a.riskScore}%; height: 100%; transition: width 0.5s;"></div>`;
+                        resultHtml += `</div>`;
+                        resultHtml += `<div style="text-align: center; font-size: 0.8em; color: #888;">Risk Score: ${a.riskScore}/100</div>`;
+                        
+                        // Summary
+                        resultHtml += `<div style="margin: 15px 0; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">`;
+                        resultHtml += `<strong>${a.summary}</strong>`;
+                        resultHtml += `</div>`;
+                        
+                        // Critical Findings
+                        if (a.criticalFindings && a.criticalFindings.length > 0) {
+                            resultHtml += `<div style="margin-top: 15px;"><strong style="color: #ff0040;">🚨 Critical Findings:</strong></div>`;
+                            for (const finding of a.criticalFindings.slice(0, 8)) {
+                                const fColor = finding.severity === 'CRITICAL' ? '#ff0040' : finding.severity === 'HIGH' ? '#ff4444' : finding.severity === 'INFO' ? '#0abdc6' : '#ffaa00';
+                                resultHtml += `<div style="margin: 5px 0; padding: 8px; background: rgba(0,0,0,0.2); border-left: 3px solid ${fColor}; border-radius: 4px;">`;
+                                resultHtml += `<span style="color: ${fColor}; font-size: 0.75em; font-weight: bold;">[${finding.severity}]</span> `;
+                                resultHtml += `<strong>${finding.finding}</strong>`;
+                                if (finding.details && Array.isArray(finding.details) && finding.details.length > 0) {
+                                    resultHtml += `<div style="color: #888; font-size: 0.8em; margin-top: 3px;">`;
+                                    resultHtml += finding.details.slice(0, 3).join('<br>');
+                                    if (finding.details.length > 3) resultHtml += `<br>... and ${finding.details.length - 3} more`;
+                                    resultHtml += `</div>`;
+                                }
+                                resultHtml += `</div>`;
+                            }
+                        }
+                        
+                        // Recommendations
+                        if (a.recommendations && a.recommendations.length > 0) {
+                            resultHtml += `<div style="margin-top: 15px;"><strong style="color: #0abdc6;">💡 Recommendations:</strong></div>`;
+                            resultHtml += `<ul style="margin: 5px 0; padding-left: 20px; color: #aaa;">`;
+                            for (const rec of a.recommendations) {
+                                resultHtml += `<li>${rec}</li>`;
+                            }
+                            resultHtml += `</ul>`;
+                        }
+                        
+                        // Stats
+                        resultHtml += `<div style="display: flex; justify-content: space-around; margin-top: 15px; padding-top: 10px; border-top: 1px solid #333;">`;
+                        resultHtml += `<div style="text-align: center;"><div style="font-size: 1.2em; color: #00ff41;">${a.stats.successful}</div><div style="font-size: 0.7em; color: #666;">Passed</div></div>`;
+                        resultHtml += `<div style="text-align: center;"><div style="font-size: 1.2em; color: #ffaa00;">${a.stats.warnings}</div><div style="font-size: 0.7em; color: #666;">Warnings</div></div>`;
+                        resultHtml += `<div style="text-align: center;"><div style="font-size: 1.2em; color: #ff0040;">${a.stats.findings}</div><div style="font-size: 0.7em; color: #666;">Findings</div></div>`;
+                        resultHtml += `<div style="text-align: center;"><div style="font-size: 1.2em; color: #0abdc6;">${Math.round(data.duration)}s</div><div style="font-size: 0.7em; color: #666;">Duration</div></div>`;
+                        resultHtml += `</div>`;
+                        
+                        resultHtml += `</div>`;
+                    }
+                    
+                    // Tool Results Summary
+                    resultHtml += `<div style="margin-top: 15px;"><strong>📊 Tool Results:</strong></div>`;
+                    resultHtml += `<div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; margin-top: 5px;">`;
+                    
+                    for (const result of data.results) {
+                        const icon = result.status === 'success' ? '✅' : result.status === 'warning' ? '⚠️' : '❌';
+                        const aiLabel = result.ai ? ' 🧠' : '';
+                        const findings = result.findingsCount ? ` • ${result.findingsCount} findings` : '';
+                        const statusColor = result.status === 'success' ? '#00ff41' : result.status === 'warning' ? '#ffaa00' : '#ff0040';
+                        resultHtml += `<div style="padding: 5px 0; border-bottom: 1px solid #222;">`;
+                        resultHtml += `${icon} <strong>${result.name || result.tool}${aiLabel}</strong>`;
+                        resultHtml += `<span style="color: ${statusColor}; float: right;">${result.status}${findings}</span>`;
+                        resultHtml += `</div>`;
+                    }
+                    resultHtml += `</div>`;
+                    
+                    // Detailed Raw Results (collapsible)
+                    resultHtml += `<details style="margin-top: 15px;">`;
+                    resultHtml += `<summary style="cursor: pointer; color: #0abdc6;">📋 Show Detailed Raw Output</summary>`;
+                    resultHtml += `<div style="max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8em;">`;
+                    
+                    for (const result of data.results) {
+                        if (result.output && result.output.trim()) {
+                            resultHtml += `<div style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">`;
+                            resultHtml += `<strong style="color: #0abdc6;">${result.name || result.tool}</strong><br>`;
+                            const output = result.output.trim().substring(0, 1000);
+                            resultHtml += `<pre style="white-space: pre-wrap; color: #aaa; font-size: 0.85em; margin: 5px 0; overflow-x: auto;">${output}${result.output.length > 1000 ? '\n...(truncated)' : ''}</pre>`;
+                            if (result.error) {
+                                resultHtml += `<div style="color: #ff0040; font-size: 0.8em; margin-top: 5px;">⚠️ ${result.error.substring(0, 300)}</div>`;
+                            }
+                            resultHtml += `</div>`;
+                        }
+                    }
+                    resultHtml += `</div></details>`;
+                    
+                    // Update the existing scan message instead of adding new one
+                    addMessage(resultHtml, false, currentScanMessageId);
+                    currentScanMessageId = null;
+
+                    const btn = document.getElementById('sendBtn');
+                    btn.disabled = false;
+                    btn.textContent = 'SCAN';
+                }
+            } catch (err) {
+                console.error('Poll error:', err);
+            }
+        }
+
+        function quickScan(type) {
+            const prompts = {
+                web: 'Full scan https://example.com',
+                recon: 'Full reconnaissance on example.com',
+                secrets: 'Hunt for secrets in current directory',
+                code: 'Full code security analysis on ./my-project',
+                mobile: 'Analyze mobile app for security issues',
+                full: 'Comprehensive security scan on target',
+                github: 'Scan GitHub repo https://github.com/user/repo for secrets',
+                dork_aws: 'Search GitHub for exposed AWS keys',
+                dork_stripe: 'Search GitHub for exposed Stripe keys',
+                dork_openai: 'Search GitHub for exposed OpenAI keys'
+            };
+            document.getElementById('userInput').value = prompts[type];
+            document.getElementById('userInput').focus();
+        }
+
+        function quickAttack(type) {
+            const prompts = {
+                sqli: 'https://example.com',
+                xss: 'https://example.com',
+                bruteforce: 'https://example.com/login',
+                fuzz: 'https://example.com',
+                full_attack: 'https://example.com',
+                deep_scan: 'https://example.com',
+                exploit: 'https://example.com'
+            };
+            document.getElementById('userInput').value = prompts[type];
+            document.getElementById('userInput').focus();
+            document.getElementById('userInput').dataset.attackType = type;
+        }
+
+        // Run scan with specific mode (Quick or Deep)
+        async function runScanMode(mode) {
+            const input = document.getElementById('userInput');
+            let target = input.value.trim();
+            
+            // If no URL entered, prompt user
+            if (!target || !target.match(/[a-z0-9][-a-z0-9]*\.[a-z]{2,}/i)) {
+                const url = prompt(`Enter target URL for ${mode === 'deep_scan' ? 'Deep' : 'Quick'} Scan:`, 'https://example.com');
+                if (!url) return;
+                target = url;
+            }
+            
+            // Ensure URL has protocol
+            if (!target.startsWith('http')) {
+                target = 'https://' + target;
+            }
+
+            const modeInfo = {
+                full_attack: { name: 'Quick Scan ⚡', tools: 4, time: '~60s' },
+                deep_scan: { name: 'Deep Scan 🔬', tools: 7, time: '~3min' }
+            };
+            const info = modeInfo[mode] || modeInfo.full_attack;
+
+            addMessage(`🔍 Starting **${info.name}** on ${target}...\n\n_${info.tools} tools • ${info.time} estimated_`, true);
+            input.value = '';
+
+            // Run the scan with selected mode
+            try {
+                const response = await fetch('/api/attack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target, attackType: mode })
+                });
+
+                const data = await response.json();
+                currentScanId = data.scanId;
+
+                // Update stats
+                document.getElementById('toolCount').textContent = data.toolCount || data.tools.length;
+                document.getElementById('aiToolCount').textContent = data.aiToolCount || 0;
+
+                // Update Active Tools panel
+                const toolsWithInfo = data.tools.map(t => ({ tool: t, ai: false, status: 'running' }));
+                updateToolList(toolsWithInfo);
+
+                // Show risk panel
+                document.getElementById('riskPanel').style.display = 'block';
+                document.getElementById('riskIndicator').className = 'risk-indicator medium';
+                document.getElementById('riskIndicator').textContent = 'SCANNING';
+
+                // Store progress message
+                scanProgressMessageId = addMessage(`
+                    <div style="border-left: 3px solid #0abdc6; padding-left: 15px;" id="scan-progress-content">
+                        <strong style="color: #0abdc6;">🛡️ ${info.name.toUpperCase()} IN PROGRESS</strong><br><br>
+                        <strong>🎯 Target:</strong> ${target}<br>
+                        <strong>🔧 Tools:</strong> ${data.toolCount || data.tools.length} selected<br>
+                        <strong>⏱️ Estimated:</strong> ${info.time}<br>
+                        <strong>⏳ Status:</strong> <span id="scan-status-text">Running tools...</span><br><br>
+                        <div class="typing-indicator" id="scan-typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                `, false);
+
+                // Poll for completion
+                await pollScanAndChat(data.scanId, target, data.toolCount || data.tools.length);
+
+            } catch (error) {
+                addMessage(`❌ Scan Error: ${error.message}`, false);
+            }
+        }
+
+        async function scanGitHubRepo() {
+            const input = document.getElementById('githubRepoUrl');
+            if (!input) {
+                console.error('githubRepoUrl input not found');
+                return alert('Error: Input not found');
+            }
+            
+            let repoUrl = input.value.trim();
+            console.log('GitHub repo URL:', repoUrl);
+            
+            if (!repoUrl) {
+                return alert('Please enter a GitHub repository URL or owner/repo');
+            }
+            
+            // Extract owner/repo from various formats
+            // Handles: github.com/user/repo, https://github.com/user/repo, user/repo
+            let repo = repoUrl
+                .replace(/^https?:\/\/(www\.)?/, '')
+                .replace(/^github\.com\//, '')
+                .replace(/\/tree\/.*$/, '')  // Remove /tree/branch/...
+                .replace(/\/blob\/.*$/, '')  // Remove /blob/branch/...
+                .replace(/\.git$/, '')
+                .replace(/\/$/, '')
+                .split('/').slice(0, 2).join('/');  // Only keep owner/repo
+            
+            console.log('Extracted repo:', repo);
+            
+            // Validate format
+            if (!repo || !repo.includes('/') || repo.split('/').length !== 2 || repo.split('/')[1] === '') {
+                const isOrgOnly = repo && !repo.includes('/');
+                let errorMsg = 'Invalid format. Need: owner/repo\n\n';
+                if (isOrgOnly) {
+                    errorMsg += `You entered "${repo}" which is a GitHub user/org, not a repo.\n\n`;
+                    errorMsg += `Try: ${repo}/REPO_NAME\n\n`;
+                }
+                errorMsg += 'Examples:\n• facebook/react\n• github.com/microsoft/vscode\n• https://github.com/vercel/next.js';
+                return alert(errorMsg);
+            }
+            
+            const btn = document.getElementById('sendBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            sendBtn.disabled = true;
+            btn.textContent = 'SCANNING...';
+            input.value = '';  // Clear immediately
+            
+            addMessage(`🔍 <strong>Scanning GitHub Repo:</strong> <a href="https://github.com/${repo}" target="_blank" style="color: #0abdc6;">${repo}</a>`, true);
+            
+            try {
+                const response = await fetch('/api/github-repo-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ repo })
+                });
+                
+                const data = await response.json();
+                console.log('Scan response:', data);
+                
+                if (data.error) {
+                    addMessage(`❌ Error: ${data.error}`);
+                    btn.disabled = false;
+                    sendBtn.disabled = false;
+                    btn.textContent = 'SCAN';
+                } else {
+                    currentScanId = data.scanId;
+                    
+                    currentScanMessageId = addMessage(`
+                        <div style="border-left: 3px solid #8b5cf6; padding-left: 15px;">
+                            <strong style="color: #8b5cf6;">🔍 GITHUB REPO SCAN</strong><br><br>
+                            <strong>📁 Repository:</strong> <a href="https://github.com/${repo}" target="_blank" style="color: #0abdc6;">${repo}</a><br>
+                            <strong>🔧 Scanning for:</strong> Secrets, API keys, passwords, tokens<br><br>
+                            <div class="loading">
+                                <span style="color: #8b5cf6;">Scanning repository...</span>
+                                <div class="loading-bar"><div class="loading-progress" style="background: linear-gradient(90deg, #8b5cf6, #a855f7);"></div></div>
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Poll for results
+                    pollInterval = setInterval(() => pollGitHubHunt(), 2000);
+                }
+            } catch (err) {
+                console.error('Scan error:', err);
+                addMessage(`❌ Error: ${err.message}`);
+                btn.disabled = false;
+                sendBtn.disabled = false;
+                btn.textContent = 'SCAN';
+            }
+        }
+        
+        // Allow Enter key to trigger GitHub repo scan
+        document.addEventListener('DOMContentLoaded', () => {
+            const githubInput = document.getElementById('githubRepoUrl');
+            if (githubInput) {
+                githubInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        scanGitHubRepo();
+                    }
+                });
+            }
+        });
+
+        async function githubHunt(secretType) {
+            const btn = document.getElementById('sendBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            sendBtn.disabled = true;
+            btn.textContent = 'HUNTING...';
+
+            const labels = {
+                aws: 'AWS Access Keys (AKIA...)',
+                aws_secret: 'AWS Secret Keys',
+                stripe: 'Stripe Live Keys (sk_live_)',
+                openai: 'OpenAI API Keys (sk-...)',
+                anthropic: 'Anthropic API Keys (sk-ant-)',
+                google_api: 'Google API Keys (AIza...)',
+                firebase: 'Firebase Configs',
+                github_token: 'GitHub Tokens (ghp_)',
+                slack: 'Slack Bot Tokens (xoxb-)',
+                discord: 'Discord Tokens',
+                twilio: 'Twilio Credentials',
+                sendgrid: 'SendGrid API Keys',
+                mongodb: 'MongoDB Connection Strings',
+                postgres: 'PostgreSQL Credentials',
+                keys: 'ALL API Keys & Secrets'
+            };
+
+            addMessage(`🔍 <strong>GitHub Secret Hunt:</strong> ${labels[secretType] || secretType}`, true);
+
+            try {
+                const response = await fetch('/api/github-hunt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ secretType })
+                });
+                
+                const data = await response.json();
+                currentScanId = data.scanId;
+
+                currentScanMessageId = addMessage(`
+                    <div style="border-left: 3px solid #8b5cf6; padding-left: 15px;">
+                        <strong style="color: #8b5cf6;">🔍 GITHUB SECRET HUNT</strong><br><br>
+                        <strong>🎯 Target:</strong> All of GitHub<br>
+                        <strong>🔑 Secret Type:</strong> ${labels[secretType] || secretType}<br>
+                        <strong>🔧 Tool:</strong> GitHub Code Search API<br><br>
+                        <div class="loading">
+                            <span style="color: #8b5cf6;">Searching GitHub...</span>
+                            <div class="loading-bar"><div class="loading-progress" style="background: linear-gradient(90deg, #8b5cf6, #a855f7);"></div></div>
+                        </div>
+                    </div>
+                `);
+
+                // Poll for results
+                pollInterval = setInterval(() => pollGitHubHunt(), 2000);
+            } catch (err) {
+                addMessage(`❌ Hunt Error: ${err.message}`);
+                btn.disabled = false;
+                sendBtn.disabled = false;
+                btn.textContent = 'SCAN';
+            }
+        }
+
+        async function pollGitHubHunt() {
+            if (!currentScanId) return;
+
+            try {
+                const response = await fetch(`/api/github-hunt/${currentScanId}`);
+                const data = await response.json();
+
+                if (data.status === 'complete') {
+                    clearInterval(pollInterval);
+                    
+                    let resultHtml = buildGitHubHuntReport(data);
+                    addMessage(resultHtml, false, currentScanMessageId);
+                    currentScanMessageId = null;
+
+                    document.getElementById('sendBtn').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
+                    document.getElementById('sendBtn').textContent = 'SCAN';
+                    document.getElementById('findingCount').textContent = data.totalSecrets || 0;
+                }
+            } catch (err) {
+                console.error('Hunt poll error:', err);
+            }
+        }
+
+        function buildGitHubHuntReport(data) {
+            let html = `<div style="background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(139,92,246,0.1)); border: 2px solid #8b5cf6; border-radius: 12px; padding: 20px;">`;
+            
+            // Header
+            html += `<div style="text-align: center; margin-bottom: 20px;">`;
+            html += `<div style="font-family: 'Orbitron', sans-serif; font-size: 1.5em; color: #8b5cf6; margin-bottom: 10px;">🔍 GITHUB SECRET HUNT REPORT</div>`;
+            if (data.repo) {
+                html += `<div style="color: #0abdc6;"><a href="https://github.com/${data.repo}" target="_blank" style="color: #0abdc6; text-decoration: none;">📁 ${data.repo}</a></div>`;
+            } else {
+                html += `<div style="color: #888;">Secret Type: ${data.secretType}</div>`;
+            }
+            html += `</div>`;
+
+            // Summary
+            const secretCount = data.secrets?.length || 0;
+            const color = secretCount > 0 ? '#ff0040' : '#00ff41';
+            html += `<div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center;">`;
+            html += `<div style="font-size: 2em; color: ${color};">${secretCount}</div>`;
+            html += `<div style="color: #888;">Exposed Secrets Found</div>`;
+            html += `</div>`;
+
+            // Findings
+            if (data.secrets && data.secrets.length > 0) {
+                html += `<div style="background: rgba(255,0,64,0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">`;
+                html += `<div style="color: #ff0040; font-weight: bold; margin-bottom: 10px;">🚨 EXPOSED SECRETS</div>`;
+                
+                for (const secret of data.secrets.slice(0, 20)) {
+                    const repoName = secret.repository?.fullName || secret.repository || 'Unknown Repo';
+                    const filePath = secret.path || 'Unknown path';
+                    const repoUrl = `https://github.com/${repoName}`;
+                    const fileUrl = secret.htmlUrl || `https://github.com/${repoName}/blob/main/${filePath}`;
+                    
+                    html += `<div style="background: rgba(0,0,0,0.3); border-left: 3px solid #ff0040; padding: 10px; margin: 8px 0; border-radius: 4px; cursor: pointer;" onclick="window.open('${fileUrl}', '_blank')">`;
+                    html += `<div><a href="${repoUrl}" target="_blank" onclick="event.stopPropagation()" style="color: #8b5cf6; text-decoration: none;"><strong>📁 ${repoName}</strong></a></div>`;
+                    html += `<div style="color: #888; font-size: 0.85em;"><a href="${fileUrl}" target="_blank" onclick="event.stopPropagation()" style="color: #0abdc6; text-decoration: none;">📄 ${filePath}</a></div>`;
+                    if (secret.textMatches && secret.textMatches.length > 0) {
+                        html += `<div style="color: #ff6666; font-size: 0.8em; margin-top: 5px; font-family: monospace; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 4px; overflow-x: auto;">`;
+                        html += secret.textMatches[0]?.fragment?.substring(0, 200) || '';
+                        html += `</div>`;
+                    }
+                    html += `<div style="font-size: 10px; color: #666; margin-top: 5px;">Click to view file →</div>`;
+                    html += `</div>`;
+                }
+                
+                if (data.secrets.length > 20) {
+                    html += `<div style="color: #888; text-align: center; margin-top: 10px;">...and ${data.secrets.length - 20} more</div>`;
+                }
+                html += `</div>`;
+            } else {
+                html += `<div style="background: rgba(0,255,65,0.1); border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 15px;">`;
+                html += `<div style="color: #00ff41;">✅ No exposed secrets found for this search</div>`;
+                html += `</div>`;
+            }
+
+            // Recommendations
+            html += `<div style="background: rgba(10,189,198,0.1); border-radius: 8px; padding: 15px;">`;
+            html += `<div style="color: #0abdc6; font-weight: bold; margin-bottom: 10px;">💡 Recommendations</div>`;
+            html += `<ul style="margin: 0; padding-left: 20px; color: #aaa;">`;
+            if (secretCount > 0) {
+                html += `<li>Contact affected repository owners about exposed credentials</li>`;
+                html += `<li>Check if your organization's secrets appear in results</li>`;
+                html += `<li>Rotate any credentials that may have been exposed</li>`;
+            }
+            html += `<li>Use GitHub secret scanning in your repositories</li>`;
+            html += `<li>Implement pre-commit hooks to prevent secret commits</li>`;
+            html += `</ul>`;
+            html += `</div>`;
+
+            // Duration
+            html += `<div style="text-align: center; margin-top: 15px; color: #666; font-size: 0.8em;">`;
+            html += `Scan completed in ${Math.round(data.duration || 0)}s`;
+            html += `</div>`;
+
+            html += `</div>`;
+            return html;
+        }
+
+        async function startSecurityCheck() {
+            const input = document.getElementById('userInput');
+            let rawInput = input.value.trim();
+            if (!rawInput) return;
+
+            // Extract URL from input (handles "full scan https://..." or just URLs)
+            const urlMatch = rawInput.match(/(https?:\/\/[^\s]+)/i);
+            let target = urlMatch ? urlMatch[1] : rawInput;
+            
+            // If no protocol, try to extract domain and add https
+            if (!target.startsWith('http')) {
+                const domainMatch = rawInput.match(/([a-z0-9][-a-z0-9]*\.[-a-z0-9.]+)/i);
+                target = domainMatch ? 'https://' + domainMatch[1] : 'https://' + target;
+            }
+            
+            // Clean up target - remove any trailing text after the URL
+            target = target.split(/\s/)[0];
+
+            const attackType = input.dataset.attackType || 'full_attack';
+            delete input.dataset.attackType;
+
+            const btn = document.getElementById('securityBtn');
+            btn.disabled = true;
+            btn.textContent = '🛡️ CHECKING...';
+
+            addMessage(`🛡️ <strong>SECURITY CHECK:</strong> ${target}<br>Check Type: ${attackType.toUpperCase()}`, true);
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/attack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target, attackType })
+                });
+                
+                const data = await response.json();
+                currentScanId = data.scanId;
+
+                // Update stats immediately with accurate tool counts
+                document.getElementById('toolCount').textContent = data.toolCount || data.tools.length;
+                document.getElementById('aiToolCount').textContent = data.aiToolCount || 0;
+                
+                currentScanMessageId = addMessage(`
+                    <div style="border-left: 3px solid #0abdc6; padding-left: 15px;">
+                        <strong style="color: #0abdc6;">🛡️ SECURITY SCAN INITIATED</strong><br><br>
+                        <strong>🎯 Target:</strong> ${target}<br>
+                        <strong>📋 Scan Type:</strong> ${data.scanName || data.attackType.toUpperCase()}<br>
+                        <strong>🔧 Tools Selected:</strong> ${data.toolCount || data.tools.length} (${data.aiToolCount || 0} AI-powered)<br>
+                        <strong>⏳ Status:</strong> Analyzing target...<br><br>
+                        <div class="loading">
+                            <span style="color: #0abdc6;">Security Analysis in Progress...</span>
+                            <div class="loading-bar"><div class="loading-progress" style="background: linear-gradient(90deg, #0abdc6, #00ff41);"></div></div>
+                        </div>
+                    </div>
+                `);
+
+                const toolsWithInfo = data.tools.map(t => ({ tool: t, ai: false, status: 'running' }));
+                updateToolList(toolsWithInfo);
+                document.getElementById('riskPanel').style.display = 'block';
+                document.getElementById('riskIndicator').className = 'risk-indicator medium';
+                document.getElementById('riskIndicator').textContent = 'ANALYZING';
+
+                // Start polling
+                pollInterval = setInterval(() => pollAttackStatus(), 2000);
+            } catch (err) {
+                addMessage(`❌ Security Check Error: ${err.message}`);
+                btn.disabled = false;
+                btn.textContent = '🛡️ SECURITY CHECK';
+            }
+        }
+
+        async function pollAttackStatus() {
+            if (!currentScanId) return;
+
+            try {
+                const response = await fetch(`/api/attack/${currentScanId}`);
+                const data = await response.json();
+
+                updateToolList(data.results.length ? data.results : data.tools.map(t => ({ tool: t, status: 'running' })));
+
+                if (data.status === 'complete') {
+                    clearInterval(pollInterval);
+                    
+                    // Update all stats from actual results
+                    document.getElementById('toolCount').textContent = data.toolCount || data.results?.length || 0;
+                    document.getElementById('aiToolCount').textContent = data.aiToolCount || data.results?.filter(r => r.ai).length || 0;
+                    document.getElementById('findingCount').textContent = data.totalVulns || 0;
+                    document.getElementById('scanTime').textContent = `${Math.round(data.duration)}s`;
+
+                    // Build security report
+                    let resultHtml = buildAttackReport(data);
+                    
+                    addMessage(resultHtml, false, currentScanMessageId);
+                    currentScanMessageId = null;
+
+                    const btn = document.getElementById('securityBtn');
+                    btn.disabled = false;
+                    btn.textContent = '🛡️ SECURITY CHECK';
+                }
+            } catch (err) {
+                console.error('Security check poll error:', err);
+            }
+        }
+
+        function buildAttackReport(data) {
+            const a = data.analysis || {};
+            const riskColor = a.riskLevel === 'CRITICAL' ? '#ff0040' : a.riskLevel === 'HIGH' ? '#ff4444' : a.riskLevel === 'MEDIUM' ? '#ffaa00' : '#00ff41';
+            
+            let html = `<div style="background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(255,0,64,0.1)); border: 2px solid ${riskColor}; border-radius: 12px; padding: 20px;">`;
+            
+            // Header
+            html += `<div style="text-align: center; margin-bottom: 20px;">`;
+            html += `<div style="font-family: 'Orbitron', sans-serif; font-size: 1.5em; color: #0abdc6; margin-bottom: 10px;">🛡️ SECURITY SCAN REPORT</div>`;
+            html += `<div style="color: #888;">Target: ${data.target}</div>`;
+            html += `<div style="color: #666; font-size: 0.8em;">Tools Used: ${data.toolCount || data.results?.length || 0} | Generated: ${new Date().toISOString()}</div>`;
+            html += `</div>`;
+
+            // Risk Score
+            html += `<div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; margin-bottom: 15px;">`;
+            html += `<div style="display: flex; justify-content: space-between; align-items: center;">`;
+            html += `<span style="font-size: 1.2em;">🎯 Security Assessment</span>`;
+            html += `<span style="background: ${riskColor}; color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold;">${a.riskLevel || 'UNKNOWN'}</span>`;
+            html += `</div>`;
+            html += `<div style="background: rgba(0,0,0,0.3); border-radius: 10px; height: 20px; margin: 15px 0; overflow: hidden;">`;
+            html += `<div style="background: linear-gradient(90deg, #00ff41 0%, #ffaa00 50%, #ff0040 100%); width: ${a.riskScore || 0}%; height: 100%;"></div>`;
+            html += `</div>`;
+            html += `<div style="text-align: center; color: #888;">Vulnerability Score: ${a.riskScore || 0}/100</div>`;
+            html += `</div>`;
+
+            // Executive Summary
+            html += `<div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px;">`;
+            html += `<div style="color: #0abdc6; font-weight: bold; margin-bottom: 10px;">📋 Executive Summary</div>`;
+            html += `<p style="color: #ccc; line-height: 1.6;">${a.summary || 'Security scan completed. See findings below.'}</p>`;
+            html += `</div>`;
+
+            // Vulnerabilities Found
+            if (a.criticalFindings && a.criticalFindings.length > 0) {
+                html += `<div style="background: rgba(255,0,64,0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">`;
+                html += `<div style="color: #ff0040; font-weight: bold; margin-bottom: 10px;">🚨 Vulnerabilities Found</div>`;
+                
+                for (const finding of a.criticalFindings) {
+                    const fColor = finding.severity === 'CRITICAL' ? '#ff0040' : finding.severity === 'HIGH' ? '#ff4444' : finding.severity === 'MEDIUM' ? '#ffaa00' : '#0abdc6';
+                    html += `<div style="background: rgba(0,0,0,0.3); border-left: 3px solid ${fColor}; padding: 10px; margin: 8px 0; border-radius: 4px;">`;
+                    html += `<div style="display: flex; justify-content: space-between; align-items: center;">`;
+                    html += `<strong>${finding.finding}</strong>`;
+                    html += `<span style="background: ${fColor}; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 0.7em;">${finding.severity}</span>`;
+                    html += `</div>`;
+                    if (finding.details) {
+                        const details = Array.isArray(finding.details) ? finding.details : [finding.details];
+                        html += `<div style="color: #888; font-size: 0.85em; margin-top: 5px;">`;
+                        html += details.slice(0, 3).join('<br>');
+                        html += `</div>`;
+                    }
+                    if (finding.tool) {
+                        html += `<div style="color: #666; font-size: 0.75em; margin-top: 5px;">Tool: ${finding.tool}</div>`;
+                    }
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            }
+
+            // Recommendations
+            if (a.recommendations && a.recommendations.length > 0) {
+                html += `<div style="background: rgba(10,189,198,0.1); border-radius: 8px; padding: 15px; margin-bottom: 15px;">`;
+                html += `<div style="color: #0abdc6; font-weight: bold; margin-bottom: 10px;">💡 Remediation Recommendations</div>`;
+                html += `<ul style="margin: 0; padding-left: 20px; color: #aaa;">`;
+                for (const rec of a.recommendations) {
+                    html += `<li style="margin: 5px 0;">${rec}</li>`;
+                }
+                html += `</ul>`;
+                html += `</div>`;
+            }
+
+            // Tool Results
+            html += `<div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px;">`;
+            html += `<div style="color: #888; font-weight: bold; margin-bottom: 10px;">🔧 Security Tools Used</div>`;
+            for (const result of (data.results || [])) {
+                const icon = result.status === 'success' ? '✅' : result.status === 'warning' ? '⚠️' : result.status === 'vuln_found' ? '💀' : '❌';
+                const statusColor = result.status === 'vuln_found' ? '#ff0040' : result.status === 'success' ? '#00ff41' : result.status === 'warning' ? '#ffaa00' : '#666';
+                html += `<div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #222;">`;
+                html += `<span>${icon} ${result.name || result.tool}</span>`;
+                html += `<span style="color: ${statusColor};">${result.status}${result.findingsCount ? ` (${result.findingsCount} vulns)` : ''}</span>`;
+                html += `</div>`;
+            }
+            html += `</div>`;
+
+            // Stats Footer
+            html += `<div style="display: flex; justify-content: space-around; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px;">`;
+            html += `<div style="text-align: center;"><div style="font-size: 1.5em; color: #ff0040;">${data.totalVulns || 0}</div><div style="font-size: 0.7em; color: #666;">Vulns Found</div></div>`;
+            html += `<div style="text-align: center;"><div style="font-size: 1.5em; color: #ffaa00;">${(data.results || []).length}</div><div style="font-size: 0.7em; color: #666;">Tools Run</div></div>`;
+            html += `<div style="text-align: center;"><div style="font-size: 1.5em; color: #0abdc6;">${Math.round(data.duration || 0)}s</div><div style="font-size: 0.7em; color: #666;">Duration</div></div>`;
+            html += `</div>`;
+
+            // Detailed Tool Results (expanded by default for full report)
+            html += `<details open style="margin-top: 15px;">`;
+            html += `<summary style="cursor: pointer; color: #ff0040; font-weight: bold;">📋 Detailed Tool Output (${(data.results || []).length} tools)</summary>`;
+            html += `<div style="max-height: 600px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: 10px;">`;
+            for (const result of (data.results || [])) {
+                const statusIcon = result.status === 'vuln_found' ? '💀' : result.status === 'success' ? '✅' : result.status === 'error' ? '❌' : '⚠️';
+                const borderColor = result.status === 'vuln_found' ? '#ff0040' : result.status === 'success' ? '#00ff41' : '#ffaa00';
+                
+                html += `<div style="margin-bottom: 15px; padding: 12px; background: rgba(0,0,0,0.2); border-left: 3px solid ${borderColor}; border-radius: 4px;">`;
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">`;
+                html += `<strong style="color: #fff; font-size: 1em;">${statusIcon} ${result.name || result.tool}</strong>`;
+                html += `<span style="color: ${borderColor}; font-size: 0.8em;">${result.findingsCount ? result.findingsCount + ' findings' : result.status}</span>`;
+                html += `</div>`;
+                
+                if (result.output && result.output.trim()) {
+                    html += `<div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; margin-top: 8px;">`;
+                    html += `<pre style="white-space: pre-wrap; color: #aaa; margin: 0; font-size: 0.8em; max-height: 300px; overflow-y: auto;">${escapeHtml(result.output.substring(0, 5000))}${result.output.length > 5000 ? '\n\n... (showing first 5000 chars)' : ''}</pre>`;
+                    html += `</div>`;
+                }
+                
+                if (result.error) {
+                    html += `<div style="color: #ff6666; font-size: 0.8em; margin-top: 5px;">⚠️ Error: ${escapeHtml(result.error.substring(0, 500))}</div>`;
+                }
+                html += `</div>`;
+            }
+            html += `</div></details>`;
+            
+            // Helper function for HTML escaping
+            function escapeHtml(text) {
+                return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // MONITORING FUNCTIONS (UptimeRobot Integration)
+        // ═══════════════════════════════════════════════════════════════
+        
+        function showAddMonitoring() {
+            document.getElementById('addMonitoringForm').style.display = 'block';
+        }
+        
+        function hideAddMonitoring() {
+            document.getElementById('addMonitoringForm').style.display = 'none';
+        }
+        
+        async function addMonitoringSite() {
+            const url = document.getElementById('monitorUrl').value;
+            if (!url) return alert('Please enter a URL');
+            
+            try {
+                const res = await fetch('/api/uptimerobot/monitors', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url, name: url })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('monitorUrl').value = '';
+                    hideAddMonitoring();
+                    loadMonitoringSites();
+                } else if (data.error?.includes('API key')) {
+                    alert('⚠️ UptimeRobot not configured.\\n\\nGo to https://uptimerobot.com to get your API key, then run:\\ncurl -X POST http://localhost:3333/api/uptimerobot/setup -H "Content-Type: application/json" -d \'{"apiKey": "YOUR_KEY"}\'');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to add monitor'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+        
+        async function loadMonitoringSites() {
+            const container = document.getElementById('monitoringList');
+            
+            try {
+                const res = await fetch('/api/uptimerobot/monitors');
+                const data = await res.json();
+                
+                if (!data.configured) {
+                    container.innerHTML = `<div class="tool-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                        <span style="color: #ffaa00;">⚠️ UptimeRobot not configured</span>
+                        <span style="color: #666; font-size: 11px;">Get API key from uptimerobot.com</span>
+                        <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add Site Anyway</button>
+                    </div>`;
+                    return;
+                }
+                
+                if (!data.monitors || data.monitors.length === 0) {
+                    container.innerHTML = `<div class="tool-item" style="justify-content: space-between;">
+                        <span style="color: #666;">No sites monitored</span>
+                        <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
+                    </div>`;
+                    return;
+                }
+                
+                let html = '';
+                for (const monitor of data.monitors) {
+                    const statusColor = monitor.status === 'online' ? '#00ff41' : monitor.status === 'down' ? '#ff0040' : '#ffaa00';
+                    const statusIcon = monitor.status === 'online' ? '🟢' : monitor.status === 'down' ? '🔴' : '🟡';
+                    const responseTime = monitor.responseTime ? `${monitor.responseTime}ms` : '-';
+                    const avgTime = monitor.avgResponseTime ? `avg ${monitor.avgResponseTime}ms` : '';
+                    const uptime24h = monitor.uptime?.day ? `${monitor.uptime.day}%` : '-';
+                    const uptime7d = monitor.uptime?.week ? `${monitor.uptime.week}%` : '-';
+                    const uptime30d = monitor.uptime?.month ? `${monitor.uptime.month}%` : '-';
+                    const lastChecked = monitor.lastChecked ? new Date(monitor.lastChecked).toLocaleTimeString() : '-';
+                    
+                    // SSL info (only show if we have valid expiry data)
+                    let sslInfo = '';
+                    if (monitor.ssl && monitor.ssl.daysUntilExpiry !== null && monitor.ssl.daysUntilExpiry !== undefined) {
+                        const sslColor = monitor.ssl.daysUntilExpiry > 30 ? '#00ff41' : monitor.ssl.daysUntilExpiry > 7 ? '#ffaa00' : '#ff0040';
+                        sslInfo = `<div style="font-size: 9px; color: ${sslColor};">🔒 SSL: ${monitor.ssl.daysUntilExpiry}d left</div>`;
+                    }
+                    
+                    // Recent incidents
+                    let incidentInfo = '';
+                    const downLogs = monitor.logs?.filter(l => l.type === 'down') || [];
+                    if (downLogs.length > 0) {
+                        incidentInfo = `<div style="font-size: 9px; color: #ff0040;">⚠️ ${downLogs.length} incident(s)</div>`;
+                    }
+                    
+                    html += `<div class="tool-item" style="flex-direction: column; padding: 10px 0; border-bottom: 1px solid #222; gap: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span style="font-size: 12px; font-weight: bold;">${statusIcon} ${monitor.friendlyName}</span>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="color: ${statusColor}; font-size: 11px; font-weight: bold;">${monitor.status.toUpperCase()}</span>
+                                <button onclick="deleteMonitor(${monitor.id}, '${monitor.friendlyName}')" style="background: transparent; border: none; color: #ff0040; cursor: pointer; font-size: 12px; padding: 2px;" title="Delete">🗑️</button>
+                            </div>
+                        </div>
+                        <div style="font-size: 10px; color: #666; word-break: break-all;">${monitor.url}</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-top: 4px;">
+                            <span>⚡ ${responseTime} ${avgTime ? `(${avgTime})` : ''}</span>
+                            <span>🕐 ${lastChecked}</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; font-size: 9px; color: #0abdc6;">
+                            <span title="24h uptime">24h: ${uptime24h}</span>
+                            <span title="7 day uptime">7d: ${uptime7d}</span>
+                            <span title="30 day uptime">30d: ${uptime30d}</span>
+                        </div>
+                        ${sslInfo}
+                        ${incidentInfo}
+                    </div>`;
+                }
+                html += `<button class="quick-btn" onclick="showAddMonitoring()" style="width: 100%; margin-top: 8px; font-size: 10px;">+ Add Site</button>`;
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = `<div class="tool-item" style="color: #ff0040;">Error loading monitors: ${e.message}</div>`;
+            }
+        }
+        
+        async function checkAllMonitoring() {
+            const btn = event.target;
+            btn.textContent = '⏳ Refreshing...';
+            btn.disabled = true;
+            
+            // UptimeRobot handles checking automatically, we just refresh the display
+            await loadMonitoringSites();
+            
+            btn.textContent = '🔄 Refresh';
+            btn.disabled = false;
+        }
+        
+        async function deleteMonitor(id, name) {
+            if (!confirm(`Delete monitor "${name}"?`)) return;
+            
+            try {
+                const res = await fetch(`/api/uptimerobot/monitors/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    loadMonitoringSites();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+        
+        // Load monitoring on page load
+        loadMonitoringSites();
+        
+        // ═══════════════════════════════════════════════════════════════
+        // AI REPORT FUNCTIONS (Dedicated Report Section)
+        // ═══════════════════════════════════════════════════════════════
+        
+        let currentReportData = null;
+        
+        async function generateAIReport() {
+            if (!currentScanId) return alert('No scan to generate report for');
+            
+            const btn = document.getElementById('generateReportBtn');
+            const statusEl = document.getElementById('aiReportStatus');
+            btn.textContent = '⏳ Generating...';
+            btn.disabled = true;
+            statusEl.innerHTML = '🔄 AI is analyzing your scan results...';
+            
+            // Show report section with loading state
+            document.getElementById('reportSection').style.display = 'block';
+            document.getElementById('reportContent').innerHTML = `
+                <div style="text-align: center; padding: 60px; color: #0abdc6;">
+                    <div style="font-size: 4em; margin-bottom: 20px; animation: pulse 2s infinite;">🧠</div>
+                    <p style="font-size: 1.2em;">AI is generating your security assessment...</p>
+                    <p style="color: #666; margin-top: 10px;">This may take 15-30 seconds</p>
+                </div>
+            `;
+            
+            // Scroll to report section
+            document.getElementById('reportSection').scrollIntoView({ behavior: 'smooth' });
+            
+            try {
+                const res = await fetch(`/api/scan/${currentScanId}/report`);
+                const data = await res.json();
+                currentReportData = data;
+                
+                // Update status
+                if (data.aiPowered) {
+                    statusEl.innerHTML = '✅ AI Report Generated!';
+                } else {
+                    statusEl.innerHTML = '⚠️ Basic report (configure Claude API for AI)';
+                }
+                
+                // Get scan info for header
+                const scanRes = await fetch(`/api/scan/${currentScanId}`);
+                const scanData = await scanRes.json();
+                
+                document.getElementById('reportTarget').textContent = `Target: ${scanData.target || 'Unknown'}`;
+                document.getElementById('reportTimestamp').textContent = `Generated: ${new Date().toLocaleString()}`;
+                
+                // Format and display report
+                const formattedReport = formatReportContent(data.report, data.aiPowered);
+                document.getElementById('reportContent').innerHTML = formattedReport;
+                
+            } catch (error) {
+                document.getElementById('reportContent').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #ff0040;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">❌</div>
+                        <p>Failed to generate report: ${error.message}</p>
+                    </div>
+                `;
+            }
+            
+            btn.textContent = '📋 Generate Scan Results';
+            btn.disabled = false;
+        }
+        
+        function formatReportContent(report, aiPowered) {
+            if (!report) return '<p style="color: #666;">No report content available.</p>';
+            
+            // Convert markdown-like formatting to HTML
+            let html = report
+                // Headers
+                .replace(/### (.*?)(?:\n|$)/g, '<h4 style="color: #ffaa00; margin: 20px 0 10px; font-size: 1.1em;">$1</h4>')
+                .replace(/## (.*?)(?:\n|$)/g, '<h3 style="color: #0abdc6; margin: 25px 0 15px; font-size: 1.3em; border-bottom: 1px solid #2a2a3a; padding-bottom: 10px;">$1</h3>')
+                .replace(/# (.*?)(?:\n|$)/g, '<h2 style="color: #00ff41; margin: 30px 0 20px; font-size: 1.5em;">$1</h2>')
+                // Bold
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #fff;">$1</strong>')
+                // Lists
+                .replace(/^- (.*?)$/gm, '<li style="margin: 5px 0; margin-left: 20px;">$1</li>')
+                .replace(/^\d+\. (.*?)$/gm, '<li style="margin: 5px 0; margin-left: 20px;">$1</li>')
+                // Code blocks
+                .replace(/`([^`]+)`/g, '<code style="background: #1a1a25; padding: 2px 6px; border-radius: 3px; color: #00ff41;">$1</code>')
+                // Line breaks
+                .replace(/\n\n/g, '</p><p style="margin: 15px 0;">')
+                .replace(/\n/g, '<br>');
+            
+            // Wrap in paragraph
+            html = '<p style="margin: 15px 0;">' + html + '</p>';
+            
+            // Add AI badge
+            const badge = aiPowered 
+                ? '<div style="display: inline-block; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 20px;">🤖 AI-Powered Analysis</div>'
+                : '<div style="display: inline-block; background: #333; color: #ffaa00; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 20px;">⚠️ Basic Analysis (Configure Claude API for AI)</div>';
+            
+            return badge + html;
+        }
+        
+        function closeReportSection() {
+            document.getElementById('reportSection').style.display = 'none';
+        }
+        
+        async function exportPDF() {
+            if (!currentScanId) return alert('No scan to export');
+            
+            // For now, open HTML export (can be printed to PDF)
+            // Later: integrate proper PDF generation
+            const win = window.open(`/api/scan/${currentScanId}/export/html`, '_blank');
+            
+            // Show instructions
+            alert('📄 HTML Report opened in new tab.\\n\\nTo save as PDF:\\n1. Press Ctrl+P (or Cmd+P on Mac)\\n2. Select "Save as PDF"\\n3. Click Save');
+        }
+        
+        async function exportHTML() {
+            if (!currentScanId) return alert('No scan to export');
+            window.open(`/api/scan/${currentScanId}/export/html`, '_blank');
+        }
+        
+        // Show AI report panel when scan completes
+        function showAIReportPanel() {
+            document.getElementById('aiReportPanel').style.display = 'block';
+        }
+        
+        // Hook into scan completion
+        const originalUpdateScanUI = typeof updateScanUI === 'function' ? updateScanUI : null;
+        if (originalUpdateScanUI) {
+            updateScanUI = function(data) {
+                originalUpdateScanUI(data);
+                if (data.status === 'complete') {
+                    showAIReportPanel();
+                }
+            };
+        }
+    </script>
+</body>
+</html>

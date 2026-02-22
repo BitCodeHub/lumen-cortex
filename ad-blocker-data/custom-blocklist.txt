@@ -1,0 +1,2 @@
+# Custom Blocklist
+# Add one domain per line

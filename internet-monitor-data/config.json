@@ -1,0 +1,20 @@
+{
+  "checkIntervalMs": 30000,
+  "targets": [
+    {
+      "host": "8.8.8.8",
+      "name": "Google DNS"
+    },
+    {
+      "host": "1.1.1.1",
+      "name": "Cloudflare DNS"
+    },
+    {
+      "host": "google.com",
+      "name": "Google"
+    }
+  ],
+  "alertPhone": "+19495422279",
+  "consecutiveFailuresBeforeAlert": 2,
+  "gatewayUrl": null
+}
