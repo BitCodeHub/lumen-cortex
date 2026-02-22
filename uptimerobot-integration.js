@@ -14,10 +14,20 @@ const API_BASE = 'https://api.uptimerobot.com/v2';
 function loadConfig() {
   try {
     if (fs.existsSync(CONFIG_PATH)) {
-      return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      // Environment variable takes precedence
+      if (process.env.UPTIMEROBOT_API_KEY) {
+        config.apiKey = process.env.UPTIMEROBOT_API_KEY;
+      }
+      return config;
     }
   } catch (e) {}
-  return { apiKey: null, monitors: {}, alertContacts: [] };
+  // Check env var even without config file
+  return { 
+    apiKey: process.env.UPTIMEROBOT_API_KEY || null, 
+    monitors: {}, 
+    alertContacts: [] 
+  };
 }
 
 function saveConfig(config) {
