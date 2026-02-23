@@ -1160,8 +1160,37 @@
                 <!-- COLLAPSIBLE ACCORDION TOOLS PANEL -->
                 <!-- ═══════════════════════════════════════════════════════════ -->
                 
+                <!-- 📡 MONITORING (expanded by default) -->
+                <div class="accordion-section active" data-section="monitoring">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <div class="accordion-header-left">
+                            <span class="accordion-icon">📡</span>
+                            <span class="accordion-title">Monitoring</span>
+                        </div>
+                        <span class="accordion-toggle">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            <div id="monitoringList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-input); border-radius: 6px;">
+                                    <span style="color: #666; font-size: 11px;">No sites monitored</span>
+                                    <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
+                                </div>
+                            </div>
+                            <div id="addMonitoringForm" style="display: none;">
+                                <input type="text" id="monitorUrl" class="tool-input" placeholder="https://example.com" style="margin-bottom: 6px;">
+                                <div class="quick-actions">
+                                    <button class="quick-btn primary" onclick="addMonitoringSite()">Add Site</button>
+                                    <button class="quick-btn" onclick="hideAddMonitoring()">✕ Cancel</button>
+                                </div>
+                            </div>
+                            <button class="quick-btn primary" onclick="checkAllMonitoring()" style="width: 100%;">🔄 Check All Sites</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 🔍 INVESTIGATION TOOLS -->
-                <div class="accordion-section active" data-section="investigation">
+                <div class="accordion-section" data-section="investigation">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <div class="accordion-header-left">
                             <span class="accordion-icon">🔍</span>
@@ -1382,35 +1411,6 @@
                                 <div style="font-size: 11px; color: #ffaa00; margin-bottom: 6px;">⏳ Scan in Progress</div>
                                 <div id="scanProgressContent" style="font-size: 10px; color: #888;"></div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 📡 MONITORING (collapsed by default) -->
-                <div class="accordion-section" data-section="monitoring">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-header-left">
-                            <span class="accordion-icon">📡</span>
-                            <span class="accordion-title">Monitoring</span>
-                        </div>
-                        <span class="accordion-toggle">▼</span>
-                    </div>
-                    <div class="accordion-content">
-                        <div class="accordion-inner">
-                            <div id="monitoringList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-input); border-radius: 6px;">
-                                    <span style="color: #666; font-size: 11px;">No sites monitored</span>
-                                    <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
-                                </div>
-                            </div>
-                            <div id="addMonitoringForm" style="display: none;">
-                                <input type="text" id="monitorUrl" class="tool-input" placeholder="https://example.com" style="margin-bottom: 6px;">
-                                <div class="quick-actions">
-                                    <button class="quick-btn primary" onclick="addMonitoringSite()">Add Site</button>
-                                    <button class="quick-btn" onclick="hideAddMonitoring()">✕ Cancel</button>
-                                </div>
-                            </div>
-                            <button class="quick-btn primary" onclick="checkAllMonitoring()" style="width: 100%;">🔄 Check All Sites</button>
                         </div>
                     </div>
                 </div>
