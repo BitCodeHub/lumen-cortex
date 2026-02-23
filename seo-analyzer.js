@@ -9,7 +9,10 @@ const { URL } = require('url');
 const cheerio = require('cheerio');
 
 // Google PageSpeed Insights API (free, no key required for basic usage)
-const PAGESPEED_API = 'https://www.googleapis.com/pagespeedinsights/v5/runPagespeed';
+// Google PageSpeed Insights API - correct endpoint
+// Free tier: 25,000 queries/day with API key, limited without
+const PAGESPEED_API = 'https://pagespeedonline.googleapis.com/pagespeedonline/v5/runPagespeed';
+const PAGESPEED_API_KEY = process.env.GOOGLE_PAGESPEED_API_KEY || ''; // Optional API key for higher limits
 
 class SEOAnalyzer {
     constructor() {
@@ -21,18 +24,27 @@ class SEOAnalyzer {
     // MAIN ANALYSIS FUNCTION
     // ═══════════════════════════════════════════════════════════════════
     
-    async analyze(url) {
+    async analyze(url, includePageSpeed = true) {
         console.log(`🔍 Starting SEO analysis for: ${url}`);
         this.url = url;
         
         const startTime = Date.now();
         
         try {
-            // Run all analyses in parallel
-            const [pageData, pagespeedData] = await Promise.all([
-                this.fetchAndAnalyzePage(url),
-                this.getPageSpeedInsights(url)
-            ]);
+            // Step 1: Fetch and analyze page (fast - 1-3 seconds)
+            console.log(`📄 [SEO] Step 1/2: Fetching and analyzing page...`);
+            const pageData = await this.fetchAndAnalyzePage(url);
+            console.log(`✅ [SEO] Page analysis complete in ${Date.now() - startTime}ms`);
+            
+            // Step 2: Get PageSpeed data (slow - 30-60 seconds)
+            let pagespeedData;
+            if (includePageSpeed) {
+                console.log(`⚡ [SEO] Step 2/2: Running Google PageSpeed analysis (this takes 30-60 seconds)...`);
+                pagespeedData = await this.getPageSpeedInsights(url);
+            } else {
+                console.log(`⏭️ [SEO] Skipping PageSpeed analysis`);
+                pagespeedData = this.getEmptyPageSpeedData();
+            }
             
             // Combine results
             this.results = {
@@ -485,12 +497,34 @@ class SEOAnalyzer {
     
     async getPageSpeedInsights(url) {
         try {
-            const apiUrl = `${PAGESPEED_API}?url=${encodeURIComponent(url)}&category=performance&category=accessibility&category=best-practices&category=seo&strategy=mobile`;
+            console.log(`🔍 [PageSpeed] Calling Google PageSpeed API for: ${url}`);
+            console.log(`🔍 [PageSpeed] This may take 30-60 seconds...`);
             
-            const data = await this.fetchJson(apiUrl);
+            let apiUrl = `${PAGESPEED_API}?url=${encodeURIComponent(url)}&category=performance&category=accessibility&category=best-practices&category=seo&strategy=mobile`;
+            
+            // Add API key if available (increases rate limit from ~2/day to 25,000/day)
+            if (PAGESPEED_API_KEY) {
+                apiUrl += `&key=${PAGESPEED_API_KEY}`;
+                console.log(`🔑 [PageSpeed] Using API key for higher rate limits`);
+            } else {
+                console.log(`⚠️ [PageSpeed] No API key - may hit rate limits. Set GOOGLE_PAGESPEED_API_KEY for full access.`);
+            }
+            
+            const startTime = Date.now();
+            const data = await this.fetchJson(apiUrl, 90000); // 90 second timeout
+            console.log(`🔍 [PageSpeed] API response received in ${Date.now() - startTime}ms`);
+            
+            // Check for API errors
+            if (data.error) {
+                console.error(`❌ [PageSpeed] API Error: ${data.error.message}`);
+                if (data.error.code === 429 || data.error.message?.includes('Quota')) {
+                    console.log('💡 [PageSpeed] Rate limited. Get a free API key from https://developers.google.com/speed/docs/insights/v5/get-started');
+                }
+                return this.getEmptyPageSpeedData();
+            }
             
             if (!data.lighthouseResult) {
-                console.log('PageSpeed Insights: No Lighthouse data available');
+                console.log('⚠️ [PageSpeed] No Lighthouse data in response');
                 return this.getEmptyPageSpeedData();
             }
             
@@ -566,19 +600,31 @@ class SEOAnalyzer {
         return relevant.slice(0, 10); // Top 10 issues
     }
     
-    fetchJson(url) {
+    fetchJson(url, timeout = 60000) {
         return new Promise((resolve, reject) => {
-            https.get(url, { timeout: 60000 }, (res) => {
+            const req = https.get(url, { timeout: timeout }, (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => {
                     try {
                         resolve(JSON.parse(data));
                     } catch (e) {
+                        console.error('[fetchJson] Invalid JSON response');
                         reject(new Error('Invalid JSON response'));
                     }
                 });
-            }).on('error', reject);
+            });
+            
+            req.on('error', (err) => {
+                console.error('[fetchJson] Request error:', err.message);
+                reject(err);
+            });
+            
+            req.on('timeout', () => {
+                console.error('[fetchJson] Request timeout after', timeout, 'ms');
+                req.destroy();
+                reject(new Error(`Request timeout after ${timeout}ms`));
+            });
         });
     }
 

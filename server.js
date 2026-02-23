@@ -5854,8 +5854,9 @@ const SEOAnalyzer = require('./seo-analyzer');
 const seoAnalyses = new Map();
 
 // POST /api/seo/analyze - Run full SEO analysis
+// Set quick=true for fast results (skips PageSpeed), quick=false for full analysis (30-60 seconds)
 app.post('/api/seo/analyze', async (req, res) => {
-    const { url } = req.body;
+    const { url, quick = false } = req.body;
     
     if (!url) {
         return res.status(400).json({ error: 'URL is required' });
@@ -5870,12 +5871,16 @@ app.post('/api/seo/analyze', async (req, res) => {
     
     const targetUrl = url.startsWith('http') ? url : 'https://' + url;
     const analysisId = 'seo-' + Date.now();
+    const includePageSpeed = !quick;
     
-    console.log(`🔍 [SEO] Starting analysis for: ${targetUrl}`);
+    console.log(`🔍 [SEO] Starting ${quick ? 'QUICK' : 'FULL'} analysis for: ${targetUrl}`);
+    if (!quick) {
+        console.log(`⚠️ [SEO] Full analysis includes Google PageSpeed - this will take 30-60 seconds`);
+    }
     
     try {
         const analyzer = new SEOAnalyzer();
-        const results = await analyzer.analyze(targetUrl);
+        const results = await analyzer.analyze(targetUrl, includePageSpeed);
         
         // Store results for later retrieval
         seoAnalyses.set(analysisId, {

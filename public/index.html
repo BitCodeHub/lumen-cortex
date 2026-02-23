@@ -1201,12 +1201,14 @@
                     </div>
                     <div class="accordion-content">
                         <div class="accordion-inner">
-                            <div style="font-size: 11px; color: #8b5cf6; margin-bottom: 8px; font-weight: bold;">🔍 Full SEO Audit</div>
+                            <div style="font-size: 11px; color: #8b5cf6; margin-bottom: 8px; font-weight: bold;">🔍 Enterprise SEO Audit</div>
                             <input type="text" id="seoTargetUrl" class="tool-input" placeholder="Enter URL to analyze (e.g., example.com)" style="border-color: #8b5cf6;">
                             <div class="quick-actions" style="margin-top: 8px;">
-                                <button class="quick-btn primary" onclick="runSEOAnalysis()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); flex: 2;">🔍 Analyze SEO</button>
-                                <button class="quick-btn" onclick="askSEOQuestion()" style="border-color: #8b5cf6;">💬 Ask</button>
+                                <button class="quick-btn" onclick="runSEOAnalysis(true)" style="border-color: #8b5cf6; flex: 1;">⚡ Quick</button>
+                                <button class="quick-btn primary" onclick="runSEOAnalysis(false)" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); flex: 1;">🔬 Full Scan</button>
                             </div>
+                            <div style="font-size: 9px; color: #666; margin-top: 4px;">⚡ Quick: On-page SEO only | 🔬 Full: + Google PageSpeed*</div>
+                            <div style="font-size: 8px; color: #555; margin-top: 2px;">*PageSpeed may be rate-limited without API key</div>
                             <div id="seoStatus" class="tool-status"></div>
                             
                             <!-- Quick SEO Questions -->
@@ -3814,7 +3816,7 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
         let currentSEOAnalysisId = null;
         let currentSEOResults = null;
         
-        async function runSEOAnalysis() {
+        async function runSEOAnalysis(quickMode = false) {
             const urlInput = document.getElementById('seoTargetUrl');
             const statusEl = document.getElementById('seoStatus');
             const exportEl = document.getElementById('seoExportOptions');
@@ -3830,18 +3832,21 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                 url = 'https://' + url;
             }
             
-            statusEl.innerHTML = '<span style="color: #8b5cf6;">🔍 Analyzing... (this may take 30-60 seconds)</span>';
+            const modeText = quickMode ? '⚡ Quick Analysis' : '🔬 Full Analysis (with PageSpeed)';
+            const timeText = quickMode ? '3-5 seconds' : '30-60 seconds';
+            
+            statusEl.innerHTML = `<span style="color: #8b5cf6;">🔍 ${modeText}... (${timeText})</span>`;
             exportEl.style.display = 'none';
             updateLastScanTime();
             
             // Add message to chat
-            addMessage(`🔍 <strong>Starting SEO Analysis</strong><br>URL: ${url}<br><span style="color: #666;">Analyzing meta tags, content, performance, and more...</span>`, true);
+            addMessage(`🔍 <strong>Starting ${modeText}</strong><br>URL: ${url}<br><span style="color: #666;">${quickMode ? 'Quick scan of meta tags, content, and structure...' : 'Full scan including Google PageSpeed Insights (this takes 30-60 seconds)...'}</span>`, true);
             
             try {
                 const response = await fetch('/api/seo/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url })
+                    body: JSON.stringify({ url, quick: quickMode })
                 });
                 
                 const data = await response.json();
