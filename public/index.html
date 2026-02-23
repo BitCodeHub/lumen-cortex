@@ -1456,7 +1456,7 @@
             <!-- Report Footer -->
             <div style="background: #0a0a0f; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #2a2a3a;">
                 <span style="color: #666; font-size: 12px;">🧠 Lumen Cortex | AI-Powered Security Intelligence</span>
-                <span style="color: #666; font-size: 12px;" id="reportTimestamp">Generated: -</span>
+                <span style="color: #666; font-size: 12px;" id="reportTimestamp">Last scan: Never</span>
             </div>
     </div> <!-- end chat-container -->
 
@@ -1471,6 +1471,17 @@
         let currentScanId = null;
         let pollInterval = null;
         let currentScanMessageId = null;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // LAST SCAN TIMESTAMP
+        // ═══════════════════════════════════════════════════════════════════
+        
+        function updateLastScanTime() {
+            const el = document.getElementById('reportTimestamp');
+            if (el) {
+                el.textContent = `Last scan: ${new Date().toLocaleTimeString()}`;
+            }
+        }
 
         // ═══════════════════════════════════════════════════════════════════
         // ACCORDION TOGGLE - Collapsible Panels
@@ -2932,6 +2943,8 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
             const input = document.getElementById('userInput');
             const request = input.value.trim();
             if (!request) return;
+            
+            updateLastScanTime(); // Update footer timestamp
 
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
@@ -3918,6 +3931,7 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
         
         // Quick network scan (ARP only)
         async function scanNetworkQuick() {
+            updateLastScanTime();
             addMessage('⚡ <strong>Network Guardian:</strong> Running quick ARP scan...', true);
             document.getElementById('deviceCount').textContent = 'Scanning...';
             
@@ -4966,7 +4980,7 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                 const scanData = await scanRes.json();
                 
                 document.getElementById('reportTarget').textContent = `Target: ${scanData.target || 'Unknown'}`;
-                document.getElementById('reportTimestamp').textContent = `Generated: ${new Date().toLocaleString()}`;
+                document.getElementById('reportTimestamp').textContent = `Last scan: ${new Date().toLocaleString()}`;
                 
                 // Format and display report
                 const formattedReport = formatReportContent(data.report, data.aiPowered);
