@@ -1003,6 +1003,25 @@
                     </div>
                 </div>
 
+                <!-- AI-Powered Features Panel -->
+                <div class="panel-card" style="border: 1px solid #ff6b35;">
+                    <div class="panel-title" style="color: #ff6b35;">🤖 AI-Powered Features</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                        <button class="quick-btn" onclick="runAIFeature('phishing')" title="Analyze suspicious emails/URLs">🎣 Phishing Detect</button>
+                        <button class="quick-btn" onclick="runAIFeature('password')" title="Check password strength">🔐 Password Audit</button>
+                        <button class="quick-btn" onclick="runAIFeature('threat')" title="Predict potential attacks">🔮 Threat Predict</button>
+                        <button class="quick-btn" onclick="runAIFeature('compliance')" title="Check GDPR/HIPAA/SOC2">📋 Compliance</button>
+                        <button class="quick-btn" onclick="runAIFeature('privacy')" title="Audit app privacy">🔒 Privacy Audit</button>
+                        <button class="quick-btn" onclick="runAIFeature('logs')" title="Analyze security logs">📊 Log Analysis</button>
+                        <button class="quick-btn" onclick="runAIFeature('malware')" title="Analyze suspicious files">🦠 Malware Check</button>
+                        <button class="quick-btn" onclick="runAIFeature('copilot')" title="Get security recommendations">🛡️ Security Copilot</button>
+                    </div>
+                    <div style="margin-top: 8px; display: flex; gap: 5px;">
+                        <button class="quick-btn" onclick="runAIFeature('attack')" style="flex: 1; background: linear-gradient(135deg, #ff6b35, #ff00ff);" title="Red team simulation">⚔️ Attack Simulation</button>
+                        <button class="quick-btn" onclick="runAIFeature('prioritize')" style="flex: 1; background: linear-gradient(135deg, #ff6b35, #00ff41);" title="Prioritize vulnerabilities">📈 Vuln Prioritizer</button>
+                    </div>
+                </div>
+
                 <div class="panel-card" id="riskPanel" style="display:none;">
                     <div class="panel-title">Risk Level</div>
                     <div class="risk-indicator low" id="riskIndicator">
@@ -5359,6 +5378,157 @@
         function startMobileProxyWithChat() {
             addMessage(`📱 <strong>Mobile Traffic Interceptor:</strong> Starting MITM Proxy...`, true);
             startMobileProxy();
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // AI-POWERED FEATURES
+        // ═══════════════════════════════════════════════════════════════
+        
+        async function runAIFeature(feature) {
+            const featureConfig = {
+                'phishing': {
+                    name: '🎣 AI Phishing Detection',
+                    endpoint: '/api/ai/phishing-detect',
+                    prompt: 'Paste the suspicious email, URL, or message to analyze:',
+                    inputRequired: true
+                },
+                'password': {
+                    name: '🔐 AI Password Auditor',
+                    endpoint: '/api/ai/password-audit',
+                    prompt: 'Enter the password to analyze (we never store passwords):',
+                    inputRequired: true,
+                    inputType: 'password'
+                },
+                'threat': {
+                    name: '🔮 AI Threat Prediction',
+                    endpoint: '/api/ai/threat-predict',
+                    prompt: 'Analyzing your network for potential threats...',
+                    inputRequired: false
+                },
+                'compliance': {
+                    name: '📋 AI Compliance Checker',
+                    endpoint: '/api/ai/compliance-check',
+                    prompt: 'Select compliance framework (GDPR, HIPAA, SOC2, PCI, or "all"):',
+                    inputRequired: true,
+                    defaultValue: 'all'
+                },
+                'privacy': {
+                    name: '🔒 AI Privacy Audit',
+                    endpoint: '/api/ai/privacy-audit',
+                    prompt: 'Enter app name or URL to audit:',
+                    inputRequired: true
+                },
+                'logs': {
+                    name: '📊 AI Log Analysis',
+                    endpoint: '/api/ai/log-analyze',
+                    prompt: 'Paste log entries to analyze (security logs, access logs, etc.):',
+                    inputRequired: true
+                },
+                'malware': {
+                    name: '🦠 AI Malware Analysis',
+                    endpoint: '/api/ai/malware-analyze',
+                    prompt: 'Enter file hash (MD5/SHA256) or paste file metadata:',
+                    inputRequired: true
+                },
+                'copilot': {
+                    name: '🛡️ AI Security Copilot',
+                    endpoint: '/api/ai/security-copilot',
+                    prompt: 'Getting personalized security recommendations...',
+                    inputRequired: false,
+                    method: 'GET'
+                },
+                'attack': {
+                    name: '⚔️ AI Attack Simulation',
+                    endpoint: '/api/ai/attack-simulate',
+                    prompt: 'Enter target domain or IP for red team simulation:',
+                    inputRequired: true
+                },
+                'prioritize': {
+                    name: '📈 AI Vulnerability Prioritizer',
+                    endpoint: '/api/ai/vuln-prioritize',
+                    prompt: 'Paste vulnerability findings (JSON or text) to prioritize:',
+                    inputRequired: true
+                }
+            };
+            
+            const config = featureConfig[feature];
+            if (!config) {
+                addMessage('❌ Unknown AI feature', true);
+                return;
+            }
+            
+            addMessage(`<strong>${config.name}</strong><br>${config.prompt}`, true);
+            
+            if (config.inputRequired) {
+                // Set up input mode for this feature
+                const input = config.inputType === 'password' 
+                    ? prompt(config.prompt) 
+                    : prompt(config.prompt, config.defaultValue || '');
+                
+                if (!input) {
+                    addMessage('❌ Cancelled', true);
+                    return;
+                }
+                
+                addMessage(`🔄 Analyzing with AI...`, true);
+                
+                try {
+                    const body = {};
+                    if (feature === 'phishing') body.content = input;
+                    else if (feature === 'password') body.password = input;
+                    else if (feature === 'compliance') body.framework = input;
+                    else if (feature === 'privacy') body.appInfo = { name: input };
+                    else if (feature === 'logs') body.logs = input;
+                    else if (feature === 'malware') body.fileInfo = { hash: input };
+                    else if (feature === 'attack') body.target = input;
+                    else if (feature === 'prioritize') {
+                        try {
+                            body.findings = JSON.parse(input);
+                        } catch {
+                            body.findings = [{ description: input }];
+                        }
+                    }
+                    
+                    const response = await fetch(config.endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const analysis = result.analysis || result.audit || result.prediction || result.compliance || result.attackPlan || result.prioritized;
+                        addMessage(`<strong>✅ ${config.name} Results:</strong><br><pre style="white-space: pre-wrap; font-size: 11px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin-top: 5px;">${typeof analysis === 'string' ? analysis : JSON.stringify(analysis, null, 2)}</pre>`, true);
+                    } else {
+                        addMessage(`❌ Error: ${result.error || 'Analysis failed'}`, true);
+                    }
+                } catch (error) {
+                    addMessage(`❌ Error: ${error.message}`, true);
+                }
+            } else {
+                // No input required - just call the API
+                addMessage(`🔄 Running ${config.name}...`, true);
+                
+                try {
+                    const response = await fetch(config.endpoint, {
+                        method: config.method || 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: config.method === 'GET' ? undefined : JSON.stringify({})
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const analysis = result.recommendations || result.prediction || result.analysis;
+                        addMessage(`<strong>✅ ${config.name} Results:</strong><br><pre style="white-space: pre-wrap; font-size: 11px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin-top: 5px;">${typeof analysis === 'string' ? analysis : JSON.stringify(analysis, null, 2)}</pre>`, true);
+                    } else {
+                        addMessage(`❌ Error: ${result.error || 'Analysis failed'}`, true);
+                    }
+                } catch (error) {
+                    addMessage(`❌ Error: ${error.message}`, true);
+                }
+            }
         }
         
         // Add message helper that scrolls to bottom
