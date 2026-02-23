@@ -3989,6 +3989,41 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                     </div>
                 </div>
                 
+                ${data.adsIntel ? `
+                <!-- 💰 Ads Intelligence -->
+                <div style="margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1)); border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.3);">
+                    <div style="font-size: 11px; font-weight: bold; color: #fbbf24; margin-bottom: 10px;">💰 Ads Intelligence ${data.adsIntel.source === 'estimated' ? '(Estimated)' : ''}</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
+                            <div style="font-size: 18px; font-weight: bold; color: #fbbf24;">$${data.adsIntel.cpc}</div>
+                            <div style="font-size: 9px; color: #888;">Cost Per Click</div>
+                            <div style="font-size: 8px; color: #666;">${data.adsIntel.cpcRange}</div>
+                        </div>
+                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
+                            <div style="font-size: 18px; font-weight: bold; color: #60a5fa;">${(data.adsIntel.searchVolume || 0).toLocaleString()}</div>
+                            <div style="font-size: 9px; color: #888;">Monthly Searches</div>
+                        </div>
+                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
+                            <div style="font-size: 18px; font-weight: bold; color: #f472b6;">$${(data.adsIntel.estimatedMonthlySpend || 0).toLocaleString()}</div>
+                            <div style="font-size: 9px; color: #888;">Market Monthly Spend</div>
+                        </div>
+                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
+                            <div style="font-size: 18px; font-weight: bold; color: #a78bfa;">$${(data.adsIntel.estimatedYearlySpend || 0).toLocaleString()}</div>
+                            <div style="font-size: 9px; color: #888;">Market Yearly Spend</div>
+                        </div>
+                    </div>
+                    ${data.adsIntel.insights ? `
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(251, 191, 36, 0.2);">
+                        ${data.adsIntel.insights.map(i => `
+                            <div style="font-size: 10px; color: ${i.type === 'success' ? '#10b981' : i.type === 'warning' ? '#f59e0b' : '#60a5fa'}; margin-bottom: 4px;">
+                                ${i.icon} ${i.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+                
                 <!-- Recommendations -->
                 <div style="margin-bottom: 12px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; border-left: 3px solid #10b981;">
                     <div style="font-size: 11px; font-weight: bold; color: #10b981; margin-bottom: 6px;">💡 Recommendations</div>
@@ -4039,14 +4074,26 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
         
         // Generate summary for Neo chat
         function generateKeywordSummary(data) {
-            return `🎯 **Keyword Research: "${data.keyword}"**
+            let summary = `🎯 **Keyword Research: "${data.keyword}"**
 ${data.location !== 'Global' ? `📍 Location: ${data.location}` : ''}
 
 **Scores:**
 - Popularity: ${data.popularity.score}/100 (${data.popularity.trend})
 - SEO Score: ${data.seo.score}/100
 - Difficulty: ${data.seo.difficulty.toUpperCase()}
-- Ranking Potential: ${data.seo.rankingPotential.toUpperCase()}
+- Ranking Potential: ${data.seo.rankingPotential.toUpperCase()}`;
+
+            if (data.adsIntel) {
+                summary += `
+
+**💰 Ads Intelligence:**
+- Cost Per Click: $${data.adsIntel.cpc} (${data.adsIntel.cpcRange})
+- Monthly Searches: ${(data.adsIntel.searchVolume || 0).toLocaleString()}
+- Market Monthly Spend: $${(data.adsIntel.estimatedMonthlySpend || 0).toLocaleString()}
+- Market Yearly Spend: $${(data.adsIntel.estimatedYearlySpend || 0).toLocaleString()}`;
+            }
+
+            summary += `
 
 **Best Keywords to Target:**
 ${data.bestKeywordsToTarget.slice(0, 3).map((k, i) => `${i + 1}. "${k.keyword}" (SEO: ${k.seoScore}, ${k.difficulty})`).join('\n')}
@@ -4054,7 +4101,9 @@ ${data.bestKeywordsToTarget.slice(0, 3).map((k, i) => `${i + 1}. "${k.keyword}" 
 **Recommendations:**
 ${data.recommendation.join('\n')}
 
-💬 Ask me anything about these keywords or how to rank for them!`;
+💬 Ask me anything about these keywords, ad strategy, or how to rank for them!`;
+            
+            return summary;
         }
         
         // Copy keyword to clipboard

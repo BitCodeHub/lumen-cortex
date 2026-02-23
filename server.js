@@ -12,6 +12,7 @@ const execPromise = util.promisify(exec);
 const uptimeRobot = require('./uptimerobot-integration');
 const alertForwarder = require('./alert-forwarder');
 const keywordResearch = require('./keyword-research');
+const keywordAdsIntel = require('./keyword-ads-intel');
 
 // Azure Claude AI for report generation
 const AZURE_CLAUDE_CONFIG = {
@@ -6021,6 +6022,70 @@ app.post('/api/keywords/bulk', async (req, res) => {
     });
   } catch (error) {
     console.error('[Bulk Keyword Research] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KEYWORD ADS INTELLIGENCE API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// POST /api/keywords/ads-intel - Get ad spend intelligence for a keyword
+app.post('/api/keywords/ads-intel', async (req, res) => {
+  try {
+    const { keyword, location = 'United States', competitionScore = 50, isCommercial = false } = req.body;
+    
+    if (!keyword) {
+      return res.status(400).json({ error: 'Keyword is required' });
+    }
+    
+    console.log(`[Ads Intel] Request: "${keyword}" in "${location}"`);
+    
+    // Get autocomplete suggestions for context
+    const suggestions = await keywordResearch.getAutocompleteSuggestions(keyword);
+    
+    // Get ads intelligence
+    const intel = await keywordAdsIntel.getKeywordAdsIntel(
+      keyword, 
+      location, 
+      competitionScore, 
+      isCommercial, 
+      suggestions
+    );
+    
+    res.json({
+      success: true,
+      ...intel
+    });
+  } catch (error) {
+    console.error('[Ads Intel] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/keywords/compare-ads - Compare multiple keywords for ad targeting
+app.post('/api/keywords/compare-ads', async (req, res) => {
+  try {
+    const { keywords, location = 'United States' } = req.body;
+    
+    if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+      return res.status(400).json({ error: 'Keywords array is required' });
+    }
+    
+    if (keywords.length > 10) {
+      return res.status(400).json({ error: 'Maximum 10 keywords per request' });
+    }
+    
+    console.log(`[Ads Comparison] Comparing ${keywords.length} keywords`);
+    
+    const comparison = await keywordAdsIntel.compareKeywordsForAds(keywords, location);
+    
+    res.json({
+      success: true,
+      ...comparison
+    });
+  } catch (error) {
+    console.error('[Ads Comparison] Error:', error);
     res.status(500).json({ error: error.message });
   }
 });

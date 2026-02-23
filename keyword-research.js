@@ -2,6 +2,12 @@
 // Analyzes keywords by location using Google APIs
 
 const fetch = require('node-fetch');
+let keywordAdsIntel = null;
+try {
+  keywordAdsIntel = require('./keyword-ads-intel');
+} catch (e) {
+  console.log('[Keyword Research] Ads intel module not loaded');
+}
 
 // Google API Key (same as PageSpeed)
 const GOOGLE_API_KEY = process.env.GOOGLE_PAGESPEED_API_KEY || '';
@@ -158,6 +164,23 @@ async function researchKeyword(keyword, location = '', country = 'us') {
   // Generate keyword ideas
   const keywordIdeas = await generateKeywordIdeas(keyword, location);
   
+  // Get ads intelligence data
+  let adsIntel = null;
+  if (keywordAdsIntel) {
+    try {
+      const locationName = location || 'United States';
+      adsIntel = await keywordAdsIntel.getKeywordAdsIntel(
+        keyword, 
+        locationName, 
+        seoAnalysis.competition === 'high' ? 80 : seoAnalysis.competition === 'medium' ? 50 : 20,
+        seoAnalysis.hasCommercialIntent,
+        suggestions
+      );
+    } catch (e) {
+      console.log('[Keyword Research] Ads intel error:', e.message);
+    }
+  }
+  
   // Find best keywords to target
   const rankedKeywords = [];
   for (const kw of keywordIdeas.slice(0, 10)) {
@@ -219,7 +242,19 @@ async function researchKeyword(keyword, location = '', country = 'us') {
     bestKeywordsToTarget: rankedKeywords.slice(0, 5),
     
     // All keyword ideas
-    keywordIdeas: keywordIdeas
+    keywordIdeas: keywordIdeas,
+    
+    // Ads intelligence (CPC, spend, etc.)
+    adsIntel: adsIntel ? {
+      cpc: adsIntel.data.cpc,
+      cpcRange: `$${adsIntel.data.cpcLow} - $${adsIntel.data.cpcHigh}`,
+      searchVolume: adsIntel.data.searchVolume,
+      estimatedMonthlySpend: adsIntel.data.estimatedMonthlySpend,
+      estimatedYearlySpend: adsIntel.data.estimatedYearlySpend,
+      competition: adsIntel.data.competition,
+      insights: adsIntel.insights,
+      source: adsIntel.source
+    } : null
   };
   
   console.log(`[Keyword Research] Complete in ${result.analysisTime}ms`);
