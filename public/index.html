@@ -2193,6 +2193,21 @@
                     isListening = false;
                     document.getElementById('voiceBtn').classList.remove('listening');
                     document.getElementById('voiceBtn').textContent = '🎤';
+                    
+                    // User-friendly error messages
+                    const errorMessages = {
+                        'not-allowed': '❌ Microphone permission denied. Click the lock icon in the address bar to allow.',
+                        'no-speech': '🔇 No speech detected. Try speaking louder or closer to the mic.',
+                        'audio-capture': '❌ No microphone found. Please connect a microphone.',
+                        'network': '❌ Network error. Check your internet connection.',
+                        'aborted': '🎤 Voice input cancelled.',
+                        'service-not-allowed': '❌ Speech service not allowed. Make sure you\'re on HTTPS or localhost.'
+                    };
+                    
+                    const msg = errorMessages[event.error] || `❌ Voice error: ${event.error}`;
+                    if (event.error !== 'aborted') {
+                        addMessage(msg, false);
+                    }
                 };
 
                 console.log('✅ Voice input initialized');
@@ -2206,12 +2221,26 @@
         function toggleVoiceInput() {
             if (!recognition) {
                 initVoiceInput();
+                if (!recognition) {
+                    addMessage('❌ Voice input not supported in this browser. Try Chrome or Edge.', false);
+                    return;
+                }
             }
 
             if (isListening) {
                 recognition.stop();
             } else {
-                recognition.start();
+                try {
+                    recognition.start();
+                    addMessage('🎤 Listening... Speak now!', false);
+                } catch (e) {
+                    console.error('Voice error:', e);
+                    if (e.message.includes('not-allowed')) {
+                        addMessage('❌ Microphone permission denied. Please allow microphone access in your browser settings.', false);
+                    } else {
+                        addMessage(`❌ Voice error: ${e.message}. Make sure you\'re using HTTPS or localhost.`, false);
+                    }
+                }
             }
         }
 
