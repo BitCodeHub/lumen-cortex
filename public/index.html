@@ -3301,19 +3301,39 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
         }
 
         function quickScan(type) {
+            // For web/recon/github scans, prompt for URL directly
+            if (type === 'web' || type === 'recon' || type === 'full') {
+                const url = prompt(`Enter target URL for ${type === 'web' ? 'Web Security' : type === 'recon' ? 'Reconnaissance' : 'Full'} Scan:`, '');
+                if (!url || !url.trim()) return;
+                let target = url.trim();
+                if (!target.startsWith('http')) {
+                    target = 'https://' + target;
+                }
+                document.getElementById('userInput').value = `scan ${target}`;
+                document.getElementById('userInput').focus();
+                // Auto-send
+                handleSmartSend();
+                return;
+            }
+            
+            if (type === 'github') {
+                const url = prompt('Enter GitHub repo URL:', 'https://github.com/');
+                if (!url || !url.trim()) return;
+                document.getElementById('userInput').value = `Scan GitHub repo ${url.trim()} for secrets`;
+                document.getElementById('userInput').focus();
+                handleSmartSend();
+                return;
+            }
+            
             const prompts = {
-                web: 'Full scan https://example.com',
-                recon: 'Full reconnaissance on example.com',
                 secrets: 'Hunt for secrets in current directory',
                 code: 'Full code security analysis on ./my-project',
                 mobile: 'Analyze mobile app for security issues',
-                full: 'Comprehensive security scan on target',
-                github: 'Scan GitHub repo https://github.com/user/repo for secrets',
                 dork_aws: 'Search GitHub for exposed AWS keys',
                 dork_stripe: 'Search GitHub for exposed Stripe keys',
                 dork_openai: 'Search GitHub for exposed OpenAI keys'
             };
-            document.getElementById('userInput').value = prompts[type];
+            document.getElementById('userInput').value = prompts[type] || '';
             document.getElementById('userInput').focus();
         }
 
