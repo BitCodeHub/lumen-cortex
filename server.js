@@ -5094,6 +5094,144 @@ app.get('/api/network-guardian/vendor/:mac', async (req, res) => {
 console.log('🛡️ Network Guardian module loaded');
 
 // ═══════════════════════════════════════════════════════════════════════════
+// IP INVESTIGATOR - White Hat IP Intelligence Tool
+// ═══════════════════════════════════════════════════════════════════════════
+
+const IPInvestigator = require('./ip-investigator');
+const ipInvestigator = new IPInvestigator({
+  abuseipdbKey: process.env.ABUSEIPDB_API_KEY,
+  shodanKey: process.env.SHODAN_API_KEY,
+  ipinfoKey: process.env.IPINFO_API_KEY
+});
+
+// Store investigation history
+const ipInvestigations = new Map();
+
+// Full IP investigation
+app.post('/api/ip-investigator/investigate', async (req, res) => {
+  const { ip } = req.body;
+  
+  if (!ip) {
+    return res.status(400).json({ error: 'IP address required' });
+  }
+  
+  // Validate IP format
+  const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  if (!ipRegex.test(ip)) {
+    return res.status(400).json({ error: 'Invalid IP address format' });
+  }
+  
+  console.log(`🔍 [IP Investigator] Starting investigation: ${ip}`);
+  
+  try {
+    const results = await ipInvestigator.investigate(ip);
+    
+    // Store in history
+    const id = `ip-${Date.now()}`;
+    ipInvestigations.set(id, { ip, results, timestamp: new Date().toISOString() });
+    
+    // Keep only last 50 investigations
+    if (ipInvestigations.size > 50) {
+      const firstKey = ipInvestigations.keys().next().value;
+      ipInvestigations.delete(firstKey);
+    }
+    
+    console.log(`✅ [IP Investigator] Completed: ${ip} - ${results.summary.riskAssessment}`);
+    res.json({ id, ...results });
+  } catch (error) {
+    console.error(`❌ [IP Investigator] Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Quick geolocation only
+app.get('/api/ip-investigator/geolocate/:ip', async (req, res) => {
+  const { ip } = req.params;
+  
+  try {
+    const geo = await ipInvestigator.getGeolocation(ip);
+    res.json(geo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// WHOIS lookup only
+app.get('/api/ip-investigator/whois/:ip', async (req, res) => {
+  const { ip } = req.params;
+  
+  try {
+    const whois = await ipInvestigator.getWhois(ip);
+    res.json(whois);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Port scan only
+app.post('/api/ip-investigator/portscan', async (req, res) => {
+  const { ip, quick = true } = req.body;
+  
+  if (!ip) {
+    return res.status(400).json({ error: 'IP address required' });
+  }
+  
+  console.log(`🚪 [IP Investigator] Port scan: ${ip} (${quick ? 'quick' : 'full'})`);
+  
+  try {
+    const ports = await ipInvestigator.scanPorts(ip, { quick });
+    res.json(ports);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get investigation history
+app.get('/api/ip-investigator/history', (req, res) => {
+  const limit = parseInt(req.query.limit) || 20;
+  const history = Array.from(ipInvestigations.entries())
+    .slice(-limit)
+    .reverse()
+    .map(([id, data]) => ({
+      id,
+      ip: data.ip,
+      timestamp: data.timestamp,
+      riskAssessment: data.results.summary.riskAssessment,
+      location: data.results.geolocation ? 
+        `${data.results.geolocation.city || ''}, ${data.results.geolocation.country || ''}` : 'Unknown'
+    }));
+  
+  res.json(history);
+});
+
+// Get specific investigation
+app.get('/api/ip-investigator/:id', (req, res) => {
+  const { id } = req.params;
+  const data = ipInvestigations.get(id);
+  
+  if (!data) {
+    return res.status(404).json({ error: 'Investigation not found' });
+  }
+  
+  res.json(data);
+});
+
+// Generate text report
+app.get('/api/ip-investigator/:id/report', (req, res) => {
+  const { id } = req.params;
+  const data = ipInvestigations.get(id);
+  
+  if (!data) {
+    return res.status(404).json({ error: 'Investigation not found' });
+  }
+  
+  const report = ipInvestigator.generateReport(data.results);
+  res.type('text/plain').send(report);
+});
+
+console.log('🔍 IP Investigator module loaded');
+
+// ═══════════════════════════════════════════════════════════════════════════
 // AD BLOCKER - AI-Powered Network-Wide Ad Blocking
 // ═══════════════════════════════════════════════════════════════════════════
 

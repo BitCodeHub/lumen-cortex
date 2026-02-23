@@ -1027,7 +1027,25 @@
                             <button class="quick-btn" onclick="hideAddMonitoring()" style="background: #333;">Cancel</button>
                         </div>
                     </div>
-                    <button class="quick-btn" onclick="checkAllMonitoring()" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #0abdc6, #00ff41);">🔄 Refresh</button>
+                    <button class="quick-btn" onclick="checkAllMonitoring()" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">🔄 Refresh</button>
+                </div>
+
+                <!-- IP Investigator - White Hat Intelligence -->
+                <div class="panel-card" style="border: 1px solid #ff6b6b;">
+                    <div class="panel-title" style="color: #ff6b6b;">🔍 IP Investigator</div>
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="ipInvestigatorTarget" placeholder="Enter IP address (e.g., 8.8.8.8)" style="width: 100%; background: #1a1a25; border: 1px solid #ff6b6b; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="investigateIP()" style="flex: 2; background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">🔍 Full Investigation</button>
+                        <button class="quick-btn" onclick="quickGeolocate()" style="flex: 1; border-color: #ff6b6b;">📍 Locate</button>
+                    </div>
+                    <div class="quick-actions" style="margin-top: 6px;">
+                        <button class="quick-btn" onclick="quickWhois()" style="border-color: #ff6b6b;">🏛️ WHOIS</button>
+                        <button class="quick-btn" onclick="quickPortScan()" style="border-color: #ff6b6b;">🚪 Ports</button>
+                        <button class="quick-btn" onclick="showIPHistory()" style="border-color: #ff6b6b;">📋 History</button>
+                    </div>
+                    <div id="ipInvestigatorStatus" style="margin-top: 8px; font-size: 10px; color: #666;"></div>
                 </div>
 
                 <!-- Network Guardian - WiFi Intrusion Detection -->
@@ -1407,8 +1425,8 @@
                         <button class="quick-btn" onclick="runAIFeature('copilot')" title="Get security recommendations">🛡️ Security Copilot</button>
                     </div>
                     <div style="margin-top: 8px; display: flex; gap: 5px;">
-                        <button class="quick-btn" onclick="runAIFeature('attack')" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6);" title="Red team simulation">⚔️ Attack Simulation</button>
-                        <button class="quick-btn" onclick="runAIFeature('prioritize')" style="flex: 1; background: linear-gradient(135deg, #0abdc6, #00ff41);" title="Prioritize vulnerabilities">📈 Vuln Prioritizer</button>
+                        <button class="quick-btn" onclick="runAIFeature('attack')" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f;" title="Red team simulation">⚔️ Attack Simulation</button>
+                        <button class="quick-btn" onclick="runAIFeature('prioritize')" style="flex: 1; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;" title="Prioritize vulnerabilities">📈 Vuln Prioritizer</button>
                     </div>
                     <div style="margin-top: 8px;">
                         <button class="quick-btn" onclick="runAIFeature('code_review')" style="width: 100%; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f; font-weight: bold;" title="Senior engineer code review">👨‍💻 Tech Lead Code Review</button>
@@ -1443,7 +1461,7 @@
                         Scan finished! Generate your security report.
                     </div>
                     <div style="display: flex; gap: 5px;">
-                        <button class="quick-btn" onclick="generateAIReport()" id="generateReportBtn" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6);">📋 Generate Scan Results</button>
+                        <button class="quick-btn" onclick="generateAIReport()" id="generateReportBtn" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f;">📋 Generate Scan Results</button>
                     </div>
                 </div>
             </div>
@@ -6000,6 +6018,275 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                 closeDeviceModal();
             }
         });
+        
+        // ═══════════════════════════════════════════════════════════════
+        // 🔍 IP INVESTIGATOR - White Hat Intelligence Tool
+        // ═══════════════════════════════════════════════════════════════
+        
+        async function investigateIP() {
+            const ip = document.getElementById('ipInvestigatorTarget').value.trim();
+            if (!ip) {
+                addMessage('❌ Please enter an IP address to investigate.', true);
+                return;
+            }
+            
+            const statusEl = document.getElementById('ipInvestigatorStatus');
+            statusEl.innerHTML = '<span style="color: #ff6b6b;">🔍 Investigating...</span>';
+            
+            addMessage(`🔍 <strong>Starting Full IP Investigation:</strong> ${ip}`, true);
+            
+            try {
+                const response = await fetch('/api/ip-investigator/investigate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    addMessage(`❌ Error: ${data.error}`, true);
+                    statusEl.innerHTML = `<span style="color: #ff0040;">Error</span>`;
+                    return;
+                }
+                
+                const geo = data.geolocation || {};
+                const whois = data.whois || {};
+                const ports = data.ports || {};
+                const threat = data.threatIntel || {};
+                const summary = data.summary || {};
+                
+                let html = `
+                    <div style="background: #1a1a25; padding: 15px; border-radius: 8px; border: 1px solid #ff6b6b;">
+                        <strong style="color: #ff6b6b; font-size: 14px;">🔍 IP Investigation Report: ${ip}</strong><br>
+                        <span style="color: #666; font-size: 10px;">Completed in ${data.investigationTime}</span><br><br>
+                        
+                        <div style="background: #0a0a0f; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                            <strong style="font-size: 16px;">${summary.riskAssessment || 'Unknown'}</strong>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #0abdc6;">📍 Location</strong><br>
+                            <span style="color: #e0e0e0;">${geo.city || 'Unknown'}, ${geo.region || ''}, ${geo.country || 'Unknown'}</span><br>
+                            <span style="color: #888;">ISP: ${geo.isp || 'Unknown'}</span><br>
+                            <span style="color: #888;">Org: ${geo.organization || 'Unknown'}</span><br>
+                            ${geo.isProxy ? '<span style="color: #ff6b6b;">⚠️ Proxy/VPN Detected</span><br>' : ''}
+                            ${geo.isHosting ? '<span style="color: #ffa500;">🖥️ Hosting/Datacenter</span><br>' : ''}
+                            ${geo.mapUrl ? `<a href="${geo.mapUrl}" target="_blank" style="color: #0abdc6; font-size: 11px;">📍 View on Map</a>` : ''}
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #0abdc6;">🏛️ Ownership</strong><br>
+                            <span style="color: #e0e0e0;">${whois.organization || 'Unknown'}</span><br>
+                            <span style="color: #888;">Net: ${whois.netRange || 'N/A'}</span><br>
+                            <span style="color: #888;">Name: ${whois.netName || 'N/A'}</span><br>
+                            ${whois.abuseEmail ? `<span style="color: #888;">Abuse: ${whois.abuseEmail}</span>` : ''}
+                        </div>
+                        
+                        ${data.reverseDns?.hostnames?.length > 0 ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #0abdc6;">🌐 Hostname</strong><br>
+                            <span style="color: #e0e0e0;">${data.reverseDns.hostnames.join(', ')}</span>
+                        </div>
+                        ` : ''}
+                        
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #0abdc6;">🚪 Open Ports (${ports.totalOpen || 0})</strong><br>
+                            ${ports.openPorts?.length > 0 ? 
+                                ports.openPorts.slice(0, 10).map(p => 
+                                    `<span style="background: #2a2a35; padding: 2px 6px; border-radius: 3px; margin: 2px; display: inline-block; font-size: 10px;">${p.port}/${p.service}</span>`
+                                ).join('') + (ports.openPorts.length > 10 ? `<span style="color: #888;"> +${ports.openPorts.length - 10} more</span>` : '')
+                                : '<span style="color: #888;">None found</span>'}
+                        </div>
+                        
+                        ${threat.abuseConfidenceScore !== undefined ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #0abdc6;">🛡️ Threat Intel</strong><br>
+                            <span style="color: ${threat.abuseConfidenceScore > 50 ? '#ff6b6b' : threat.abuseConfidenceScore > 25 ? '#ffa500' : '#00ff41'};">
+                                Abuse Score: ${threat.abuseConfidenceScore}%
+                            </span><br>
+                            <span style="color: #888;">Reports: ${threat.totalReports || 0} from ${threat.numDistinctUsers || 0} users</span><br>
+                            ${threat.isTor ? '<span style="color: #ff6b6b;">🧅 Tor Exit Node</span>' : ''}
+                        </div>
+                        ` : ''}
+                        
+                        ${summary.concerns?.length > 0 ? `
+                        <div style="margin-bottom: 10px; background: #2a1a1a; padding: 8px; border-radius: 4px;">
+                            <strong style="color: #ff6b6b;">⚠️ Concerns</strong><br>
+                            ${summary.concerns.map(c => `<span style="color: #e0e0e0; font-size: 11px;">${c}</span><br>`).join('')}
+                        </div>
+                        ` : ''}
+                        
+                        <div style="margin-top: 10px; text-align: right;">
+                            <button onclick="window.open('/api/ip-investigator/${data.id}/report', '_blank')" style="background: #2a2a35; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 10px;">📄 Full Report</button>
+                        </div>
+                    </div>
+                `;
+                
+                addMessage(html, true);
+                statusEl.innerHTML = `<span style="color: #00ff41;">✅ ${summary.riskAssessment}</span>`;
+                
+            } catch (error) {
+                addMessage(`❌ Investigation failed: ${error.message}`, true);
+                statusEl.innerHTML = `<span style="color: #ff0040;">Failed</span>`;
+            }
+        }
+        
+        async function quickGeolocate() {
+            const ip = document.getElementById('ipInvestigatorTarget').value.trim();
+            if (!ip) {
+                addMessage('❌ Please enter an IP address.', true);
+                return;
+            }
+            
+            addMessage(`📍 <strong>Geolocating:</strong> ${ip}`, true);
+            
+            try {
+                const response = await fetch(`/api/ip-investigator/geolocate/${ip}`);
+                const geo = await response.json();
+                
+                if (geo.error) {
+                    addMessage(`❌ Error: ${geo.error}`, true);
+                    return;
+                }
+                
+                addMessage(`
+                    <div style="background: #1a1a25; padding: 12px; border-radius: 8px; border: 1px solid #0abdc6;">
+                        <strong style="color: #0abdc6;">📍 Geolocation: ${ip}</strong><br><br>
+                        <strong>Location:</strong> ${geo.city || 'Unknown'}, ${geo.region || ''}, ${geo.country || 'Unknown'}<br>
+                        <strong>Coordinates:</strong> ${geo.latitude}, ${geo.longitude}<br>
+                        <strong>Timezone:</strong> ${geo.timezone || 'N/A'}<br>
+                        <strong>ISP:</strong> ${geo.isp || 'Unknown'}<br>
+                        <strong>Organization:</strong> ${geo.organization || 'Unknown'}<br>
+                        ${geo.asn ? `<strong>ASN:</strong> ${geo.asn}<br>` : ''}
+                        ${geo.isProxy ? '<span style="color: #ff6b6b;">⚠️ Proxy/VPN</span><br>' : ''}
+                        ${geo.mapUrl ? `<br><a href="${geo.mapUrl}" target="_blank" style="color: #0abdc6;">🗺️ View on Map</a>` : ''}
+                    </div>
+                `, true);
+            } catch (error) {
+                addMessage(`❌ Geolocation failed: ${error.message}`, true);
+            }
+        }
+        
+        async function quickWhois() {
+            const ip = document.getElementById('ipInvestigatorTarget').value.trim();
+            if (!ip) {
+                addMessage('❌ Please enter an IP address.', true);
+                return;
+            }
+            
+            addMessage(`🏛️ <strong>WHOIS Lookup:</strong> ${ip}`, true);
+            
+            try {
+                const response = await fetch(`/api/ip-investigator/whois/${ip}`);
+                const whois = await response.json();
+                
+                if (whois.error) {
+                    addMessage(`❌ Error: ${whois.error}`, true);
+                    return;
+                }
+                
+                addMessage(`
+                    <div style="background: #1a1a25; padding: 12px; border-radius: 8px; border: 1px solid #ffa500;">
+                        <strong style="color: #ffa500;">🏛️ WHOIS: ${ip}</strong><br><br>
+                        <strong>Organization:</strong> ${whois.organization || 'Unknown'}<br>
+                        <strong>Net Range:</strong> ${whois.netRange || 'N/A'}<br>
+                        <strong>Net Name:</strong> ${whois.netName || 'N/A'}<br>
+                        <strong>Country:</strong> ${whois.country || 'N/A'}<br>
+                        ${whois.address ? `<strong>Address:</strong> ${whois.address}<br>` : ''}
+                        ${whois.regDate ? `<strong>Registered:</strong> ${whois.regDate}<br>` : ''}
+                        ${whois.abuseEmail ? `<strong>Abuse Contact:</strong> ${whois.abuseEmail}<br>` : ''}
+                        ${whois.cidr ? `<strong>CIDR:</strong> ${whois.cidr}<br>` : ''}
+                    </div>
+                `, true);
+            } catch (error) {
+                addMessage(`❌ WHOIS lookup failed: ${error.message}`, true);
+            }
+        }
+        
+        async function quickPortScan() {
+            const ip = document.getElementById('ipInvestigatorTarget').value.trim();
+            if (!ip) {
+                addMessage('❌ Please enter an IP address.', true);
+                return;
+            }
+            
+            addMessage(`🚪 <strong>Port Scan (Top 100):</strong> ${ip}`, true);
+            document.getElementById('ipInvestigatorStatus').innerHTML = '<span style="color: #ffa500;">🔍 Scanning ports...</span>';
+            
+            try {
+                const response = await fetch('/api/ip-investigator/portscan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip, quick: true })
+                });
+                const ports = await response.json();
+                
+                if (ports.error) {
+                    addMessage(`❌ Error: ${ports.error}`, true);
+                    document.getElementById('ipInvestigatorStatus').innerHTML = '';
+                    return;
+                }
+                
+                const portList = ports.openPorts?.length > 0 
+                    ? ports.openPorts.map(p => `<tr><td style="padding: 4px; border-bottom: 1px solid #333;">${p.port}</td><td style="padding: 4px; border-bottom: 1px solid #333;">${p.protocol}</td><td style="padding: 4px; border-bottom: 1px solid #333;">${p.service}</td></tr>`).join('')
+                    : '<tr><td colspan="3" style="padding: 10px; color: #888;">No open ports found</td></tr>';
+                
+                addMessage(`
+                    <div style="background: #1a1a25; padding: 12px; border-radius: 8px; border: 1px solid #00ff41;">
+                        <strong style="color: #00ff41;">🚪 Port Scan: ${ip}</strong><br>
+                        <span style="color: #888; font-size: 10px;">${ports.scanType || 'Quick scan'} | Host: ${ports.hostUp ? 'Up' : 'Down'} | Latency: ${ports.latency || 'N/A'}</span><br><br>
+                        <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+                            <tr style="color: #0abdc6;"><th style="text-align: left; padding: 4px;">Port</th><th style="text-align: left; padding: 4px;">Proto</th><th style="text-align: left; padding: 4px;">Service</th></tr>
+                            ${portList}
+                        </table>
+                        <br><strong style="color: #00ff41;">Total Open: ${ports.totalOpen || 0}</strong>
+                    </div>
+                `, true);
+                document.getElementById('ipInvestigatorStatus').innerHTML = `<span style="color: #00ff41;">✅ ${ports.totalOpen || 0} ports open</span>`;
+            } catch (error) {
+                addMessage(`❌ Port scan failed: ${error.message}`, true);
+                document.getElementById('ipInvestigatorStatus').innerHTML = '';
+            }
+        }
+        
+        async function showIPHistory() {
+            try {
+                const response = await fetch('/api/ip-investigator/history?limit=10');
+                const history = await response.json();
+                
+                if (history.length === 0) {
+                    addMessage(`
+                        <div style="background: #1a1a25; padding: 12px; border-radius: 8px; border: 1px solid #ff6b6b;">
+                            <strong style="color: #ff6b6b;">📋 IP Investigation History</strong><br><br>
+                            <span style="color: #888;">No investigations yet. Enter an IP and click "Full Investigation".</span>
+                        </div>
+                    `, true);
+                    return;
+                }
+                
+                const rows = history.map(h => `
+                    <tr style="cursor: pointer;" onclick="document.getElementById('ipInvestigatorTarget').value='${h.ip}'; investigateIP();">
+                        <td style="padding: 6px; border-bottom: 1px solid #333;">${h.ip}</td>
+                        <td style="padding: 6px; border-bottom: 1px solid #333;">${h.location}</td>
+                        <td style="padding: 6px; border-bottom: 1px solid #333;">${h.riskAssessment}</td>
+                    </tr>
+                `).join('');
+                
+                addMessage(`
+                    <div style="background: #1a1a25; padding: 12px; border-radius: 8px; border: 1px solid #ff6b6b;">
+                        <strong style="color: #ff6b6b;">📋 Recent IP Investigations</strong><br><br>
+                        <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+                            <tr style="color: #0abdc6;"><th style="text-align: left; padding: 6px;">IP</th><th style="text-align: left; padding: 6px;">Location</th><th style="text-align: left; padding: 6px;">Risk</th></tr>
+                            ${rows}
+                        </table>
+                        <br><span style="color: #666; font-size: 10px;">Click any row to re-investigate</span>
+                    </div>
+                `, true);
+            } catch (error) {
+                addMessage(`❌ Failed to load history: ${error.message}`, true);
+            }
+        }
         
         // ═══════════════════════════════════════════════════════════════
         // 🔧 PANEL TOOL INTEGRATION - Connect Right Panels to Chat
