@@ -1281,9 +1281,8 @@
                             
                             <div id="keywordStatus" class="tool-status"></div>
                             
-                            <!-- Keyword Results -->
-                            <div id="keywordResults" style="display: none; margin-top: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border);">
-                            </div>
+                            <!-- Keyword Results (shown in chat) -->
+                            <div id="keywordResults" style="display: none;"></div>
                             
                             <!-- Quick Keyword Topics -->
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
@@ -3932,8 +3931,11 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                 return;
             }
             
-            statusEl.innerHTML = '<span style="color: #10b981;">🔍 Researching keyword...</span>';
+            statusEl.innerHTML = '<span style="color: #10b981;">🔍 Researching keyword... (10-15 sec)</span>';
             resultsEl.style.display = 'none';
+            
+            // Show loading in chat
+            addMessage('user', `🔍 Research keyword: "${keyword}"${location ? ` in ${location}` : ''}`);
             
             try {
                 const response = await fetch('/api/keywords/research', {
@@ -3946,164 +3948,111 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                 
                 if (data.success) {
                     currentKeywordResults = data.data;
-                    displayKeywordResults(data.data);
-                    statusEl.innerHTML = '<span style="color: #10b981;">✅ Research complete!</span>';
+                    statusEl.innerHTML = '<span style="color: #10b981;">✅ Results in chat →</span>';
                     
-                    // Auto-send to Neo chat
-                    const summary = generateKeywordSummary(data.data);
-                    addMessage('assistant', summary);
+                    // Send rich results to Neo chat (main display area)
+                    const richSummary = generateRichKeywordSummary(data.data);
+                    addMessage('assistant', richSummary);
+                    
+                    // Scroll chat to bottom
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 } else {
                     throw new Error(data.error || 'Research failed');
                 }
             } catch (error) {
                 statusEl.innerHTML = `<span style="color: #ef4444;">❌ ${error.message}</span>`;
+                addMessage('assistant', `❌ Keyword research failed: ${error.message}`);
             }
         }
         
         // Display keyword results
+        // Display keyword results - now shown in chat for better spacing
         function displayKeywordResults(data) {
-            const resultsEl = document.getElementById('keywordResults');
-            
-            // Score colors
-            const getScoreColor = (score) => score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
-            const getDifficultyColor = (diff) => diff === 'easy' ? '#10b981' : diff === 'medium' ? '#f59e0b' : '#ef4444';
-            const getPotentialColor = (pot) => pot === 'high' ? '#10b981' : pot === 'medium' ? '#f59e0b' : '#ef4444';
-            
-            resultsEl.innerHTML = `
-                <!-- Main Scores -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
-                    <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
-                        <div style="font-size: 24px; font-weight: bold; color: ${getScoreColor(data.popularity.score)};">${data.popularity.score}</div>
-                        <div style="font-size: 10px; color: #888;">Popularity</div>
-                        <div style="font-size: 9px; color: ${data.popularity.trend === 'rising' ? '#10b981' : '#888'};">📈 ${data.popularity.trend}</div>
-                    </div>
-                    <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
-                        <div style="font-size: 24px; font-weight: bold; color: ${getScoreColor(data.seo.score)};">${data.seo.score}</div>
-                        <div style="font-size: 10px; color: #888;">SEO Score</div>
-                        <div style="font-size: 9px; color: ${getPotentialColor(data.seo.rankingPotential)};">⭐ ${data.seo.rankingPotential} potential</div>
-                    </div>
-                    <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
-                        <div style="font-size: 18px; font-weight: bold; color: ${getDifficultyColor(data.seo.difficulty)};">${data.seo.difficulty.toUpperCase()}</div>
-                        <div style="font-size: 10px; color: #888;">Difficulty</div>
-                        <div style="font-size: 9px; color: #888;">Competition: ${data.seo.competition}</div>
-                    </div>
-                </div>
-                
-                ${data.adsIntel ? `
-                <!-- 💰 Ads Intelligence -->
-                <div style="margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1)); border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.3);">
-                    <div style="font-size: 11px; font-weight: bold; color: #fbbf24; margin-bottom: 10px;">💰 Ads Intelligence ${data.adsIntel.source === 'estimated' ? '(Estimated)' : ''}</div>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
-                            <div style="font-size: 18px; font-weight: bold; color: #fbbf24;">$${data.adsIntel.cpc}</div>
-                            <div style="font-size: 9px; color: #888;">Cost Per Click</div>
-                            <div style="font-size: 8px; color: #666;">${data.adsIntel.cpcRange}</div>
-                        </div>
-                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
-                            <div style="font-size: 18px; font-weight: bold; color: #60a5fa;">${(data.adsIntel.searchVolume || 0).toLocaleString()}</div>
-                            <div style="font-size: 9px; color: #888;">Monthly Searches</div>
-                        </div>
-                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
-                            <div style="font-size: 18px; font-weight: bold; color: #f472b6;">$${(data.adsIntel.estimatedMonthlySpend || 0).toLocaleString()}</div>
-                            <div style="font-size: 9px; color: #888;">Market Monthly Spend</div>
-                        </div>
-                        <div style="background: var(--bg-tertiary); padding: 8px; border-radius: 6px;">
-                            <div style="font-size: 18px; font-weight: bold; color: #a78bfa;">$${(data.adsIntel.estimatedYearlySpend || 0).toLocaleString()}</div>
-                            <div style="font-size: 9px; color: #888;">Market Yearly Spend</div>
-                        </div>
-                    </div>
-                    ${data.adsIntel.insights ? `
-                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(251, 191, 36, 0.2);">
-                        ${data.adsIntel.insights.map(i => `
-                            <div style="font-size: 10px; color: ${i.type === 'success' ? '#10b981' : i.type === 'warning' ? '#f59e0b' : '#60a5fa'}; margin-bottom: 4px;">
-                                ${i.icon} ${i.text}
-                            </div>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                </div>
-                ` : ''}
-                
-                <!-- Recommendations -->
-                <div style="margin-bottom: 12px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; border-left: 3px solid #10b981;">
-                    <div style="font-size: 11px; font-weight: bold; color: #10b981; margin-bottom: 6px;">💡 Recommendations</div>
-                    ${data.recommendation.map(r => `<div style="font-size: 11px; color: #ccc; margin-bottom: 4px;">${r}</div>`).join('')}
-                </div>
-                
-                <!-- Best Keywords to Target -->
-                <div style="margin-bottom: 12px;">
-                    <div style="font-size: 11px; font-weight: bold; color: #10b981; margin-bottom: 8px;">🎯 Best Keywords to Target (Ranked)</div>
-                    ${data.bestKeywordsToTarget.map((k, i) => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 4px; cursor: pointer;" onclick="copyKeyword('${k.keyword.replace(/'/g, "\\'")}')">
-                            <div>
-                                <span style="color: #10b981; font-weight: bold;">#${i + 1}</span>
-                                <span style="margin-left: 8px; font-size: 12px;">${k.keyword}</span>
-                            </div>
-                            <div style="display: flex; gap: 8px; font-size: 10px;">
-                                <span style="color: ${getScoreColor(k.seoScore)};">SEO: ${k.seoScore}</span>
-                                <span style="color: ${getDifficultyColor(k.difficulty)};">${k.difficulty}</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <!-- Related Keywords -->
-                <div style="margin-bottom: 8px;">
-                    <div style="font-size: 11px; font-weight: bold; color: #888; margin-bottom: 6px;">🔗 Related Keywords</div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                        ${data.relatedKeywords.slice(0, 8).map(k => `
-                            <span style="padding: 4px 8px; background: var(--bg-tertiary); border-radius: 12px; font-size: 10px; cursor: pointer;" onclick="searchRelatedKeyword('${k.replace(/'/g, "\\'")}')">${k}</span>
-                        `).join('')}
-                    </div>
-                </div>
-                
-                ${data.localKeywords.length > 0 ? `
-                    <div>
-                        <div style="font-size: 11px; font-weight: bold; color: #888; margin-bottom: 6px;">📍 Local Keywords</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                            ${data.localKeywords.slice(0, 6).map(k => `
-                                <span style="padding: 4px 8px; background: var(--bg-tertiary); border-radius: 12px; font-size: 10px; cursor: pointer;" onclick="searchRelatedKeyword('${k.replace(/'/g, "\\'")}')">${k}</span>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-            `;
-            
-            resultsEl.style.display = 'block';
+            // Results now displayed in chat window via generateRichKeywordSummary()
+            // This function kept for backward compatibility
+            currentKeywordResults = data;
         }
         
-        // Generate summary for Neo chat
-        function generateKeywordSummary(data) {
-            let summary = `🎯 **Keyword Research: "${data.keyword}"**
-${data.location !== 'Global' ? `📍 Location: ${data.location}` : ''}
+        // Generate rich summary for Neo chat (main display)
+        function generateRichKeywordSummary(data) {
+            const getScoreEmoji = (score) => score >= 70 ? '🟢' : score >= 50 ? '🟡' : '🔴';
+            const getDiffEmoji = (diff) => diff === 'easy' ? '🟢' : diff === 'medium' ? '🟡' : '🔴';
+            
+            let summary = `## 🎯 Keyword Research: "${data.keyword}"
+${data.location !== 'Global' ? `📍 **Location:** ${data.location}\n` : ''}
+---
 
-**Scores:**
-- Popularity: ${data.popularity.score}/100 (${data.popularity.trend})
-- SEO Score: ${data.seo.score}/100
-- Difficulty: ${data.seo.difficulty.toUpperCase()}
-- Ranking Potential: ${data.seo.rankingPotential.toUpperCase()}`;
+### 📊 Scores Overview
+
+| Metric | Score | Status |
+|--------|-------|--------|
+| Popularity | **${data.popularity.score}/100** | ${getScoreEmoji(data.popularity.score)} ${data.popularity.trend} |
+| SEO Score | **${data.seo.score}/100** | ${getScoreEmoji(data.seo.score)} ${data.seo.rankingPotential} potential |
+| Difficulty | **${data.seo.difficulty.toUpperCase()}** | ${getDiffEmoji(data.seo.difficulty)} Competition: ${data.seo.competition} |`;
 
             if (data.adsIntel) {
                 summary += `
 
-**💰 Ads Intelligence:**
-- Cost Per Click: $${data.adsIntel.cpc} (${data.adsIntel.cpcRange})
-- Monthly Searches: ${(data.adsIntel.searchVolume || 0).toLocaleString()}
-- Market Monthly Spend: $${(data.adsIntel.estimatedMonthlySpend || 0).toLocaleString()}
-- Market Yearly Spend: $${(data.adsIntel.estimatedYearlySpend || 0).toLocaleString()}`;
+---
+
+### 💰 Ads Intelligence ${data.adsIntel.source === 'rapidapi' ? '(Real Data)' : '(Estimated)'}
+
+| Metric | Value |
+|--------|-------|
+| 🔍 Monthly Searches | **${(data.adsIntel.searchVolume || 0).toLocaleString()}** |
+| 💵 Cost Per Click | **$${data.adsIntel.cpc}** (${data.adsIntel.cpcRange}) |
+| 📈 Market Monthly Spend | **$${(data.adsIntel.estimatedMonthlySpend || 0).toLocaleString()}** |
+| 📅 Market Yearly Spend | **$${(data.adsIntel.estimatedYearlySpend || 0).toLocaleString()}** |`;
+
+                if (data.adsIntel.insights && data.adsIntel.insights.length > 0) {
+                    summary += `
+
+**Insights:**
+${data.adsIntel.insights.map(i => `${i.icon} ${i.text}`).join('\n')}`;
+                }
             }
 
             summary += `
 
-**Best Keywords to Target:**
-${data.bestKeywordsToTarget.slice(0, 3).map((k, i) => `${i + 1}. "${k.keyword}" (SEO: ${k.seoScore}, ${k.difficulty})`).join('\n')}
+---
 
-**Recommendations:**
+### 🎯 Best Keywords to Target
+
+${data.bestKeywordsToTarget.slice(0, 5).map((k, i) => `${i + 1}. **"${k.keyword}"** — SEO: ${k.seoScore}, Difficulty: ${k.difficulty}, Potential: ${k.rankingPotential}`).join('\n')}
+
+---
+
+### 💡 Recommendations
+
 ${data.recommendation.join('\n')}
 
-💬 Ask me anything about these keywords, ad strategy, or how to rank for them!`;
+---
+
+### 🔗 Related Keywords
+
+${data.relatedKeywords.slice(0, 8).map(k => `\`${k}\``).join(' • ')}`;
+
+            if (data.localKeywords && data.localKeywords.length > 0) {
+                summary += `
+
+### 📍 Local Keywords
+
+${data.localKeywords.slice(0, 6).map(k => `\`${k}\``).join(' • ')}`;
+            }
+
+            summary += `
+
+---
+
+💬 **Ask me anything** about these keywords, how to rank for them, or ad strategy!`;
             
             return summary;
+        }
+        
+        // Legacy summary function (kept for compatibility)
+        function generateKeywordSummary(data) {
+            return generateRichKeywordSummary(data);
         }
         
         // Copy keyword to clipboard
