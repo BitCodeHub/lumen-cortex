@@ -362,6 +362,43 @@ function setupRoutes(app) {
     dest: '/tmp/mobsf-uploads/',
     limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit
   });
+
+  // Download PDF report
+  app.get('/api/mobsf/scan/:id/pdf', async (req, res) => {
+    try {
+      const scan = mobileScans.get(req.params.id);
+      if (!scan || !scan.hash) {
+        return res.status(404).json({ error: 'Scan not found or not complete' });
+      }
+      
+      const pdfBuffer = await getPdfReport(scan.hash);
+      if (!pdfBuffer) {
+        return res.status(500).json({ error: 'Failed to generate PDF' });
+      }
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${scan.fileName || 'report'}-security-report.pdf"`);
+      res.send(Buffer.from(pdfBuffer));
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // Get JSON report for download
+  app.get('/api/mobsf/scan/:id/json', async (req, res) => {
+    try {
+      const scan = mobileScans.get(req.params.id);
+      if (!scan) {
+        return res.status(404).json({ error: 'Scan not found' });
+      }
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${scan.fileName || 'report'}-security-report.json"`);
+      res.json(scan.report || scan.summary);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
   
   // Check MobSF status
   app.get('/api/mobsf/status', (req, res) => {

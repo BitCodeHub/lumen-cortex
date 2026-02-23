@@ -1094,10 +1094,41 @@
                         </div>
                     </div>
                     
+                    <!-- Recent Scans -->
+                    <div id="recentMobileScans" style="margin-top: 12px; display: none;">
+                        <div style="font-size: 0.75em; color: #888; margin-bottom: 6px;">📋 Recent Scans:</div>
+                        <div id="recentMobileScansList" style="max-height: 80px; overflow-y: auto;"></div>
+                    </div>
+                    
                     <!-- What it scans -->
                     <div style="margin-top: 10px; font-size: 0.7em; color: #666;">
                         <strong style="color: #888;">Scans for:</strong> Hardcoded secrets • SSL issues • Dangerous permissions • Malware • Code vulnerabilities
                     </div>
+                    
+                    <!-- Refresh recent scans on load -->
+                    <script>
+                        (function loadRecentMobileScans() {
+                            fetch('/api/mobsf/scans')
+                                .then(r => r.json())
+                                .then(scans => {
+                                    if (scans.length > 0) {
+                                        document.getElementById('recentMobileScans').style.display = 'block';
+                                        const list = document.getElementById('recentMobileScansList');
+                                        list.innerHTML = scans.slice(0, 5).map(s => `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #2a2a3a; font-size: 0.75em;">
+                                                <span style="color: ${s.status === 'complete' ? '#00ff41' : s.status === 'error' ? '#ff0040' : '#ffaa00'};">
+                                                    ${s.status === 'complete' ? '✅' : s.status === 'error' ? '❌' : '⏳'} ${s.fileName?.slice(0, 20) || 'Unknown'}
+                                                </span>
+                                                ${s.status === 'complete' ? `
+                                                    <button onclick="downloadMobilePDF('${s.scanId}')" style="background: none; border: none; color: #ff6b35; cursor: pointer; font-size: 10px;">📄</button>
+                                                ` : ''}
+                                            </div>
+                                        `).join('');
+                                    }
+                                })
+                                .catch(() => {});
+                        })();
+                    </script>
                 </div>
 
                 <div class="panel-card" style="border: 1px solid #8b5cf6;">
@@ -6420,9 +6451,15 @@ Paste your code below:`,
             }
             
             html += `
-                    <div style="text-align: center; margin-top: 15px;">
+                    <div style="text-align: center; margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                         <button onclick="askAboutMobileScan()" class="quick-btn" style="background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f; padding: 10px 20px;">
                             💬 Ask Neo about these findings
+                        </button>
+                        <button onclick="downloadMobilePDF('${scan.scanId}')" class="quick-btn" style="border-color: #ff6b35; padding: 10px 20px;">
+                            📄 Download PDF
+                        </button>
+                        <button onclick="downloadMobileJSON('${scan.scanId}')" class="quick-btn" style="border-color: #0abdc6; padding: 10px 20px;">
+                            📋 Download JSON
                         </button>
                     </div>
                 </div>
@@ -6446,6 +6483,28 @@ Paste your code below:`,
         function askAboutMobileScan() {
             document.getElementById('userInput').value = 'Explain the mobile app security findings and what are the most critical issues I should fix?';
             document.getElementById('userInput').focus();
+        }
+        
+        // Download PDF report
+        function downloadMobilePDF(scanId) {
+            const link = document.createElement('a');
+            link.href = `/api/mobsf/scan/${scanId}/pdf`;
+            link.download = 'mobile-security-report.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            addMessage('📄 Downloading PDF report...', false);
+        }
+        
+        // Download JSON report
+        function downloadMobileJSON(scanId) {
+            const link = document.createElement('a');
+            link.href = `/api/mobsf/scan/${scanId}/json`;
+            link.download = 'mobile-security-report.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            addMessage('📋 Downloading JSON report...', false);
         }
         
         // ═══════════════════════════════════════════════════════════════
