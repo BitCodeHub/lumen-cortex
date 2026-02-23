@@ -1171,6 +1171,105 @@
                     </script>
                 </div>
 
+                <!-- 🐛 AI DEBUGGER - Comprehensive Code Analysis -->
+                <div class="panel-card" style="border: 1px solid #e91e63;">
+                    <div class="panel-title" style="color: #e91e63;">🐛 AI Debugger</div>
+                    <div style="font-size: 10px; color: #888; margin-bottom: 10px;">Fix bugs • Find vulnerabilities • Get solutions</div>
+                    
+                    <!-- Code input area -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 0.75em; color: #888; margin-bottom: 5px;">📝 Paste code with issues:</div>
+                        <textarea id="debugCodeInput" placeholder="Paste your buggy code here..." 
+                            style="width: 100%; height: 100px; background: #0a0a0f; border: 1px solid #e91e63; color: #e0e0e0; padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <!-- Error message input -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 0.75em; color: #888; margin-bottom: 5px;">⚠️ Error message (optional):</div>
+                        <textarea id="debugErrorInput" placeholder="Paste error message, stack trace, or describe the issue..." 
+                            style="width: 100%; height: 60px; background: #0a0a0f; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <!-- File upload option -->
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 0.75em; color: #888; margin-bottom: 5px;">📎 Or upload file:</div>
+                        <div id="debugFileUploadArea" style="border: 2px dashed #e91e63; border-radius: 6px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.3s;"
+                             onclick="document.getElementById('debugFileInput').click()"
+                             ondragover="event.preventDefault(); this.style.borderColor='#00ff41'; this.style.background='rgba(0,255,65,0.1)';"
+                             ondragleave="this.style.borderColor='#e91e63'; this.style.background='transparent';"
+                             ondrop="handleDebugFileDrop(event)">
+                            <span style="color: #888; font-size: 0.8em;">Drop file or click to browse</span>
+                        </div>
+                        <input type="file" id="debugFileInput" style="display: none;" onchange="handleDebugFileUpload(this.files[0])">
+                        <div id="debugFileInfo" style="display: none; margin-top: 8px; padding: 8px; background: #1a1a25; border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span id="debugFileName" style="color: #e91e63; font-size: 0.8em;"></span>
+                                <button onclick="clearDebugFile()" style="background: none; border: none; color: #ff0040; cursor: pointer;">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analysis type buttons -->
+                    <div style="font-size: 0.75em; color: #888; margin-bottom: 8px;">🔍 Analysis type:</div>
+                    <div class="quick-actions" style="margin-bottom: 10px;">
+                        <button class="quick-btn debug-type-btn" onclick="selectDebugType('bugs')" data-type="bugs" style="border-color: #e91e63; flex: 1;">🐛 Bugs</button>
+                        <button class="quick-btn debug-type-btn" onclick="selectDebugType('security')" data-type="security" style="border-color: #ff0040; flex: 1;">🔒 Security</button>
+                        <button class="quick-btn debug-type-btn" onclick="selectDebugType('all')" data-type="all" style="border-color: #00ff41; flex: 1;">⚡ All</button>
+                    </div>
+                    
+                    <!-- Additional options -->
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8em; color: #888;">
+                            <input type="checkbox" id="debugExplainFix" checked style="accent-color: #e91e63;"> 
+                            Explain fixes in plain English
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8em; color: #888; margin-top: 5px;">
+                            <input type="checkbox" id="debugShowFixed" checked style="accent-color: #00ff41;"> 
+                            Show complete fixed code
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8em; color: #888; margin-top: 5px;">
+                            <input type="checkbox" id="debugBestPractices" style="accent-color: #0abdc6;"> 
+                            Include best practices tips
+                        </label>
+                    </div>
+                    
+                    <!-- Debug button -->
+                    <button onclick="runAIDebugger()" class="quick-btn" style="width: 100%; background: linear-gradient(135deg, #e91e63, #ff6b6b); color: white; padding: 12px; font-size: 1em; font-weight: bold;">
+                        🐛 Debug & Fix Code
+                    </button>
+                    
+                    <!-- Quick debug prompts -->
+                    <div style="margin-top: 12px; font-size: 0.7em; color: #666;">
+                        <strong style="color: #888;">Quick prompts:</strong>
+                        <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;">
+                            <span onclick="quickDebugPrompt('Why is this throwing an error?')" class="debug-quick-chip">❓ Why error?</span>
+                            <span onclick="quickDebugPrompt('Find all security vulnerabilities')" class="debug-quick-chip">🔒 Security</span>
+                            <span onclick="quickDebugPrompt('Fix and optimize this code')" class="debug-quick-chip">⚡ Fix & Optimize</span>
+                            <span onclick="quickDebugPrompt('Is this code safe for production?')" class="debug-quick-chip">🚀 Production ready?</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                    .debug-quick-chip {
+                        background: rgba(233, 30, 99, 0.1);
+                        border: 1px solid #e91e63;
+                        color: #e91e63;
+                        padding: 3px 8px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+                    .debug-quick-chip:hover {
+                        background: #e91e63;
+                        color: white;
+                    }
+                    .debug-type-btn.active {
+                        background: linear-gradient(135deg, #e91e63, #ff6b6b) !important;
+                        color: white !important;
+                    }
+                </style>
+
                 <div class="panel-card" style="border: 1px solid #8b5cf6;">
                     <div class="panel-title" style="color: #8b5cf6;">🔍 GitHub Secret Hunter</div>
                     
@@ -2690,6 +2789,172 @@
             URL.revokeObjectURL(url);
             
             addMessage(`✨ Applied changes and saved: ${filename}`, false);
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // 🐛 AI DEBUGGER - Comprehensive Code Analysis System
+        // ═══════════════════════════════════════════════════════════════
+        
+        let debugFileContent = null;
+        let debugFileName = null;
+        let selectedDebugType = 'all';
+        
+        // Select debug analysis type
+        function selectDebugType(type) {
+            selectedDebugType = type;
+            document.querySelectorAll('.debug-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // Initialize default selection
+        setTimeout(() => selectDebugType('all'), 100);
+        
+        // Handle debug file drop
+        function handleDebugFileDrop(event) {
+            event.preventDefault();
+            const uploadArea = document.getElementById('debugFileUploadArea');
+            uploadArea.style.borderColor = '#e91e63';
+            uploadArea.style.background = 'transparent';
+            
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                handleDebugFileUpload(file);
+            }
+        }
+        
+        // Handle debug file upload
+        async function handleDebugFileUpload(file) {
+            if (!file) return;
+            
+            debugFileName = file.name;
+            
+            try {
+                debugFileContent = await readFileAsText(file);
+                
+                // Show file info
+                document.getElementById('debugFileInfo').style.display = 'block';
+                document.getElementById('debugFileName').textContent = `📄 ${file.name} (${formatFileSize(file.size)})`;
+                
+                // Auto-populate code input
+                document.getElementById('debugCodeInput').value = debugFileContent;
+                
+            } catch (e) {
+                addMessage(`❌ Could not read file: ${e.message}`, false);
+            }
+        }
+        
+        // Clear debug file
+        function clearDebugFile() {
+            debugFileContent = null;
+            debugFileName = null;
+            document.getElementById('debugFileInfo').style.display = 'none';
+            document.getElementById('debugFileInput').value = '';
+        }
+        
+        // Quick debug prompt
+        function quickDebugPrompt(prompt) {
+            document.getElementById('debugErrorInput').value = prompt;
+            runAIDebugger();
+        }
+        
+        // Run the AI Debugger
+        async function runAIDebugger() {
+            const codeInput = document.getElementById('debugCodeInput').value.trim();
+            const errorInput = document.getElementById('debugErrorInput').value.trim();
+            const explainFix = document.getElementById('debugExplainFix').checked;
+            const showFixed = document.getElementById('debugShowFixed').checked;
+            const bestPractices = document.getElementById('debugBestPractices').checked;
+            
+            if (!codeInput && !debugFileContent) {
+                addMessage('❌ Please paste code or upload a file to debug.', false);
+                return;
+            }
+            
+            const code = codeInput || debugFileContent;
+            const fileName = debugFileName || 'code snippet';
+            
+            // Build the debug analysis prompt
+            let analysisType = '';
+            switch (selectedDebugType) {
+                case 'bugs':
+                    analysisType = 'Focus on finding BUGS, ERRORS, and LOGIC ISSUES.';
+                    break;
+                case 'security':
+                    analysisType = 'Focus on SECURITY VULNERABILITIES, including OWASP Top 10, injection flaws, authentication issues, data exposure, etc.';
+                    break;
+                case 'all':
+                default:
+                    analysisType = 'Perform COMPREHENSIVE analysis: bugs, security vulnerabilities, performance issues, code quality problems, and potential improvements.';
+            }
+            
+            let requirements = [];
+            if (explainFix) requirements.push('Explain each issue and fix in plain English that anyone can understand');
+            if (showFixed) requirements.push('Provide the COMPLETE fixed code at the end (not just snippets)');
+            if (bestPractices) requirements.push('Include best practices and recommendations for improvement');
+            
+            const debugPrompt = `
+🐛 **AI DEBUGGER REQUEST**
+
+**File:** ${fileName}
+**Analysis Type:** ${selectedDebugType.toUpperCase()}
+
+${errorInput ? `**Error/Issue Description:**
+\`\`\`
+${errorInput}
+\`\`\`
+
+` : ''}**Code to Analyze:**
+\`\`\`
+${code.slice(0, 50000)}${code.length > 50000 ? '\n... (truncated)' : ''}
+\`\`\`
+
+**Instructions:**
+${analysisType}
+
+**Requirements:**
+${requirements.map(r => `• ${r}`).join('\n')}
+
+**Please provide your analysis in this format:**
+
+## 🔍 Issues Found
+
+For each issue:
+### [SEVERITY EMOJI] Issue #N: [Issue Title]
+- **Type:** Bug / Security / Performance / Code Quality
+- **Line(s):** [line numbers if applicable]
+- **Problem:** [Clear explanation of what's wrong]
+- **Impact:** [What could go wrong if not fixed]
+- **Fix:** [How to fix it]
+
+## 🔧 Quick Fixes Summary
+[Bullet list of all fixes needed]
+
+${showFixed ? `## ✅ Complete Fixed Code
+[The entire code with all issues fixed]` : ''}
+
+${bestPractices ? `## 💡 Best Practices & Recommendations
+[Additional tips for improvement]` : ''}
+`;
+
+            // Show user message
+            addMessage(`🐛 <strong>AI Debugger:</strong> Analyzing ${fileName}...<br>
+                <span style="color: #888; font-size: 0.9em;">Analysis type: ${selectedDebugType.toUpperCase()}</span>`, true);
+            
+            // Send to chat
+            document.getElementById('userInput').value = debugPrompt;
+            
+            // Trigger send
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.click();
+            
+            // Clear inputs after sending
+            document.getElementById('debugCodeInput').value = '';
+            document.getElementById('debugErrorInput').value = '';
+            clearDebugFile();
         }
 
         function updateToolList(tools) {
