@@ -1238,249 +1238,27 @@
                 <!-- LEGACY PANELS (kept for compatibility) -->
                 <!-- ═══════════════════════════════════════════════════════════ -->
                 
-                <!-- Hidden: Original Network Guardian (for functions) -->
-                <div id="legacy-network-guardian" style="display: none;">
+                <!-- Hidden elements for legacy function compatibility -->
+                <div id="legacy-elements" style="display: none;">
                     <div id="networkGuardianAlerts"></div>
-                </div>
-                    <div id="networkGuardianStatus" style="margin-bottom: 10px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #666; font-size: 11px;">WiFi: <span id="networkName">Loading...</span></span>
-                            <span id="deviceCount" style="color: #00ff41; font-size: 11px;">0 devices</span>
-                        </div>
-                    </div>
-                    <div id="networkGuardianAlerts" style="max-height: 60px; overflow-y: auto; margin-bottom: 8px;"></div>
-                    <div class="quick-actions">
-                        <button class="quick-btn" onclick="scanNetworkQuickWithChat()" style="flex: 1; border-color: #00ff41;">⚡ Quick Scan</button>
-                        <button class="quick-btn" onclick="scanNetworkFullWithChat()" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f;">🤖 AI Scan</button>
-                    </div>
-                    <div class="quick-actions" style="margin-top: 8px;">
-                        <button class="quick-btn" onclick="showWhitelistInChat()" style="flex: 1;">📋 Whitelist</button>
-                        <button class="quick-btn" onclick="showNetworkHistoryInChat()" style="flex: 1;">📊 History</button>
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <button class="quick-btn" onclick="askNetworkQuestion()" style="width: 100%; border-color: #0abdc6; color: #0abdc6;">💬 Ask about my network</button>
-                    </div>
-                </div>
-
-                <div class="panel-card">
-                    <div class="panel-title">Quick Scans</div>
-                    <div class="quick-actions">
-                        <button class="quick-btn" onclick="quickScanWithChat('web')">🌐 Web</button>
-                        <button class="quick-btn" onclick="quickScanWithChat('recon')">🔍 Recon</button>
-                        <button class="quick-btn" onclick="quickScanWithChat('secrets')">🔑 Secrets</button>
-                        <button class="quick-btn" onclick="quickScanWithChat('code')">📝 Code</button>
-                        <button class="quick-btn" onclick="quickScanWithChat('github')">🐙 GitHub</button>
-                        <button class="quick-btn" onclick="quickScanWithChat('full')">⚡ Full</button>
-                    </div>
-                    <div class="quick-actions" style="margin-top: 8px;">
-                        <button class="quick-btn" onclick="githubHuntWithChat('aws')">🔴 AWS Keys</button>
-                        <button class="quick-btn" onclick="githubHuntWithChat('stripe')">💳 Stripe</button>
-                        <button class="quick-btn" onclick="githubHuntWithChat('openai')">🤖 OpenAI</button>
-                    </div>
-                </div>
-
-                <!-- DAST & SAST Panel -->
-                <div class="panel-card" style="border: 1px solid #00ff41;">
-                    <div class="panel-title" style="color: #00ff41;">🛡️ DAST & SAST</div>
-                    
-                    <!-- Target input -->
-                    <div style="margin-bottom: 10px;">
-                        <input type="text" id="dastSastTarget" placeholder="URL (DAST) or /path/to/code (SAST)" style="width: 100%; background: #1a1a25; border: 1px solid #00ff41; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
-                    </div>
-                    
-                    <!-- DAST Section -->
-                    <div style="font-size: 10px; color: #ff6b6b; margin-bottom: 6px; font-weight: bold;">🔴 DAST (Dynamic - Running Apps)</div>
-                    <div class="quick-actions">
-                        <button class="quick-btn" onclick="runDASTScan('zap')" style="border-color: #ff6b6b;">🕷️ ZAP</button>
-                        <button class="quick-btn" onclick="runDASTScan('nikto')" style="border-color: #ff6b6b;">🔍 Nikto</button>
-                        <button class="quick-btn" onclick="runDASTScan('nuclei')" style="border-color: #ff6b6b;">⚡ Nuclei</button>
-                        <button class="quick-btn" onclick="runDASTScan('sqlmap')" style="border-color: #ff6b6b;">💉 SQLMap</button>
-                    </div>
-                    <div class="quick-actions" style="margin-top: 6px;">
-                        <button class="quick-btn" onclick="runDASTScan('xsstrike')" style="border-color: #ff6b6b;">🔥 XSS</button>
-                        <button class="quick-btn" onclick="runDASTScan('full_dast')" style="flex: 1; background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">⚡ Full DAST</button>
-                    </div>
-                    
-                    <!-- SAST Section -->
-                    <div style="font-size: 10px; color: #4dabf7; margin: 12px 0 6px 0; font-weight: bold;">🔵 SAST (Static - Source Code)</div>
-                    <div class="quick-actions">
-                        <button class="quick-btn" onclick="runSASTScan('semgrep')" style="border-color: #4dabf7;">🔬 Semgrep</button>
-                        <button class="quick-btn" onclick="runSASTScan('bandit')" style="border-color: #4dabf7;">🐍 Bandit</button>
-                        <button class="quick-btn" onclick="runSASTScan('bearer')" style="border-color: #4dabf7;">🔒 Bearer</button>
-                        <button class="quick-btn" onclick="runSASTScan('codeql')" style="border-color: #4dabf7;">🧬 CodeQL</button>
-                    </div>
-                    <div class="quick-actions" style="margin-top: 6px;">
-                        <button class="quick-btn" onclick="runSASTScan('secrets')" style="border-color: #4dabf7;">🔑 Secrets</button>
-                        <button class="quick-btn" onclick="runSASTScan('full_sast')" style="flex: 1; background: linear-gradient(135deg, #4dabf7, #0abdc6); color: #0a0a0f;">⚡ Full SAST</button>
-                    </div>
-                </div>
-
-                <!-- Mobile App Security (MobSF) -->
-                <div class="panel-card" style="border: 1px solid #ff6b35;">
-                    <div class="panel-title" style="color: #ff6b35;">📱 Mobile App Security</div>
-                    <div style="font-size: 10px; color: #888; margin-bottom: 10px;">Powered by MobSF • APK/IPA Analysis</div>
-                    
-                    <!-- File upload area -->
-                    <div id="mobileUploadArea" style="border: 2px dashed #ff6b35; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s;"
-                         onclick="document.getElementById('mobileFileInput').click()"
-                         ondragover="event.preventDefault(); this.style.borderColor='#00ff41'; this.style.background='rgba(0,255,65,0.1)';"
-                         ondragleave="this.style.borderColor='#ff6b35'; this.style.background='transparent';"
-                         ondrop="handleMobileDrop(event)">
-                        <div style="font-size: 2em; margin-bottom: 5px;">📲</div>
-                        <div style="color: #ff6b35; font-size: 0.85em;">Drop APK/IPA here</div>
-                        <div style="color: #666; font-size: 0.75em; margin-top: 5px;">or click to browse</div>
-                    </div>
                     <input type="file" id="mobileFileInput" accept=".apk,.ipa,.zip,.appx" style="display: none;" onchange="handleMobileUpload(this.files[0])">
-                    
-                    <!-- Scan progress -->
-                    <div id="mobileScanProgress" style="display: none; margin-top: 10px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span id="mobileScanStatus" style="color: #ff6b35; font-size: 0.8em;">Uploading...</span>
-                            <span id="mobileScanPercent" style="color: #00ff41; font-size: 0.8em;">0%</span>
-                        </div>
-                        <div style="background: #1a1a25; border-radius: 4px; height: 6px; overflow: hidden;">
-                            <div id="mobileScanBar" style="background: linear-gradient(90deg, #ff6b35, #00ff41); height: 100%; width: 0%; transition: width 0.3s;"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Recent Scans -->
-                    <div id="recentMobileScans" style="margin-top: 12px; display: none;">
-                        <div style="font-size: 0.75em; color: #888; margin-bottom: 6px;">📋 Recent Scans:</div>
-                        <div id="recentMobileScansList" style="max-height: 80px; overflow-y: auto;"></div>
-                    </div>
-                    
-                    <!-- What it scans -->
-                    <div style="margin-top: 10px; font-size: 0.7em; color: #666;">
-                        <strong style="color: #888;">Scans for:</strong> Hardcoded secrets • SSL issues • Dangerous permissions • Malware • Code vulnerabilities
-                    </div>
-                    
-                    <!-- Refresh recent scans on load -->
-                    <script>
-                        (function loadRecentMobileScans() {
-                            fetch('/api/mobsf/scans')
-                                .then(r => r.json())
-                                .then(scans => {
-                                    if (scans.length > 0) {
-                                        document.getElementById('recentMobileScans').style.display = 'block';
-                                        const list = document.getElementById('recentMobileScansList');
-                                        list.innerHTML = scans.slice(0, 5).map(s => `
-                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #2a2a3a; font-size: 0.75em;">
-                                                <span style="color: ${s.status === 'complete' ? '#00ff41' : s.status === 'error' ? '#ff0040' : '#ffaa00'};">
-                                                    ${s.status === 'complete' ? '✅' : s.status === 'error' ? '❌' : '⏳'} ${s.fileName?.slice(0, 20) || 'Unknown'}
-                                                </span>
-                                                ${s.status === 'complete' ? `
-                                                    <button onclick="downloadMobilePDF('${s.scanId}')" style="background: none; border: none; color: #ff6b35; cursor: pointer; font-size: 10px;">📄</button>
-                                                ` : ''}
-                                            </div>
-                                        `).join('');
-                                    }
-                                })
-                                .catch(() => {});
-                        })();
-                    </script>
+                <!-- End of side-panel duplicate cleanup - keeping legacy IDs hidden -->
+                <div style="display: none;">
+                    <div id="mobileScanProgress"></div>
+                    <div id="mobileScanStatus"></div>
+                    <div id="mobileScanPercent"></div>
+                    <div id="mobileScanBar"></div>
+                    <div id="recentMobileScans"></div>
+                    <div id="recentMobileScansList"></div>
+                    <div id="debugCodeInput"></div>
+                    <div id="debugErrorInput"></div>
+                    <div id="debugFileInput"></div>
+                    <div id="debugFileInfo"></div>
+                    <div id="debugFileName"></div>
                 </div>
 
-                <!-- 🐛 AI DEBUGGER - Comprehensive Code Analysis -->
-                <div class="panel-card" style="border: 1px solid #e91e63;">
-                    <div class="panel-title" style="color: #e91e63;">🐛 AI Debugger</div>
-                    <div style="font-size: 10px; color: #888; margin-bottom: 10px;">Fix bugs • Find vulnerabilities • Get solutions</div>
-                    
-                    <!-- Code input area -->
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-size: 0.75em; color: #888; margin-bottom: 5px;">📝 Paste code with issues:</div>
-                        <textarea id="debugCodeInput" placeholder="Paste your buggy code here..." 
-                            style="width: 100%; height: 100px; background: #0a0a0f; border: 1px solid #e91e63; color: #e0e0e0; padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; resize: vertical;"></textarea>
-                    </div>
-                    
-                    <!-- Error message input -->
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-size: 0.75em; color: #888; margin-bottom: 5px;">⚠️ Error message (optional):</div>
-                        <textarea id="debugErrorInput" placeholder="Paste error message, stack trace, or describe the issue..." 
-                            style="width: 100%; height: 60px; background: #0a0a0f; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; resize: vertical;"></textarea>
-                    </div>
-                    
-                    <!-- File upload option -->
-                    <div style="margin-bottom: 12px;">
-                        <div style="font-size: 0.75em; color: #888; margin-bottom: 5px;">📎 Or upload file:</div>
-                        <div id="debugFileUploadArea" style="border: 2px dashed #e91e63; border-radius: 6px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.3s;"
-                             onclick="document.getElementById('debugFileInput').click()"
-                             ondragover="event.preventDefault(); this.style.borderColor='#00ff41'; this.style.background='rgba(0,255,65,0.1)';"
-                             ondragleave="this.style.borderColor='#e91e63'; this.style.background='transparent';"
-                             ondrop="handleDebugFileDrop(event)">
-                            <span style="color: #888; font-size: 0.8em;">Drop file or click to browse</span>
-                        </div>
-                        <input type="file" id="debugFileInput" style="display: none;" onchange="handleDebugFileUpload(this.files[0])">
-                        <div id="debugFileInfo" style="display: none; margin-top: 8px; padding: 8px; background: #1a1a25; border-radius: 4px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span id="debugFileName" style="color: #e91e63; font-size: 0.8em;"></span>
-                                <button onclick="clearDebugFile()" style="background: none; border: none; color: #ff0040; cursor: pointer;">✕</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Analysis type buttons -->
-                    <div style="font-size: 0.75em; color: #888; margin-bottom: 8px;">🔍 Analysis type:</div>
-                    <div class="quick-actions" style="margin-bottom: 10px;">
-                        <button class="quick-btn debug-type-btn" onclick="selectDebugType('bugs')" data-type="bugs" style="border-color: #e91e63; flex: 1;">🐛 Bugs</button>
-                        <button class="quick-btn debug-type-btn" onclick="selectDebugType('security')" data-type="security" style="border-color: #ff0040; flex: 1;">🔒 Security</button>
-                        <button class="quick-btn debug-type-btn" onclick="selectDebugType('all')" data-type="all" style="border-color: #00ff41; flex: 1;">⚡ All</button>
-                    </div>
-                    
-                    <!-- Additional options -->
-                    <div style="margin-bottom: 12px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8em; color: #888;">
-                            <input type="checkbox" id="debugExplainFix" checked style="accent-color: #e91e63;"> 
-                            Explain fixes in plain English
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8em; color: #888; margin-top: 5px;">
-                            <input type="checkbox" id="debugShowFixed" checked style="accent-color: #00ff41;"> 
-                            Show complete fixed code
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8em; color: #888; margin-top: 5px;">
-                            <input type="checkbox" id="debugBestPractices" style="accent-color: #0abdc6;"> 
-                            Include best practices tips
-                        </label>
-                    </div>
-                    
-                    <!-- Debug button -->
-                    <button onclick="runAIDebugger()" class="quick-btn" style="width: 100%; background: linear-gradient(135deg, #e91e63, #ff6b6b); color: white; padding: 12px; font-size: 1em; font-weight: bold;">
-                        🐛 Debug & Fix Code
-                    </button>
-                    
-                    <!-- Quick debug prompts -->
-                    <div style="margin-top: 12px; font-size: 0.7em; color: #666;">
-                        <strong style="color: #888;">Quick prompts:</strong>
-                        <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;">
-                            <span onclick="quickDebugPrompt('Why is this throwing an error?')" class="debug-quick-chip">❓ Why error?</span>
-                            <span onclick="quickDebugPrompt('Find all security vulnerabilities')" class="debug-quick-chip">🔒 Security</span>
-                            <span onclick="quickDebugPrompt('Fix and optimize this code')" class="debug-quick-chip">⚡ Fix & Optimize</span>
-                            <span onclick="quickDebugPrompt('Is this code safe for production?')" class="debug-quick-chip">🚀 Production ready?</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <style>
-                    .debug-quick-chip {
-                        background: rgba(233, 30, 99, 0.1);
-                        border: 1px solid #e91e63;
-                        color: #e91e63;
-                        padding: 3px 8px;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                    }
-                    .debug-quick-chip:hover {
-                        background: #e91e63;
-                        color: white;
-                    }
-                    .debug-type-btn.active {
-                        background: linear-gradient(135deg, #e91e63, #ff6b6b) !important;
-                        color: white !important;
-                    }
-                </style>
-
-                <div class="panel-card" style="border: 1px solid #8b5cf6;">
-                    <div class="panel-title" style="color: #8b5cf6;">🔍 GitHub Secret Hunter</div>
+                <div class="panel-card" style="border: 1px solid #8b5cf6; display: none;">
+                    <div class="panel-title" style="color: #8b5cf6;">🔍 GitHub Secret Hunter (Legacy)</div>
                     
                     <!-- Scan specific repo -->
                     <div style="margin-bottom: 10px;">
@@ -1570,90 +1348,21 @@
                     </div>
                 </div>
 
-                <div class="panel-card">
-                    <div class="panel-title">Active Tools</div>
-                    <div class="tool-list" id="toolList">
-                        <div class="tool-item">
-                            <div class="tool-status pending"></div>
-                            <span>No active scans</span>
-                        </div>
+                <!-- Hidden legacy panels for JS compatibility -->
+                <div style="display: none;">
+                    <div id="toolList"></div>
+                    <div id="toolCount">0</div>
+                    <div id="aiToolCount">0</div>
+                    <div id="findingCount">0</div>
+                    <div id="scanTime">0s</div>
+                    <div id="riskPanel"><div id="riskIndicator"></div></div>
+                    <div id="scanProgressPanel">
+                        <div id="scanProgressStatus"></div>
+                        <div id="scanProgressBar"></div>
+                        <div id="scanToolsProgress"></div>
+                        <div id="scanElapsedTime"></div>
                     </div>
-                </div>
-
-                <div class="panel-card">
-                    <div class="panel-title">Scan Stats</div>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-value" id="toolCount">0</div>
-                            <div class="stat-label">Tools</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="aiToolCount">0</div>
-                            <div class="stat-label">AI-Powered</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="findingCount">0</div>
-                            <div class="stat-label">Findings</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="scanTime">0s</div>
-                            <div class="stat-label">Time</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- AI-Powered Features Panel -->
-                <div class="panel-card" style="border: 1px solid #ff6b35;">
-                    <div class="panel-title" style="color: #ff6b35;">🤖 AI-Powered Features</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                        <button class="quick-btn" onclick="runAIFeature('phishing')" title="Analyze suspicious emails/URLs">🎣 Phishing Detect</button>
-                        <button class="quick-btn" onclick="runAIFeature('password')" title="Check password strength">🔐 Password Audit</button>
-                        <button class="quick-btn" onclick="runAIFeature('threat')" title="Predict potential attacks">🔮 Threat Predict</button>
-                        <button class="quick-btn" onclick="runAIFeature('compliance')" title="Check GDPR/HIPAA/SOC2">📋 Compliance</button>
-                        <button class="quick-btn" onclick="runAIFeature('privacy')" title="Audit app privacy">🔒 Privacy Audit</button>
-                        <button class="quick-btn" onclick="runAIFeature('logs')" title="Analyze security logs">📊 Log Analysis</button>
-                        <button class="quick-btn" onclick="runAIFeature('malware')" title="Analyze suspicious files">🦠 Malware Check</button>
-                        <button class="quick-btn" onclick="runAIFeature('copilot')" title="Get security recommendations">🛡️ Security Copilot</button>
-                    </div>
-                    <div style="margin-top: 8px; display: flex; gap: 5px;">
-                        <button class="quick-btn" onclick="runAIFeature('attack')" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f;" title="Red team simulation">⚔️ Attack Simulation</button>
-                        <button class="quick-btn" onclick="runAIFeature('prioritize')" style="flex: 1; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;" title="Prioritize vulnerabilities">📈 Vuln Prioritizer</button>
-                    </div>
-                    <div style="margin-top: 8px;">
-                        <button class="quick-btn" onclick="runAIFeature('code_review')" style="width: 100%; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f; font-weight: bold;" title="Senior engineer code review">👨‍💻 Tech Lead Code Review</button>
-                    </div>
-                </div>
-
-                <div class="panel-card" id="riskPanel" style="display:none;">
-                    <div class="panel-title">Risk Level</div>
-                    <div class="risk-indicator low" id="riskIndicator">
-                        Assessing...
-                    </div>
-                </div>
-
-                <!-- Scan Progress Panel -->
-                <div class="panel-card" id="scanProgressPanel" style="display: none; border-color: #ffaa00;">
-                    <div class="panel-title" style="color: #ffaa00;">⏳ Scan in Progress</div>
-                    <div id="scanProgressStatus" style="color: #0abdc6; margin-bottom: 10px; font-size: 12px;">
-                        Running security tools...
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border-radius: 10px; height: 8px; overflow: hidden;">
-                        <div id="scanProgressBar" style="background: linear-gradient(90deg, #ffaa00, #00ff41); height: 100%; width: 0%; transition: width 0.3s;"></div>
-                    </div>
-                    <div style="margin-top: 8px; font-size: 11px; color: #666;">
-                        <span id="scanToolsProgress">0/0 tools</span> • <span id="scanElapsedTime">0s</span>
-                    </div>
-                </div>
-
-                <!-- AI Report Panel (shows when scan complete) -->
-                <div class="panel-card" id="aiReportPanel" style="display: none; border-color: #00ff41;">
-                    <div class="panel-title" style="color: #00ff41;">✅ Scan Complete</div>
-                    <div id="aiReportStatus" style="color: #0abdc6; margin-bottom: 10px; font-size: 12px;">
-                        Scan finished! Generate your security report.
-                    </div>
-                    <div style="display: flex; gap: 5px;">
-                        <button class="quick-btn" onclick="generateAIReport()" id="generateReportBtn" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f;">📋 Generate Scan Results</button>
-                    </div>
+                    <div id="aiReportPanel"><div id="aiReportStatus"></div></div>
                 </div>
             </div>
         </div>
