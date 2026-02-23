@@ -3934,8 +3934,8 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
             statusEl.innerHTML = '<span style="color: #10b981;">🔍 Researching keyword... (10-15 sec)</span>';
             resultsEl.style.display = 'none';
             
-            // Show loading in chat
-            addMessage('user', `🔍 Research keyword: "${keyword}"${location ? ` in ${location}` : ''}`);
+            // Show loading in chat (content, isUser=true)
+            addMessage(`🔍 Research keyword: **"${keyword}"**${location ? ` in ${location}` : ''}`, true);
             
             try {
                 const response = await fetch('/api/keywords/research', {
@@ -3951,8 +3951,9 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                     statusEl.innerHTML = '<span style="color: #10b981;">✅ Results in chat →</span>';
                     
                     // Send rich results to Neo chat (main display area)
+                    // addMessage(content, isUser=false for assistant)
                     const richSummary = generateRichKeywordSummary(data.data);
-                    addMessage('assistant', richSummary);
+                    addMessage(richSummary, false);
                     
                     // Scroll chat to bottom
                     const chatMessages = document.getElementById('chatMessages');
@@ -3962,7 +3963,7 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                 }
             } catch (error) {
                 statusEl.innerHTML = `<span style="color: #ef4444;">❌ ${error.message}</span>`;
-                addMessage('assistant', `❌ Keyword research failed: ${error.message}`);
+                addMessage(`❌ Keyword research failed: ${error.message}`, false);
             }
         }
         
