@@ -49,6 +49,112 @@ const monitoringState = {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
+// File upload handling with multer
+const multer = require('multer');
+const chatFileUpload = multer({ 
+  dest: '/tmp/lumen-cortex-uploads/',
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
+
+// Store for uploaded files
+const uploadedFiles = new Map();
+
+// File upload endpoint for chat
+app.post('/api/files/upload', chatFileUpload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    const fileId = 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    const filePath = req.file.path;
+    const fileName = req.file.originalname;
+    const fileSize = req.file.size;
+    const mimeType = req.file.mimetype;
+    
+    // Read file content for text files
+    let content = null;
+    const textMimeTypes = ['text/', 'application/json', 'application/javascript', 'application/xml'];
+    const isText = textMimeTypes.some(t => mimeType.startsWith(t)) || 
+                   ['.js', '.ts', '.py', '.java', '.c', '.cpp', '.go', '.rs', '.rb', '.php', 
+                    '.swift', '.kt', '.scala', '.sql', '.sh', '.bash', '.html', '.css', 
+                    '.scss', '.json', '.yaml', '.yml', '.xml', '.md', '.txt', '.env', '.log']
+                   .some(ext => fileName.toLowerCase().endsWith(ext));
+    
+    if (isText && fileSize < 10 * 1024 * 1024) { // Under 10MB for text
+      try {
+        content = fs.readFileSync(filePath, 'utf8');
+      } catch (e) {
+        console.warn('Could not read file as text:', e.message);
+      }
+    }
+    
+    // Store file info
+    uploadedFiles.set(fileId, {
+      fileId,
+      fileName,
+      filePath,
+      fileSize,
+      mimeType,
+      content,
+      uploadedAt: Date.now()
+    });
+    
+    // Clean up old files after 1 hour
+    setTimeout(() => {
+      const file = uploadedFiles.get(fileId);
+      if (file) {
+        try { fs.unlinkSync(file.filePath); } catch (e) {}
+        uploadedFiles.delete(fileId);
+      }
+    }, 60 * 60 * 1000);
+    
+    res.json({ 
+      fileId, 
+      fileName, 
+      fileSize,
+      mimeType,
+      hasContent: !!content,
+      contentPreview: content ? content.slice(0, 200) + '...' : null
+    });
+    
+  } catch (error) {
+    console.error('File upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get uploaded file info
+app.get('/api/files/:fileId', (req, res) => {
+  const file = uploadedFiles.get(req.params.fileId);
+  if (!file) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+  res.json({
+    fileId: file.fileId,
+    fileName: file.fileName,
+    fileSize: file.fileSize,
+    mimeType: file.mimeType,
+    content: file.content
+  });
+});
+
+// Download modified file
+app.post('/api/files/save', express.json(), (req, res) => {
+  try {
+    const { content, filename } = req.body;
+    if (!content || !filename) {
+      return res.status(400).json({ error: 'Content and filename required' });
+    }
+    
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(content);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Store active scans
 const activeScans = new Map();
 

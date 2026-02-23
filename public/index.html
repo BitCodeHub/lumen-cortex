@@ -935,11 +935,32 @@
                     </div>
                 </div>
                 <div class="chat-input-area">
+                    <!-- Attached File Indicator -->
+                    <div id="attachedFileIndicator" style="display: none; margin-bottom: 8px; padding: 10px 12px; background: linear-gradient(135deg, #1a1a25, #12121a); border: 1px solid #0abdc6; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="attachedFileIcon" style="font-size: 1.5em;">📄</span>
+                                <div>
+                                    <div id="attachedFileName" style="color: #0abdc6; font-size: 0.9em; font-weight: bold;">filename.js</div>
+                                    <div id="attachedFileInfo" style="color: #666; font-size: 0.75em;">JavaScript • 2.4 KB</div>
+                                </div>
+                            </div>
+                            <button onclick="removeAttachedFile()" style="background: none; border: none; color: #ff0040; cursor: pointer; font-size: 1.2em;" title="Remove file">✕</button>
+                        </div>
+                        <div id="attachedFilePreview" style="margin-top: 8px; max-height: 100px; overflow: hidden; background: rgba(0,0,0,0.3); border-radius: 4px; padding: 8px; font-size: 0.75em; color: #888; display: none;">
+                            <pre style="margin: 0; white-space: pre-wrap; word-break: break-all;"></pre>
+                        </div>
+                    </div>
+                    
                     <!-- Unified Chat Input - Always Available -->
                     <div class="input-wrapper">
                         <button class="voice-btn" onclick="toggleVoiceInput()" id="voiceBtn" title="Voice Input">
                             🎤
                         </button>
+                        <button class="voice-btn" onclick="document.getElementById('chatFileInput').click()" id="fileBtn" title="Upload File" style="margin-left: 4px;">
+                            📎
+                        </button>
+                        <input type="file" id="chatFileInput" style="display: none;" onchange="handleChatFileUpload(this.files[0])">
                         <input type="text" class="chat-input typewriter-input" id="userInput" 
                                placeholder="💻 Paste code to explain, review, or continue..." 
                                onkeypress="handleSmartInput(event)"
@@ -962,6 +983,15 @@
                         <span onclick="insertPrompt('explain the security findings', this)" class="prompt-chip" style="cursor: pointer;">💡 Explain</span>
                         <span onclick="insertPrompt('how do I fix these vulnerabilities?', this)" class="prompt-chip" style="cursor: pointer;">🔧 Fix</span>
                         <span onclick="toggleVoiceOutput()" id="voiceOutputToggle" style="cursor: pointer;">🔊 Voice</span>
+                    </div>
+                    
+                    <!-- File action chips (shown when file is attached) -->
+                    <div id="fileActionChips" class="input-hints" style="margin-top: 8px; display: none;">
+                        <span onclick="insertPrompt('What does this file do? Explain in detail.', this)" class="prompt-chip" style="cursor: pointer; border-color: #0abdc6;">📖 Explain</span>
+                        <span onclick="insertPrompt('Review this code. Give me suggestions for improvements.', this)" class="prompt-chip" style="cursor: pointer; border-color: #00ff41;">👨‍💻 Review</span>
+                        <span onclick="insertPrompt('Scan this file for security vulnerabilities.', this)" class="prompt-chip" style="cursor: pointer; border-color: #ff0040;">🔒 Security Scan</span>
+                        <span onclick="insertPrompt('Refactor this code to be cleaner and more efficient.', this)" class="prompt-chip" style="cursor: pointer; border-color: #ffaa00;">✨ Refactor</span>
+                        <span onclick="insertPrompt('Find and fix bugs in this code.', this)" class="prompt-chip" style="cursor: pointer; border-color: #ff6b35;">🐛 Fix Bugs</span>
                     </div>
                     
                     <!-- Hidden mode state -->
@@ -2521,7 +2551,7 @@
             if (messageId) {
                 const existing = document.getElementById(messageId);
                 if (existing) {
-                    existing.querySelector('.message-content').innerHTML = content;
+                    existing.querySelector('.message-content').innerHTML = processCodeBlocks(content, !isUser);
                     messages.scrollTop = messages.scrollHeight;
                     return messageId;
                 }
@@ -2532,13 +2562,124 @@
             const newId = messageId || 'msg-' + Date.now();
             div.id = newId;
             div.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            // Process code blocks in AI responses to add download buttons
+            const processedContent = processCodeBlocks(content, !isUser);
+            
             div.innerHTML = `
                 <div class="message-label">${isUser ? 'You' : '🤖 Neo'}</div>
-                <div class="message-content">${content}</div>
+                <div class="message-content">${processedContent}</div>
             `;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
             return newId;
+        }
+        
+        // Process code blocks and add interactive buttons
+        function processCodeBlocks(content, addButtons = false) {
+            if (!addButtons) return content;
+            
+            // Match code blocks with optional language
+            const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+            let blockIndex = 0;
+            
+            return content.replace(codeBlockRegex, (match, lang, code) => {
+                const blockId = 'code-block-' + Date.now() + '-' + blockIndex++;
+                const language = lang || 'text';
+                const escapedCode = code.trim();
+                
+                // Determine suggested filename based on language
+                const langToExt = {
+                    'javascript': 'js', 'typescript': 'ts', 'python': 'py', 'java': 'java',
+                    'cpp': 'cpp', 'c': 'c', 'csharp': 'cs', 'go': 'go', 'rust': 'rs',
+                    'ruby': 'rb', 'php': 'php', 'swift': 'swift', 'kotlin': 'kt',
+                    'html': 'html', 'css': 'css', 'scss': 'scss', 'json': 'json',
+                    'yaml': 'yaml', 'yml': 'yml', 'xml': 'xml', 'sql': 'sql',
+                    'bash': 'sh', 'shell': 'sh', 'markdown': 'md', 'md': 'md'
+                };
+                const ext = langToExt[language.toLowerCase()] || 'txt';
+                const suggestedName = `code.${ext}`;
+                
+                // Store code for later download
+                window.codeBlocks = window.codeBlocks || {};
+                window.codeBlocks[blockId] = { code: escapedCode, language, suggestedName };
+                
+                return `
+                    <div class="code-block-container" style="position: relative; margin: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #1a1a25; padding: 6px 10px; border-radius: 6px 6px 0 0; border: 1px solid #2a2a3a; border-bottom: none;">
+                            <span style="color: #0abdc6; font-size: 0.8em;">${language}</span>
+                            <div style="display: flex; gap: 6px;">
+                                <button onclick="copyCodeBlock('${blockId}')" style="background: none; border: 1px solid #666; color: #888; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75em;" title="Copy code">📋 Copy</button>
+                                <button onclick="downloadCodeBlock('${blockId}')" style="background: none; border: 1px solid #00ff41; color: #00ff41; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75em;" title="Download file">💾 Download</button>
+                                <button onclick="applyCodeBlock('${blockId}')" style="background: linear-gradient(135deg, #00ff41, #0abdc6); border: none; color: #0a0a0f; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75em; font-weight: bold;" title="Apply changes">✨ Apply</button>
+                            </div>
+                        </div>
+                        <pre style="background: #0a0a0f; padding: 12px; margin: 0; border-radius: 0 0 6px 6px; border: 1px solid #2a2a3a; overflow-x: auto; font-size: 0.85em;"><code>${escapeHtml(escapedCode)}</code></pre>
+                    </div>
+                `;
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Copy code block to clipboard
+        function copyCodeBlock(blockId) {
+            const block = window.codeBlocks?.[blockId];
+            if (!block) return;
+            
+            navigator.clipboard.writeText(block.code).then(() => {
+                addMessage('📋 Code copied to clipboard!', false);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+            });
+        }
+        
+        // Download code block as file
+        function downloadCodeBlock(blockId) {
+            const block = window.codeBlocks?.[blockId];
+            if (!block) return;
+            
+            const filename = prompt('Save as:', block.suggestedName);
+            if (!filename) return;
+            
+            const blob = new Blob([block.code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            addMessage(`💾 Downloaded: ${filename}`, false);
+        }
+        
+        // Apply code changes (replaces attached file or asks for filename)
+        function applyCodeBlock(blockId) {
+            const block = window.codeBlocks?.[blockId];
+            if (!block) return;
+            
+            // If there was an attached file, offer to save with same name
+            const originalName = attachedFile?.name;
+            const filename = prompt('Save modified file as:', originalName || block.suggestedName);
+            if (!filename) return;
+            
+            const blob = new Blob([block.code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            addMessage(`✨ Applied changes and saved: ${filename}`, false);
         }
 
         function updateToolList(tools) {
@@ -6505,6 +6646,245 @@ Paste your code below:`,
             link.click();
             document.body.removeChild(link);
             addMessage('📋 Downloading JSON report...', false);
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // FILE UPLOAD & ANALYSIS SYSTEM
+        // ═══════════════════════════════════════════════════════════════
+        
+        let attachedFile = null;
+        let attachedFileContent = null;
+        let currentFileId = null;
+        
+        // File type icons and info
+        const fileTypeInfo = {
+            // Code files
+            'js': { icon: '📜', type: 'JavaScript', lang: 'javascript' },
+            'ts': { icon: '📘', type: 'TypeScript', lang: 'typescript' },
+            'jsx': { icon: '⚛️', type: 'React JSX', lang: 'javascript' },
+            'tsx': { icon: '⚛️', type: 'React TSX', lang: 'typescript' },
+            'py': { icon: '🐍', type: 'Python', lang: 'python' },
+            'java': { icon: '☕', type: 'Java', lang: 'java' },
+            'c': { icon: '🔧', type: 'C', lang: 'c' },
+            'cpp': { icon: '🔧', type: 'C++', lang: 'cpp' },
+            'cs': { icon: '🎮', type: 'C#', lang: 'csharp' },
+            'go': { icon: '🐹', type: 'Go', lang: 'go' },
+            'rs': { icon: '🦀', type: 'Rust', lang: 'rust' },
+            'rb': { icon: '💎', type: 'Ruby', lang: 'ruby' },
+            'php': { icon: '🐘', type: 'PHP', lang: 'php' },
+            'swift': { icon: '🍎', type: 'Swift', lang: 'swift' },
+            'kt': { icon: '🎯', type: 'Kotlin', lang: 'kotlin' },
+            'scala': { icon: '🔴', type: 'Scala', lang: 'scala' },
+            'r': { icon: '📊', type: 'R', lang: 'r' },
+            'sql': { icon: '🗃️', type: 'SQL', lang: 'sql' },
+            'sh': { icon: '🖥️', type: 'Shell', lang: 'bash' },
+            'bash': { icon: '🖥️', type: 'Bash', lang: 'bash' },
+            'ps1': { icon: '💠', type: 'PowerShell', lang: 'powershell' },
+            // Web files
+            'html': { icon: '🌐', type: 'HTML', lang: 'html' },
+            'htm': { icon: '🌐', type: 'HTML', lang: 'html' },
+            'css': { icon: '🎨', type: 'CSS', lang: 'css' },
+            'scss': { icon: '🎨', type: 'SCSS', lang: 'scss' },
+            'sass': { icon: '🎨', type: 'Sass', lang: 'sass' },
+            'less': { icon: '🎨', type: 'Less', lang: 'less' },
+            'vue': { icon: '💚', type: 'Vue', lang: 'vue' },
+            'svelte': { icon: '🧡', type: 'Svelte', lang: 'svelte' },
+            // Config files
+            'json': { icon: '📋', type: 'JSON', lang: 'json' },
+            'yaml': { icon: '📋', type: 'YAML', lang: 'yaml' },
+            'yml': { icon: '📋', type: 'YAML', lang: 'yaml' },
+            'xml': { icon: '📋', type: 'XML', lang: 'xml' },
+            'toml': { icon: '📋', type: 'TOML', lang: 'toml' },
+            'ini': { icon: '⚙️', type: 'INI', lang: 'ini' },
+            'env': { icon: '🔐', type: 'Environment', lang: 'env' },
+            // Docs
+            'md': { icon: '📝', type: 'Markdown', lang: 'markdown' },
+            'txt': { icon: '📄', type: 'Text', lang: 'text' },
+            'log': { icon: '📋', type: 'Log', lang: 'text' },
+            'csv': { icon: '📊', type: 'CSV', lang: 'csv' },
+            // Binary/special
+            'apk': { icon: '📱', type: 'Android APK', lang: 'binary' },
+            'ipa': { icon: '📱', type: 'iOS App', lang: 'binary' },
+            'exe': { icon: '⚙️', type: 'Executable', lang: 'binary' },
+            'dll': { icon: '📦', type: 'DLL', lang: 'binary' },
+            'so': { icon: '📦', type: 'Shared Object', lang: 'binary' },
+            'zip': { icon: '📦', type: 'ZIP Archive', lang: 'binary' },
+            'tar': { icon: '📦', type: 'TAR Archive', lang: 'binary' },
+            'gz': { icon: '📦', type: 'GZip', lang: 'binary' },
+            'pdf': { icon: '📕', type: 'PDF', lang: 'binary' },
+            'png': { icon: '🖼️', type: 'PNG Image', lang: 'binary' },
+            'jpg': { icon: '🖼️', type: 'JPEG Image', lang: 'binary' },
+            'jpeg': { icon: '🖼️', type: 'JPEG Image', lang: 'binary' },
+            'gif': { icon: '🖼️', type: 'GIF Image', lang: 'binary' },
+            'svg': { icon: '🎨', type: 'SVG', lang: 'xml' },
+            'default': { icon: '📄', type: 'File', lang: 'text' }
+        };
+        
+        function getFileInfo(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            return fileTypeInfo[ext] || fileTypeInfo['default'];
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // Handle file upload from chat input
+        async function handleChatFileUpload(file) {
+            if (!file) return;
+            
+            attachedFile = file;
+            const info = getFileInfo(file.name);
+            
+            // Update UI
+            document.getElementById('attachedFileIndicator').style.display = 'block';
+            document.getElementById('attachedFileIcon').textContent = info.icon;
+            document.getElementById('attachedFileName').textContent = file.name;
+            document.getElementById('attachedFileInfo').textContent = `${info.type} • ${formatFileSize(file.size)}`;
+            document.getElementById('fileActionChips').style.display = 'flex';
+            
+            // Read file content for text files
+            if (info.lang !== 'binary' && file.size < 5 * 1024 * 1024) { // Under 5MB
+                try {
+                    attachedFileContent = await readFileAsText(file);
+                    
+                    // Show preview
+                    const preview = document.getElementById('attachedFilePreview');
+                    preview.style.display = 'block';
+                    preview.querySelector('pre').textContent = attachedFileContent.slice(0, 500) + (attachedFileContent.length > 500 ? '\n...' : '');
+                } catch (e) {
+                    console.warn('Could not read file as text:', e);
+                }
+            }
+            
+            // Upload to server
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/api/files/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.fileId) {
+                    currentFileId = result.fileId;
+                }
+            } catch (e) {
+                console.warn('File upload failed:', e);
+            }
+            
+            // Focus input for user to type question
+            document.getElementById('userInput').placeholder = `Ask about ${file.name}...`;
+            document.getElementById('userInput').focus();
+        }
+        
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+        
+        function removeAttachedFile() {
+            attachedFile = null;
+            attachedFileContent = null;
+            currentFileId = null;
+            
+            document.getElementById('attachedFileIndicator').style.display = 'none';
+            document.getElementById('attachedFilePreview').style.display = 'none';
+            document.getElementById('fileActionChips').style.display = 'none';
+            document.getElementById('userInput').placeholder = '💻 Paste code to explain, review, or continue...';
+            document.getElementById('chatFileInput').value = '';
+        }
+        
+        // Enhanced send function that includes file context
+        const originalHandleSmartSend = window.handleSmartSend;
+        window.handleSmartSend = async function() {
+            const input = document.getElementById('userInput');
+            let message = input.value.trim();
+            
+            // If there's an attached file, include its content in the message
+            if (attachedFile && attachedFileContent) {
+                const info = getFileInfo(attachedFile.name);
+                const fileContext = `
+[ATTACHED FILE: ${attachedFile.name}]
+[TYPE: ${info.type}]
+[SIZE: ${formatFileSize(attachedFile.size)}]
+
+\`\`\`${info.lang}
+${attachedFileContent.slice(0, 50000)}${attachedFileContent.length > 50000 ? '\n... (truncated)' : ''}
+\`\`\`
+
+USER QUESTION: ${message || 'What does this file do?'}`;
+                
+                // Set the enhanced message
+                input.value = fileContext;
+                
+                // Add visual indicator that file was sent
+                addMessage(`📎 <strong>Attached:</strong> ${attachedFile.name} (${formatFileSize(attachedFile.size)})`, true);
+                
+                // Clear attachment after sending
+                setTimeout(removeAttachedFile, 100);
+            }
+            
+            // Call original send function
+            if (typeof originalHandleSmartSend === 'function') {
+                return originalHandleSmartSend();
+            }
+        };
+        
+        // Download modified file from Neo's response
+        function downloadModifiedFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            addMessage(`📥 Downloaded: ${filename}`, false);
+        }
+        
+        // Extract code from Neo's response and offer download
+        function extractAndDownloadCode(codeBlock, suggestedName) {
+            const filename = prompt('Save as:', suggestedName || 'modified-code.txt');
+            if (filename) {
+                downloadModifiedFile(codeBlock, filename);
+            }
+        }
+        
+        // Drag and drop support for the entire chat area
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                chatMessages.style.background = 'rgba(0, 255, 65, 0.05)';
+                chatMessages.style.border = '2px dashed #00ff41';
+            });
+            
+            chatMessages.addEventListener('dragleave', (e) => {
+                chatMessages.style.background = '';
+                chatMessages.style.border = '';
+            });
+            
+            chatMessages.addEventListener('drop', (e) => {
+                e.preventDefault();
+                chatMessages.style.background = '';
+                chatMessages.style.border = '';
+                
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    handleChatFileUpload(file);
+                }
+            });
         }
         
         // ═══════════════════════════════════════════════════════════════
