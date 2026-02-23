@@ -937,7 +937,20 @@ function generateFallbackResponse(session, userMessage) {
     if (msg.includes('scan') || msg.includes('check') || msg.includes('test')) {
       return `🔍 To scan a target, type a URL or domain. For example:\n\n\`scan example.com\`\n\nI'll run a comprehensive security assessment and explain the findings.`;
     }
-    return `👋 Hello! I'm Cortex, your AI security assistant.\n\nI can help you:\n- **Scan websites** for vulnerabilities\n- **Monitor network devices** in real-time\n- **Explain security findings** in plain language\n- **Answer questions** about your network\n\n**Try asking:**\n- "How many devices are on my network?"\n- "Who is using Netflix?"\n- "What is 192.168.1.X doing?"\n\nOr type a URL to scan!`;
+    // Try to give a helpful response instead of repeating the greeting
+    const userMsg = msg.toLowerCase();
+    
+    // Handle common questions
+    if (userMsg.includes('help') || userMsg.includes('what can you do')) {
+      return `🤖 **I'm Neo, your AI security & coding assistant!**\n\n**I can help with:**\n\n💻 **Coding:**\n- Paste code → I'll explain it\n- Ask me to build anything\n- Debug and review code\n\n🛡️ **Security:**\n- Scan websites for vulnerabilities\n- Monitor your network\n- Explain security issues\n\n**Try:** Paste some code, ask a question, or enter a URL to scan!`;
+    }
+    
+    if (userMsg.includes('hello') || userMsg.includes('hi') || userMsg.length < 10) {
+      return `👋 Hey! I'm Neo. What can I help you with today?\n\n**Try:**\n- Paste some code for me to explain\n- Ask a coding question\n- Enter a URL to scan\n- Ask about network security`;
+    }
+    
+    // For actual questions, give a real response
+    return `🤔 I'd love to help with that! For the best response, try:\n\n- **For coding:** Paste the code directly\n- **For security:** Enter a URL like \`scan example.com\`\n- **For network:** Ask "what devices are on my network?"\n\nOr rephrase your question and I'll do my best!`;
   }
 
   // Has scan context - provide relevant information
