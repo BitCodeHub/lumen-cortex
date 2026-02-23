@@ -525,8 +525,8 @@
         .side-panel {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-height: 90vh;
+            gap: 15px;
+            max-height: 80vh;
             overflow-y: auto;
             padding-right: 5px;
             position: sticky;
@@ -548,90 +548,6 @@
         
         .side-panel::-webkit-scrollbar-thumb:hover {
             background: var(--primary);
-        }
-
-        /* Collapsible Accordion Styles */
-        .accordion-section {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .accordion-section.active {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
-        }
-        
-        .accordion-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 15px;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.2s ease;
-        }
-        
-        .accordion-header:hover {
-            background: rgba(0, 255, 65, 0.05);
-        }
-        
-        .accordion-header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .accordion-icon {
-            font-size: 1.2em;
-        }
-        
-        .accordion-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.8rem;
-            color: var(--text);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .accordion-badge {
-            font-size: 0.65rem;
-            background: var(--primary);
-            color: var(--bg-dark);
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-        
-        .accordion-toggle {
-            color: var(--text-dim);
-            font-size: 0.8em;
-            transition: transform 0.3s ease;
-        }
-        
-        .accordion-section.active .accordion-toggle {
-            transform: rotate(180deg);
-            color: var(--primary);
-        }
-        
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
-            padding: 0 15px;
-        }
-        
-        .accordion-section.active .accordion-content {
-            max-height: 600px;
-            padding: 0 15px 15px 15px;
-        }
-        
-        .accordion-inner {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
         }
 
         .panel-card {
@@ -656,67 +572,6 @@
         .panel-title::before {
             content: '▸';
             color: var(--secondary);
-        }
-        
-        /* Tool input styling */
-        .tool-input {
-            width: 100%;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-family: inherit;
-            transition: border-color 0.2s;
-        }
-        
-        .tool-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .tool-input::placeholder {
-            color: var(--text-dim);
-        }
-        
-        /* Quick actions grid */
-        .quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        
-        .quick-btn {
-            flex: 1;
-            min-width: 60px;
-            padding: 8px 10px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text);
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        
-        .quick-btn:hover {
-            border-color: var(--primary);
-            background: rgba(0, 255, 65, 0.1);
-        }
-        
-        .quick-btn.primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: var(--bg-dark);
-            border: none;
-            font-weight: bold;
-        }
-        
-        .tool-status {
-            font-size: 10px;
-            color: var(--text-dim);
-            margin-top: 8px;
         }
 
         /* Active tools */
@@ -1156,265 +1011,233 @@
             </div>
 
             <div class="side-panel">
+                <!-- Tool Category Tabs -->
+                <div style="display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <button class="tool-tab active" onclick="showToolCategory('intel')" id="tab-intel" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #ff6b6b; color: #ff6b6b; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: bold;">🔍 Intel</button>
+                    <button class="tool-tab" onclick="showToolCategory('network')" id="tab-network" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">🛡️ Network</button>
+                    <button class="tool-tab" onclick="showToolCategory('scanners')" id="tab-scanners" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">🎯 Scan</button>
+                    <button class="tool-tab" onclick="showToolCategory('mobile')" id="tab-mobile" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">📱 Mobile</button>
+                    <button class="tool-tab" onclick="showToolCategory('more')" id="tab-more" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">⚡ More</button>
+                </div>
+
                 <!-- ═══════════════════════════════════════════════════════════ -->
-                <!-- COLLAPSIBLE ACCORDION TOOLS PANEL -->
+                <!-- INTEL CATEGORY - IP & Domain Investigation -->
                 <!-- ═══════════════════════════════════════════════════════════ -->
-                
-                <!-- 🔍 INVESTIGATION TOOLS -->
-                <div class="accordion-section active" data-section="investigation">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-header-left">
-                            <span class="accordion-icon">🔍</span>
-                            <span class="accordion-title">Investigation</span>
+                <div id="category-intel" class="tool-category">
+                    <!-- IP Investigator -->
+                    <div class="panel-card" style="border: 1px solid #ff6b6b;">
+                        <div class="panel-title" style="color: #ff6b6b;">🔍 IP Investigator</div>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="ipInvestigatorTarget" placeholder="Enter IP address (e.g., 8.8.8.8)" style="width: 100%; background: #1a1a25; border: 1px solid #ff6b6b; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
                         </div>
-                        <span class="accordion-toggle">▼</span>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="investigateIP()" style="flex: 2; background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">🔍 Investigate</button>
+                            <button class="quick-btn" onclick="quickGeolocate()" style="flex: 1; border-color: #ff6b6b;">📍</button>
+                            <button class="quick-btn" onclick="quickPortScan()" style="flex: 1; border-color: #ff6b6b;">🚪</button>
+                        </div>
+                        <div id="ipInvestigatorStatus" style="margin-top: 6px; font-size: 10px; color: #666;"></div>
                     </div>
-                    <div class="accordion-content">
-                        <div class="accordion-inner">
-                            <!-- IP Investigator -->
-                            <div style="margin-bottom: 12px;">
-                                <div style="font-size: 11px; color: #ff6b6b; margin-bottom: 6px; font-weight: bold;">🔍 IP Lookup</div>
-                                <input type="text" id="ipInvestigatorTarget" class="tool-input" placeholder="Enter IP (e.g., 8.8.8.8)" style="border-color: #ff6b6b;">
-                                <div class="quick-actions" style="margin-top: 6px;">
-                                    <button class="quick-btn primary" onclick="investigateIP()">Investigate</button>
-                                    <button class="quick-btn" onclick="quickGeolocate()" style="border-color: #ff6b6b;">📍</button>
-                                    <button class="quick-btn" onclick="quickPortScan()" style="border-color: #ff6b6b;">🚪</button>
-                                </div>
-                                <div id="ipInvestigatorStatus" class="tool-status"></div>
-                            </div>
-                            
-                            <!-- Domain Investigator -->
-                            <div style="margin-bottom: 12px;">
-                                <div style="font-size: 11px; color: #0abdc6; margin-bottom: 6px; font-weight: bold;">🌐 Domain Lookup</div>
-                                <input type="text" id="domainInvestigatorTarget" class="tool-input" placeholder="Enter domain (e.g., google.com)" style="border-color: #0abdc6;">
-                                <div class="quick-actions" style="margin-top: 6px;">
-                                    <button class="quick-btn" onclick="investigateDomain()" style="background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">Investigate</button>
-                                    <button class="quick-btn" onclick="quickDNS()" style="border-color: #0abdc6;">DNS</button>
-                                    <button class="quick-btn" onclick="quickSSL()" style="border-color: #0abdc6;">SSL</button>
-                                </div>
-                                <div id="domainInvestigatorStatus" class="tool-status"></div>
-                            </div>
-                            
-                            <!-- Secret Hunter -->
-                            <div>
-                                <div style="font-size: 11px; color: #8b5cf6; margin-bottom: 6px; font-weight: bold;">🔑 Secret Hunter</div>
-                                <div class="quick-actions">
-                                    <button class="quick-btn" onclick="githubHuntWithChat('aws')" style="border-color: #8b5cf6;">AWS</button>
-                                    <button class="quick-btn" onclick="githubHuntWithChat('stripe')" style="border-color: #8b5cf6;">Stripe</button>
-                                    <button class="quick-btn" onclick="githubHuntWithChat('openai')" style="border-color: #8b5cf6;">OpenAI</button>
-                                    <button class="quick-btn" onclick="githubHuntWithChat('firebase')" style="border-color: #8b5cf6;">Firebase</button>
-                                </div>
-                            </div>
+
+                    <!-- Domain Investigator -->
+                    <div class="panel-card" style="border: 1px solid #0abdc6;">
+                        <div class="panel-title" style="color: #0abdc6;">🌐 Domain Investigator</div>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="domainInvestigatorTarget" placeholder="Enter domain (e.g., google.com)" style="width: 100%; background: #1a1a25; border: 1px solid #0abdc6; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="investigateDomain()" style="flex: 2; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">🌐 Investigate</button>
+                            <button class="quick-btn" onclick="quickDNS()" style="flex: 1; border-color: #0abdc6;">📋</button>
+                            <button class="quick-btn" onclick="quickSSL()" style="flex: 1; border-color: #0abdc6;">🔒</button>
+                        </div>
+                        <div id="domainInvestigatorStatus" style="margin-top: 6px; font-size: 10px; color: #666;"></div>
+                    </div>
+
+                    <!-- GitHub Secret Hunter (compact) -->
+                    <div class="panel-card" style="border: 1px solid #8b5cf6;">
+                        <div class="panel-title" style="color: #8b5cf6;">🔑 Secret Hunter</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="githubHuntWithChat('aws')" style="border-color: #8b5cf6;">AWS</button>
+                            <button class="quick-btn" onclick="githubHuntWithChat('stripe')" style="border-color: #8b5cf6;">Stripe</button>
+                            <button class="quick-btn" onclick="githubHuntWithChat('openai')" style="border-color: #8b5cf6;">OpenAI</button>
+                            <button class="quick-btn" onclick="githubHuntWithChat('firebase')" style="border-color: #8b5cf6;">Firebase</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 🛡️ NETWORK SECURITY -->
-                <div class="accordion-section" data-section="network">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-header-left">
-                            <span class="accordion-icon">🛡️</span>
-                            <span class="accordion-title">Network Security</span>
-                            <span class="accordion-badge" id="deviceCountBadge">0</span>
-                        </div>
-                        <span class="accordion-toggle">▼</span>
-                    </div>
-                    <div class="accordion-content">
-                        <div class="accordion-inner">
-                            <!-- Network Guardian Status -->
-                            <div id="networkGuardianStatus" style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-input); border-radius: 6px; margin-bottom: 10px;">
-                                <span style="color: #666; font-size: 11px;">WiFi: <span id="networkName" style="color: #00ff41;">Loading...</span></span>
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- NETWORK CATEGORY - Network Security & Monitoring -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-network" class="tool-category" style="display: none;">
+                    <!-- Network Guardian -->
+                    <div class="panel-card" style="border: 1px solid #00ff41;">
+                        <div class="panel-title" style="color: #00ff41;">🛡️ Network Guardian</div>
+                        <div id="networkGuardianStatus" style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #666; font-size: 11px;">WiFi: <span id="networkName">Loading...</span></span>
                                 <span id="deviceCount" style="color: #00ff41; font-size: 11px;">0 devices</span>
                             </div>
-                            
-                            <div class="quick-actions">
-                                <button class="quick-btn" onclick="scanNetworkQuickWithChat()" style="border-color: #00ff41;">⚡ Quick Scan</button>
-                                <button class="quick-btn primary" onclick="scanNetworkFullWithChat()">🤖 AI Scan</button>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="scanNetworkQuickWithChat()" style="flex: 1; border-color: #00ff41;">⚡ Quick</button>
+                            <button class="quick-btn" onclick="scanNetworkFullWithChat()" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f;">🤖 AI Scan</button>
+                        </div>
+                        <div class="quick-actions" style="margin-top: 6px;">
+                            <button class="quick-btn" onclick="showWhitelistInChat()" style="flex: 1;">📋 Whitelist</button>
+                            <button class="quick-btn" onclick="showNetworkHistoryInChat()" style="flex: 1;">📊 History</button>
+                        </div>
+                    </div>
+
+                    <!-- Monitoring -->
+                    <div class="panel-card">
+                        <div class="panel-title">📡 Monitoring</div>
+                        <div id="monitoringList" style="max-height: 150px; overflow-y: auto;">
+                            <div class="tool-item" style="justify-content: space-between;">
+                                <span style="color: #666;">No sites monitored</span>
+                                <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
                             </div>
-                            <div class="quick-actions" style="margin-top: 6px;">
-                                <button class="quick-btn" onclick="showWhitelistInChat()">📋 Whitelist</button>
-                                <button class="quick-btn" onclick="showNetworkHistoryInChat()">📊 History</button>
+                        </div>
+                        <div id="addMonitoringForm" style="display: none; margin-top: 10px;">
+                            <input type="text" id="monitorUrl" placeholder="https://example.com" style="width: 100%; background: #1a1a25; border: 1px solid #2a2a3a; color: #e0e0e0; padding: 8px; margin-bottom: 5px; border-radius: 4px;">
+                            <div style="display: flex; gap: 5px;">
+                                <button class="quick-btn" onclick="addMonitoringSite()" style="flex: 1;">Add</button>
+                                <button class="quick-btn" onclick="hideAddMonitoring()" style="background: #333;">✕</button>
                             </div>
-                            
-                            <!-- Traffic Sniffer -->
-                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
-                                <div style="font-size: 11px; color: #ff00ff; margin-bottom: 6px; font-weight: bold;">📡 Traffic Sniffer</div>
-                                <div class="quick-actions">
-                                    <button class="quick-btn" onclick="startPacketCapture()" style="border-color: #ff00ff;">▶️ Start</button>
-                                    <button class="quick-btn" onclick="stopPacketCapture()" style="border-color: #ff00ff;">⏹️ Stop</button>
-                                    <button class="quick-btn" onclick="analyzePackets()" style="border-color: #ff00ff;">🔍 Analyze</button>
-                                </div>
-                            </div>
+                        </div>
+                        <button class="quick-btn" onclick="checkAllMonitoring()" style="width: 100%; margin-top: 8px; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">🔄 Refresh</button>
+                    </div>
+
+                    <!-- Network Sniffer (compact) -->
+                    <div class="panel-card" style="border: 1px solid #ff00ff;">
+                        <div class="panel-title" style="color: #ff00ff;">📡 Traffic Sniffer</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="startPacketCapture()" style="border-color: #ff00ff;">▶️ Start</button>
+                            <button class="quick-btn" onclick="stopPacketCapture()" style="border-color: #ff00ff;">⏹️ Stop</button>
+                            <button class="quick-btn" onclick="analyzePackets()" style="border-color: #ff00ff;">🔍 Analyze</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 🎯 SECURITY SCANNERS -->
-                <div class="accordion-section" data-section="scanners">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-header-left">
-                            <span class="accordion-icon">🎯</span>
-                            <span class="accordion-title">Security Scanners</span>
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- SCANNERS CATEGORY - DAST, SAST, Quick Scans -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-scanners" class="tool-category" style="display: none;">
+                    <!-- Quick Scans -->
+                    <div class="panel-card">
+                        <div class="panel-title">⚡ Quick Scans</div>
+                        <div style="margin-bottom: 8px;">
+                            <input type="text" id="quickScanTarget" placeholder="URL or domain to scan" style="width: 100%; background: #1a1a25; border: 1px solid #444; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
                         </div>
-                        <span class="accordion-toggle">▼</span>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="quickScanWithChat('web')">🌐 Web</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('recon')">🔍 Recon</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('secrets')">🔑 Secrets</button>
+                        </div>
+                        <div class="quick-actions" style="margin-top: 6px;">
+                            <button class="quick-btn" onclick="quickScanWithChat('code')">📝 Code</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('github')">🐙 GitHub</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('full')" style="background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">⚡ Full</button>
+                        </div>
                     </div>
-                    <div class="accordion-content">
-                        <div class="accordion-inner">
-                            <!-- Quick Scan Input -->
-                            <div style="margin-bottom: 12px;">
-                                <input type="text" id="quickScanTarget" class="tool-input" placeholder="URL or domain to scan">
-                                <div class="quick-actions" style="margin-top: 6px;">
-                                    <button class="quick-btn" onclick="quickScanWithChat('web')">🌐 Web</button>
-                                    <button class="quick-btn" onclick="quickScanWithChat('recon')">🔍 Recon</button>
-                                    <button class="quick-btn" onclick="quickScanWithChat('secrets')">🔑 Secrets</button>
-                                </div>
-                                <div class="quick-actions" style="margin-top: 6px;">
-                                    <button class="quick-btn" onclick="quickScanWithChat('code')">📝 Code</button>
-                                    <button class="quick-btn" onclick="quickScanWithChat('github')">🐙 GitHub</button>
-                                    <button class="quick-btn primary" onclick="quickScanWithChat('full')" style="background: linear-gradient(135deg, #ff6b6b, #ff0040);">⚡ Full</button>
-                                </div>
-                            </div>
-                            
-                            <!-- DAST & SAST -->
-                            <div style="padding-top: 12px; border-top: 1px solid var(--border);">
-                                <input type="text" id="dastSastTarget" class="tool-input" placeholder="URL (DAST) or /path (SAST)" style="border-color: #00ff41;">
-                                
-                                <div style="font-size: 10px; color: #ff6b6b; margin: 8px 0 4px 0; font-weight: bold;">🔴 DAST (Dynamic)</div>
-                                <div class="quick-actions">
-                                    <button class="quick-btn" onclick="runDASTScan('zap')" style="border-color: #ff6b6b;">ZAP</button>
-                                    <button class="quick-btn" onclick="runDASTScan('nikto')" style="border-color: #ff6b6b;">Nikto</button>
-                                    <button class="quick-btn" onclick="runDASTScan('nuclei')" style="border-color: #ff6b6b;">Nuclei</button>
-                                    <button class="quick-btn" onclick="runDASTScan('sqlmap')" style="border-color: #ff6b6b;">SQLMap</button>
-                                </div>
-                                
-                                <div style="font-size: 10px; color: #4dabf7; margin: 8px 0 4px 0; font-weight: bold;">🔵 SAST (Static)</div>
-                                <div class="quick-actions">
-                                    <button class="quick-btn" onclick="runSASTScan('semgrep')" style="border-color: #4dabf7;">Semgrep</button>
-                                    <button class="quick-btn" onclick="runSASTScan('bandit')" style="border-color: #4dabf7;">Bandit</button>
-                                    <button class="quick-btn" onclick="runSASTScan('secrets')" style="border-color: #4dabf7;">Secrets</button>
-                                </div>
-                            </div>
+
+                    <!-- DAST & SAST -->
+                    <div class="panel-card" style="border: 1px solid #00ff41;">
+                        <div class="panel-title" style="color: #00ff41;">🛡️ DAST & SAST</div>
+                        <div style="margin-bottom: 8px;">
+                            <input type="text" id="dastSastTarget" placeholder="URL (DAST) or /path (SAST)" style="width: 100%; background: #1a1a25; border: 1px solid #00ff41; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                        </div>
+                        <div style="font-size: 10px; color: #ff6b6b; margin-bottom: 4px;">🔴 DAST</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="runDASTScan('zap')" style="border-color: #ff6b6b;">ZAP</button>
+                            <button class="quick-btn" onclick="runDASTScan('nikto')" style="border-color: #ff6b6b;">Nikto</button>
+                            <button class="quick-btn" onclick="runDASTScan('nuclei')" style="border-color: #ff6b6b;">Nuclei</button>
+                            <button class="quick-btn" onclick="runDASTScan('sqlmap')" style="border-color: #ff6b6b;">SQL</button>
+                        </div>
+                        <div style="font-size: 10px; color: #4dabf7; margin: 8px 0 4px 0;">🔵 SAST</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="runSASTScan('semgrep')" style="border-color: #4dabf7;">Semgrep</button>
+                            <button class="quick-btn" onclick="runSASTScan('bandit')" style="border-color: #4dabf7;">Bandit</button>
+                            <button class="quick-btn" onclick="runSASTScan('secrets')" style="border-color: #4dabf7;">Secrets</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 📱 MOBILE & CODE -->
-                <div class="accordion-section" data-section="mobile">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-header-left">
-                            <span class="accordion-icon">📱</span>
-                            <span class="accordion-title">Mobile & Code</span>
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- MOBILE CATEGORY - Mobile App Security -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-mobile" class="tool-category" style="display: none;">
+                    <!-- MobSF -->
+                    <div class="panel-card" style="border: 1px solid #ff6b35;">
+                        <div class="panel-title" style="color: #ff6b35;">📱 Mobile App Security</div>
+                        <div style="margin-bottom: 10px;">
+                            <input type="file" id="mobsfFileInput" accept=".apk,.ipa,.zip" style="display: none;" onchange="handleMobsfUpload(this)">
+                            <button class="quick-btn" onclick="document.getElementById('mobsfFileInput').click()" style="width: 100%; border-color: #ff6b35;">📤 Upload APK/IPA</button>
                         </div>
-                        <span class="accordion-toggle">▼</span>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="listMobsfScans()" style="border-color: #ff6b35;">📋 Scans</button>
+                            <button class="quick-btn" onclick="showMobsfHelp()" style="border-color: #ff6b35;">❓ Help</button>
+                        </div>
+                        <div id="mobsfStatus" style="margin-top: 8px; font-size: 10px; color: #666;"></div>
                     </div>
-                    <div class="accordion-content">
-                        <div class="accordion-inner">
-                            <!-- Mobile App Security -->
-                            <div style="margin-bottom: 12px;">
-                                <div style="font-size: 11px; color: #ff6b35; margin-bottom: 6px; font-weight: bold;">📱 Mobile App Security</div>
-                                <input type="file" id="mobsfFileInput" accept=".apk,.ipa,.zip" style="display: none;" onchange="handleMobsfUpload(this)">
-                                <button class="quick-btn" onclick="document.getElementById('mobsfFileInput').click()" style="width: 100%; border-color: #ff6b35; margin-bottom: 6px;">📤 Upload APK/IPA</button>
-                                <div class="quick-actions">
-                                    <button class="quick-btn" onclick="listMobsfScans()" style="border-color: #ff6b35;">📋 Scans</button>
-                                    <button class="quick-btn" onclick="showMobsfHelp()" style="border-color: #ff6b35;">❓ Help</button>
-                                </div>
-                                <div id="mobsfStatus" class="tool-status"></div>
-                            </div>
-                            
-                            <!-- AI Debugger -->
-                            <div style="padding-top: 12px; border-top: 1px solid var(--border);">
-                                <div style="font-size: 11px; color: #e91e63; margin-bottom: 6px; font-weight: bold;">🐛 AI Debugger</div>
-                                <textarea id="debugCode" class="tool-input" placeholder="Paste buggy code here..." style="height: 80px; border-color: #e91e63; resize: vertical; font-family: monospace;"></textarea>
-                                <div class="quick-actions" style="margin-top: 6px;">
-                                    <button class="quick-btn primary" onclick="debugCodeWithAI()" style="background: linear-gradient(135deg, #e91e63, #ff6b6b);">🐛 Debug</button>
-                                    <button class="quick-btn" onclick="explainCodeWithAI()" style="border-color: #e91e63;">📖 Explain</button>
-                                </div>
-                            </div>
+
+                    <!-- AI Debugger -->
+                    <div class="panel-card" style="border: 1px solid #e91e63;">
+                        <div class="panel-title" style="color: #e91e63;">🐛 AI Debugger</div>
+                        <div style="margin-bottom: 10px;">
+                            <textarea id="debugCode" placeholder="Paste code to debug..." style="width: 100%; height: 80px; background: #1a1a25; border: 1px solid #e91e63; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px; font-family: monospace; resize: vertical;"></textarea>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="debugCodeWithAI()" style="flex: 1; background: linear-gradient(135deg, #e91e63, #ff6b6b); color: #0a0a0f;">🐛 Debug</button>
+                            <button class="quick-btn" onclick="explainCodeWithAI()" style="flex: 1; border-color: #e91e63;">📖 Explain</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- ⚡ STATS & AI -->
-                <div class="accordion-section" data-section="more">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-header-left">
-                            <span class="accordion-icon">⚡</span>
-                            <span class="accordion-title">Stats & AI</span>
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- MORE CATEGORY - Additional Tools -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-more" class="tool-category" style="display: none;">
+                    <!-- Scan Stats -->
+                    <div class="panel-card">
+                        <div class="panel-title">📊 Stats</div>
+                        <div id="scanStatsContent" style="font-size: 11px; color: #888;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>Total Scans:</span><span id="totalScans" style="color: #00ff41;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>Vulns Found:</span><span id="totalVulns" style="color: #ff6b6b;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>IP Investigations:</span><span id="totalIPInvestigations" style="color: #0abdc6;">0</span>
+                            </div>
                         </div>
-                        <span class="accordion-toggle">▼</span>
                     </div>
-                    <div class="accordion-content">
-                        <div class="accordion-inner">
-                            <!-- Stats -->
-                            <div id="scanStatsContent" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
-                                <div style="background: var(--bg-input); padding: 10px; border-radius: 6px; text-align: center;">
-                                    <div style="font-size: 18px; color: #00ff41; font-weight: bold;" id="totalScans">0</div>
-                                    <div style="font-size: 10px; color: #666;">Scans</div>
-                                </div>
-                                <div style="background: var(--bg-input); padding: 10px; border-radius: 6px; text-align: center;">
-                                    <div style="font-size: 18px; color: #ff6b6b; font-weight: bold;" id="totalVulns">0</div>
-                                    <div style="font-size: 10px; color: #666;">Vulns</div>
-                                </div>
-                                <div style="background: var(--bg-input); padding: 10px; border-radius: 6px; text-align: center;">
-                                    <div style="font-size: 18px; color: #0abdc6; font-weight: bold;" id="totalIPInvestigations">0</div>
-                                    <div style="font-size: 10px; color: #666;">IPs</div>
-                                </div>
-                                <div style="background: var(--bg-input); padding: 10px; border-radius: 6px; text-align: center;">
-                                    <div style="font-size: 18px; color: #ff6b35; font-weight: bold;" id="activeToolCount">0</div>
-                                    <div style="font-size: 10px; color: #666;">Active</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Active Tools -->
-                            <div style="margin-bottom: 12px;">
-                                <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 6px;">🔧 Active Tools</div>
-                                <div id="activeToolsPanel" style="font-size: 10px; color: #666; padding: 8px; background: var(--bg-input); border-radius: 6px;">No active scans</div>
-                            </div>
-                            
-                            <!-- AI Features -->
-                            <div class="quick-actions">
-                                <button class="quick-btn primary" onclick="generateSecurityReport()">📄 Generate Report</button>
-                                <button class="quick-btn" onclick="showAIHelp()" style="border-color: #ff6b35;">❓ Help</button>
-                            </div>
-                            
-                            <!-- Scan Progress (hidden by default) -->
-                            <div id="scanProgressPanel" style="display: none; margin-top: 12px; padding: 10px; background: rgba(255, 170, 0, 0.1); border: 1px solid #ffaa00; border-radius: 6px;">
-                                <div style="font-size: 11px; color: #ffaa00; margin-bottom: 6px;">⏳ Scan in Progress</div>
-                                <div id="scanProgressContent" style="font-size: 10px; color: #888;"></div>
-                            </div>
+
+                    <!-- Active Tools -->
+                    <div class="panel-card">
+                        <div class="panel-title">🔧 Active Tools</div>
+                        <div id="activeToolsPanel" style="font-size: 10px; color: #666;">No active scans</div>
+                    </div>
+
+                    <!-- AI Features -->
+                    <div class="panel-card" style="border: 1px solid #ff6b35;">
+                        <div class="panel-title" style="color: #ff6b35;">🤖 AI Features</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="generateSecurityReport()" style="border-color: #ff6b35;">📄 Report</button>
+                            <button class="quick-btn" onclick="showAIHelp()" style="border-color: #ff6b35;">❓ Help</button>
                         </div>
+                    </div>
+
+                    <!-- Scan Progress (hidden by default) -->
+                    <div class="panel-card" id="scanProgressPanel" style="display: none; border-color: #ffaa00;">
+                        <div class="panel-title" style="color: #ffaa00;">⏳ Scan in Progress</div>
+                        <div id="scanProgressContent" style="font-size: 11px;"></div>
                     </div>
                 </div>
 
-                <!-- 📡 MONITORING (collapsed by default) -->
-                <div class="accordion-section" data-section="monitoring">
-                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                        <div class="accordion-header-left">
-                            <span class="accordion-icon">📡</span>
-                            <span class="accordion-title">Monitoring</span>
-                        </div>
-                        <span class="accordion-toggle">▼</span>
-                    </div>
-                    <div class="accordion-content">
-                        <div class="accordion-inner">
-                            <div id="monitoringList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-input); border-radius: 6px;">
-                                    <span style="color: #666; font-size: 11px;">No sites monitored</span>
-                                    <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
-                                </div>
-                            </div>
-                            <div id="addMonitoringForm" style="display: none;">
-                                <input type="text" id="monitorUrl" class="tool-input" placeholder="https://example.com" style="margin-bottom: 6px;">
-                                <div class="quick-actions">
-                                    <button class="quick-btn primary" onclick="addMonitoringSite()">Add Site</button>
-                                    <button class="quick-btn" onclick="hideAddMonitoring()">✕ Cancel</button>
-                                </div>
-                            </div>
-                            <button class="quick-btn primary" onclick="checkAllMonitoring()" style="width: 100%;">🔄 Check All Sites</button>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- LEGACY PANELS (kept for compatibility) -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                
                 <!-- Hidden elements for legacy function compatibility -->
                 <div id="legacy-elements" style="display: none;">
                     <div id="networkGuardianAlerts"></div>
@@ -1437,13 +1260,8 @@
                     <div id="findingCount">0</div>
                     <div id="scanTime">0s</div>
                     <div id="riskPanel"><div id="riskIndicator"></div></div>
+                    <div id="scanProgressPanel"><div id="scanProgressStatus"></div><div id="scanProgressBar"></div><div id="scanToolsProgress"></div><div id="scanElapsedTime"></div></div>
                     <div id="aiReportPanel"><div id="aiReportStatus"></div></div>
-                    <!-- Legacy tab/category elements -->
-                    <div id="category-intel"></div>
-                    <div id="category-network"></div>
-                    <div id="category-scanners"></div>
-                    <div id="category-mobile"></div>
-                    <div id="category-more"></div>
                 </div>
             </div> <!-- end side-panel -->
         </div> <!-- end main-content -->
@@ -1471,52 +1289,6 @@
         let currentScanId = null;
         let pollInterval = null;
         let currentScanMessageId = null;
-
-        // ═══════════════════════════════════════════════════════════════════
-        // ACCORDION TOGGLE - Collapsible Panels
-        // ═══════════════════════════════════════════════════════════════════
-        
-        function toggleAccordion(header) {
-            const section = header.parentElement;
-            const isActive = section.classList.contains('active');
-            
-            // Toggle current section
-            if (isActive) {
-                section.classList.remove('active');
-            } else {
-                section.classList.add('active');
-            }
-        }
-        
-        // Initialize first accordion as open on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const firstAccordion = document.querySelector('.accordion-section');
-            if (firstAccordion) {
-                firstAccordion.classList.add('active');
-            }
-        });
-        
-        // Legacy tab function (for backward compatibility)
-        function showToolCategory(category) {
-            // Map to accordion sections
-            const mapping = {
-                'intel': 'investigation',
-                'network': 'network',
-                'scanners': 'scanners',
-                'mobile': 'mobile',
-                'more': 'more'
-            };
-            const sectionName = mapping[category] || category;
-            const section = document.querySelector(`.accordion-section[data-section="${sectionName}"]`);
-            if (section) {
-                // Close all other sections
-                document.querySelectorAll('.accordion-section').forEach(s => s.classList.remove('active'));
-                // Open the target section
-                section.classList.add('active');
-                // Scroll to it
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
 
         // ═══════════════════════════════════════════════════════════════════
         // AI CHAT & VOICE - Phase 1, 2, 3, 4 Implementation
