@@ -4658,6 +4658,13 @@ familyControls.setupRoutes(app);
 console.log('👨‍👩‍👧‍👦 Family & Parental Controls loaded');
 
 // ═══════════════════════════════════════════════════════════════════════════
+// ADVANCED AI FEATURES MODULE
+// ═══════════════════════════════════════════════════════════════════════════
+const aiFeatures = require('./ai-features');
+aiFeatures.setupRoutes(app);
+console.log('🤖 Advanced AI Features loaded (10 new capabilities)');
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 app.listen(PORT, () => {
   const aiCount = Object.values(AI_TOOLS).filter(t => t.ai).length;
