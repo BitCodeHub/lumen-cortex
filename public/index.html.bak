@@ -1285,6 +1285,238 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
+    <!-- LEGACY ELEMENTS REMOVED - Now in side-panel -->
+    <script>
+        // Legacy panel IDs are now hidden in #legacy-elements div
+        // JavaScript functions still reference them by ID and will find them there
+    </script>
+
+    <script>
+        let currentScanId = null;
+        let pollInterval = null;
+        let currentScanMessageId = null;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // AI CHAT & VOICE - Phase 1, 2, 3, 4 Implementation
+        // ═══════════════════════════════════════════════════════════════════
+        
+        let sessionId = 'session-' + Date.now();
+        let isVoiceOutputEnabled = false;
+        let recognition = null;
+        let isListening = false;
+        let voiceSynth = window.speechSynthesis;
+        
+        // UI successfully cleaned - old panels removed
+        console.log('Lumen Cortex UI loaded with tabbed categories');
+        
+        // START OF CLEANED JS - Orphan HTML removed
+        // INJECT POINT
+                        <button class="quick-btn" onclick="githubHuntWithChat('twilio')" style="border-color: #f22f46;">📱 Twilio</button>
+                        <button class="quick-btn" onclick="githubHuntWithChat('sendgrid')" style="border-color: #1a82e2;">📧 SendGrid</button>
+                    </div>
+                    <div class="quick-actions" style="margin-top: 8px;">
+                        <button class="quick-btn" onclick="githubHuntWithChat('mongodb')" style="border-color: #4db33d;">🍃 MongoDB</button>
+                        <button class="quick-btn" onclick="githubHuntWithChat('postgres')" style="border-color: #336791;">🐘 Postgres</button>
+                        <button class="quick-btn" onclick="githubHuntWithChat('anthropic')" style="border-color: #d4a574;">🤖 Anthropic</button>
+                        <button class="quick-btn" onclick="githubHuntWithChat('keys')" style="border-color: #ff0040;">🔑 ALL KEYS</button>
+                    </div>
+                </div>
+
+                <div class="panel-card" style="border: 1px solid #0abdc6;">
+                    <div class="panel-title" style="color: #0abdc6;">🛡️ Scan Modes</div>
+                    <div class="quick-actions" style="gap: 8px;">
+                        <button class="quick-btn" onclick="runScanMode('full_attack')" style="flex: 1; background: #00ff41; color: #0a0a0f; padding: 12px 8px;">
+                            <strong style="font-size: 14px;">⚡ QUICK SCAN</strong><br>
+                            <span style="font-size: 11px;">~60s • 4 tools</span>
+                        </button>
+                        <button class="quick-btn" onclick="runScanMode('deep_scan')" style="flex: 1; background: #ff6600; color: #0a0a0f; padding: 12px 8px;">
+                            <strong style="font-size: 14px;">🔬 DEEP SCAN</strong><br>
+                            <span style="font-size: 11px;">~3min • 7 tools</span>
+                        </button>
+                    </div>
+                    <div class="panel-title" style="color: #0abdc6; margin-top: 12px; font-size: 0.8em;">Targeted Checks</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn attack-quick" onclick="quickAttack('sqli')">💉 SQLi</button>
+                        <button class="quick-btn attack-quick" onclick="quickAttack('xss')">🔥 XSS</button>
+                        <button class="quick-btn attack-quick" onclick="quickAttack('fuzz')">🎯 Fuzzing</button>
+                        <button class="quick-btn attack-quick" onclick="quickAttack('exploit')">🔍 Critical</button>
+                    </div>
+                </div>
+
+                <!-- Network Traffic Sniffer -->
+                <div class="panel-card" style="border: 1px solid #ff00ff;">
+                    <div class="panel-title" style="color: #ff00ff;">📡 Network Traffic Sniffer</div>
+                    
+                    <!-- Target input -->
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="networkTarget" placeholder="IP, domain, or 'local' for all traffic" 
+                               style="width: 100%; background: #1a1a25; border: 1px solid #ff00ff; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px; margin-bottom: 8px;"
+                               onfocus="setInputMode('scan')">
+                    </div>
+                    
+                    <div style="font-size: 10px; color: #666; margin-bottom: 8px;">Capture Type:</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="startNetworkCaptureWithChat('http')" style="border-color: #ff00ff;">🌐 HTTP/S</button>
+                        <button class="quick-btn" onclick="startNetworkCaptureWithChat('dns')" style="border-color: #ff00ff;">🔍 DNS</button>
+                        <button class="quick-btn" onclick="startNetworkCaptureWithChat('all')" style="border-color: #ff00ff;">📊 All</button>
+                    </div>
+                    
+                    <div style="font-size: 10px; color: #666; margin-top: 10px; margin-bottom: 8px;">Port Scanning:</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="startPortScanWithChat('quick')" style="border-color: #00ff41;">⚡ Quick</button>
+                        <button class="quick-btn" onclick="startPortScanWithChat('full')" style="border-color: #ff6600;">🔬 Full</button>
+                        <button class="quick-btn" onclick="startPortScanWithChat('vuln')" style="border-color: #ff0040;">💀 Vuln</button>
+                    </div>
+                    
+                    <div style="font-size: 10px; color: #666; margin-top: 10px; margin-bottom: 8px;">Mobile App Traffic:</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="startMobileProxyWithChat()" style="border-color: #0abdc6; background: linear-gradient(135deg, #0abdc620, #ff00ff20);">
+                            📱 Start MITM Proxy
+                        </button>
+                    </div>
+                    
+                    <div id="networkStatus" style="margin-top: 10px; padding: 8px; background: #1a1a25; border-radius: 4px; font-size: 11px; display: none;">
+                        <span style="color: #00ff41;">●</span> <span id="networkStatusText">Ready</span>
+                    </div>
+                </div>
+
+                <!-- Hidden legacy panels for JS compatibility -->
+                <div style="display: none;">
+                    <div id="toolList"></div>
+                    <div id="toolCount">0</div>
+                    <div id="aiToolCount">0</div>
+                    <div id="findingCount">0</div>
+                    <div id="scanTime">0s</div>
+                    <div id="riskPanel"><div id="riskIndicator"></div></div>
+                    <div id="scanProgressPanel">
+                        <div id="scanProgressStatus"></div>
+                        <div id="scanProgressBar"></div>
+                        <div id="scanToolsProgress"></div>
+                        <div id="scanElapsedTime"></div>
+                    </div>
+                    <div id="aiReportPanel"><div id="aiReportStatus"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEVICE DASHBOARD SECTION (Outside chat, full width) -->
+    <div id="deviceDashboard" style="display: none; margin: 20px auto; max-width: 1600px; padding: 0 20px;">
+        <div style="background: linear-gradient(135deg, #12121a, #1a1a25); border: 2px solid #00ff41; border-radius: 12px; overflow: hidden; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);">
+            <!-- Dashboard Header -->
+            <div style="background: linear-gradient(135deg, #00ff41, #0abdc6); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0; color: #0a0a0f; font-family: 'Orbitron', monospace; font-size: 1.3em;">🛡️ NETWORK DEVICE DASHBOARD</h2>
+                    <p style="margin: 5px 0 0; color: #0a0a0f; opacity: 0.8;" id="dashboardSubtitle">Click any device to view details and real-time activity</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span id="dashboardStats" style="background: #0a0a0f; color: #00ff41; padding: 8px 16px; border-radius: 20px; font-size: 12px;">
+                        <span id="dashDeviceCount">0</span> devices • <span id="dashThreatCount">0</span> threats
+                    </span>
+                    <button onclick="refreshDeviceDashboard()" style="background: #0a0a0f; color: #00ff41; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'JetBrains Mono', monospace;">🔄 Refresh</button>
+                    <button onclick="closeDeviceDashboard()" style="background: transparent; color: #0a0a0f; border: 2px solid #0a0a0f; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                </div>
+            </div>
+            
+            <!-- Dashboard Content - Split View -->
+            <div style="display: grid; grid-template-columns: 400px 1fr; min-height: 500px;">
+                <!-- Device List Panel -->
+                <div style="border-right: 1px solid #2a2a3a; background: #0f0f15;">
+                    <div style="padding: 15px; border-bottom: 1px solid #2a2a3a;">
+                        <input type="text" id="deviceSearchInput" placeholder="🔍 Search devices..." oninput="filterDevices()" 
+                               style="width: 100%; background: #1a1a25; border: 1px solid #2a2a3a; color: #e0e0e0; padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <button onclick="filterByStatus('all')" class="filter-btn active" data-filter="all" style="flex: 1; padding: 6px; background: #00ff41; color: #0a0a0f; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">All</button>
+                            <button onclick="filterByStatus('trusted')" class="filter-btn" data-filter="trusted" style="flex: 1; padding: 6px; background: #1a1a25; color: #00ff41; border: 1px solid #00ff41; border-radius: 4px; cursor: pointer; font-size: 11px;">✓ Trusted</button>
+                            <button onclick="filterByStatus('unknown')" class="filter-btn" data-filter="unknown" style="flex: 1; padding: 6px; background: #1a1a25; color: #ffaa00; border: 1px solid #ffaa00; border-radius: 4px; cursor: pointer; font-size: 11px;">? Unknown</button>
+                            <button onclick="filterByStatus('threat')" class="filter-btn" data-filter="threat" style="flex: 1; padding: 6px; background: #1a1a25; color: #ff0040; border: 1px solid #ff0040; border-radius: 4px; cursor: pointer; font-size: 11px;">⚠ Threats</button>
+                        </div>
+                    </div>
+                    <div id="deviceListContainer" style="max-height: 450px; overflow-y: auto; padding: 10px;">
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">📡</div>
+                            <p>Run a network scan to discover devices</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Device Detail Panel -->
+                <div id="deviceDetailPanel" style="padding: 20px; background: #12121a;">
+                    <div style="text-align: center; padding: 80px 40px; color: #666;">
+                        <div style="font-size: 4em; margin-bottom: 20px;">👈</div>
+                        <p style="font-size: 1.2em;">Select a device from the list</p>
+                        <p style="margin-top: 10px; font-size: 0.9em;">View details, monitor activity, and analyze behavior</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Footer -->
+            <div style="background: #0a0a0f; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #2a2a3a;">
+                <span style="color: #666; font-size: 11px;">🛡️ Network Guardian | AI-Powered Device Intelligence</span>
+                <span style="color: #666; font-size: 11px;" id="dashboardLastScan">Last scan: Never</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Detail Modal (for full-screen view) -->
+    <div id="deviceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; overflow-y: auto;">
+        <div style="max-width: 1000px; margin: 40px auto; padding: 20px;">
+            <div style="background: #12121a; border: 2px solid #0abdc6; border-radius: 12px; overflow: hidden;">
+                <!-- Modal Header -->
+                <div style="background: linear-gradient(135deg, #0abdc6, #8b5cf6); padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 id="modalDeviceName" style="margin: 0; color: #0a0a0f; font-family: 'Orbitron', monospace;">Device Details</h2>
+                        <p id="modalDeviceIP" style="margin: 5px 0 0; color: #0a0a0f; opacity: 0.8;">IP: --</p>
+                    </div>
+                    <button onclick="closeDeviceModal()" style="background: #0a0a0f; color: #0abdc6; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                </div>
+                
+                <!-- Modal Content -->
+                <div id="modalContent" style="padding: 20px;">
+                    <!-- Content populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEDICATED REPORT SECTION (Outside chat, full width) -->
+    <div id="reportSection" style="display: none; margin: 20px auto; max-width: 1400px; padding: 0 20px;">
+        <div style="background: linear-gradient(135deg, #12121a, #1a1a25); border: 2px solid #00ff41; border-radius: 12px; overflow: hidden; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);">
+            <!-- Report Header -->
+            <div style="background: linear-gradient(135deg, #00ff41, #0abdc6); padding: 20px 30px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0; color: #0a0a0f; font-family: 'Orbitron', monospace; font-size: 1.5em;">🛡️ SECURITY ASSESSMENT REPORT</h2>
+                    <p style="margin: 5px 0 0; color: #0a0a0f; opacity: 0.8;" id="reportTarget">Target: -</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="exportPDF()" style="background: #0a0a0f; color: #00ff41; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'JetBrains Mono', monospace;">📄 Export PDF</button>
+                    <button onclick="closeReportSection()" style="background: transparent; color: #0a0a0f; border: 2px solid #0a0a0f; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">✕ Close</button>
+                </div>
+            </div>
+            
+            <!-- Report Content -->
+            <div id="reportContent" style="padding: 30px; color: #e0e0e0; line-height: 1.8; max-height: 70vh; overflow-y: auto;">
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 3em; margin-bottom: 20px;">🔄</div>
+                    <p>Generating AI-powered security report...</p>
+                </div>
+            </div>
+            
+            <!-- Report Footer -->
+            <div style="background: #0a0a0f; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #2a2a3a;">
+                <span style="color: #666; font-size: 12px;">🧠 Lumen Cortex | AI-Powered Security Intelligence</span>
+                <span style="color: #666; font-size: 12px;" id="reportTimestamp">Generated: -</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Markdown parser for AI responses -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Syntax highlighting for code -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <script>
         let currentScanId = null;
         let pollInterval = null;
