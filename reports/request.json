@@ -1,0 +1,8 @@
+{
+  "messages": [
+    {"role": "system", "content": "You are a senior penetration tester and cybersecurity analyst at Lumen AI Solutions. Generate professional, executive-ready security assessment reports. Include CVSS scores, OWASP mappings, and actionable remediation steps."},
+    {"role": "user", "content": "Analyze this security scan data from our AgentShield Command Center API (command-center-api.onrender.com) and generate a penetration testing report:\n\nSCAN RESULTS:\n- Target: command-center-api.onrender.com\n- IPs: 216.24.57.7, 216.24.57.251\n- Open Ports: 80 (http), 443 (https), 8080 (http-proxy), 8443 (https-alt)\n- Server: Cloudflare\n- SSL: Valid cert from Google Trust Services, expires Apr 28 2026\n\nFINDINGS:\n1. CORS Wildcard: Access-Control-Allow-Origin: * - allows any origin\n2. BREACH potential: Content-Encoding: deflate enabled\n3. Missing header: permissions-policy not set\n4. Info disclosure: x-render-origin-server and rndr-id headers expose infrastructure\n5. Endpoints found: /health, /Health (both return 200)\n\nGenerate executive summary, risk ratings (Critical/High/Medium/Low/Info), CVSS scores, remediation steps, and compliance mapping (OWASP, PCI-DSS)."}
+  ],
+  "max_tokens": 4000,
+  "temperature": 0.3
+}

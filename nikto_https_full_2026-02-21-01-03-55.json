@@ -1,0 +1,19 @@
+[
+   {
+      "end_time" : "2026-02-21 01:03:56 -0800",
+      "host" : null,
+      "ip" : "",
+      "port" : "443",
+      "server_banner" : null,
+      "start_time" : "2026-02-21 01:03:56 -0800",
+      "vulnerabilities" : [
+         {
+            "id" : "FAIL",
+            "method" : "GET",
+            "msg" : "ERROR: Cannot resolve hostname 'full' because 'nodename nor servname provided, or not known'.",
+            "references" : "",
+            "url" : "/"
+         }
+      ]
+   }
+]

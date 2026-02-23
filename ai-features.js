@@ -86,22 +86,35 @@ Be specific and actionable. Format as structured JSON.`;
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function analyzePhishing(content) {
-  const systemPrompt = `You are a phishing detection expert. Analyze the provided content (email, URL, or message) for phishing indicators. Check for:
+  const systemPrompt = `You are a phishing detection expert. Analyze the provided content (email, URL, or message) for ACTUAL phishing indicators.
 
-1. Suspicious URLs (typosquatting, lookalike domains)
-2. Urgency/fear tactics
-3. Impersonation attempts
-4. Mismatched sender info
-5. Suspicious attachments
-6. Request for sensitive info
-7. Grammar/spelling issues
-8. Technical red flags (SPF, DKIM failures noted)
+IMPORTANT - What is NOT phishing:
+- Using Gmail, Yahoo, Outlook, or other free email providers (billions of legitimate users)
+- Personal email addresses (not everyone uses corporate email)
+- Simple or casual usernames
+- Emails from contacts you know
+
+ACTUAL phishing indicators to check for:
+1. Suspicious URLs (typosquatting like "amaz0n.com", lookalike domains like "paypa1.com")
+2. Urgency/fear tactics ("Your account will be closed!", "Act now!")
+3. Impersonation attempts (claiming to be a company but using wrong domain)
+4. Mismatched sender info (display name says "Bank" but email is random)
+5. Suspicious attachments (.exe, .zip with password, macro documents)
+6. Request for sensitive info (passwords, SSN, credit cards)
+7. Poor grammar/spelling in supposedly professional emails
+8. Technical red flags (SPF/DKIM failures, if header info provided)
+
+DO NOT flag as suspicious:
+- Legitimate free email providers (Gmail, Yahoo, Hotmail, etc.)
+- Personal email addresses with normal usernames
+- Emails without actual malicious indicators
 
 Provide:
-- Risk Score (0-100)
+- Risk Score (0-100) - Only high if REAL indicators found
 - Confidence Level
-- Specific indicators found
+- Specific indicators found (only list ACTUAL red flags)
 - Recommended action (Safe/Suspicious/Block)
+- If no real indicators: Say "No phishing indicators detected"
 
 Format as JSON.`;
 
@@ -314,6 +327,90 @@ Format as JSON with prioritized array.`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 11. AI TECH LEAD CODE REVIEW
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function reviewCodeAsTechLead(code, language = 'auto', context = '') {
+  const systemPrompt = `You are a Senior Tech Lead / Principal Engineer with 15+ years of experience at top tech companies (Google, Meta, Netflix). You're conducting a thorough code review as if this is a PR review.
+
+Review this code like a senior engineer would in a real code review. Be direct, constructive, and thorough.
+
+## Review Categories:
+
+### 🏗️ Architecture & Design
+- Is the code well-structured?
+- Does it follow SOLID principles?
+- Is there proper separation of concerns?
+- Are there any design pattern violations?
+
+### 📝 Code Quality
+- Is the code readable and maintainable?
+- Are there any code smells?
+- Is naming clear and consistent?
+- Is there unnecessary complexity?
+
+### ⚡ Performance
+- Are there any performance issues?
+- Inefficient algorithms or data structures?
+- Memory leaks or resource management issues?
+- N+1 queries or other common problems?
+
+### 🔒 Security
+- Any security vulnerabilities?
+- Input validation issues?
+- Authentication/authorization problems?
+- Sensitive data exposure?
+
+### 🧪 Testing & Reliability
+- Is the code testable?
+- Are edge cases handled?
+- Error handling adequate?
+- What tests should be written?
+
+### 📚 Best Practices
+- Language-specific best practices
+- Industry standards compliance
+- Documentation needs
+- Consistency with modern patterns
+
+## Output Format:
+
+Provide your review as a real tech lead would:
+
+1. **Overall Assessment** (1-2 sentences, letter grade A-F)
+
+2. **Must Fix (Blockers)** 🔴
+   - Critical issues that must be fixed before merge
+
+3. **Should Fix** 🟡
+   - Important improvements that should be addressed
+
+4. **Consider** 🟢
+   - Nice-to-have improvements and suggestions
+
+5. **What's Good** ✅
+   - Positive aspects worth calling out
+
+6. **Refactored Example** (if applicable)
+   - Show how a key section could be improved
+
+Be specific with line references where possible. Be direct but constructive - like a real senior engineer.`;
+
+  const userContent = `
+Language: ${language === 'auto' ? 'Please detect the language' : language}
+${context ? `Context: ${context}` : ''}
+
+CODE TO REVIEW:
+\`\`\`
+${code}
+\`\`\`
+`;
+
+  const analysis = await analyzeWithAI(systemPrompt, userContent, 6000);
+  return analysis;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 10. AI SECURITY COPILOT (Proactive)
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -474,6 +571,22 @@ function setupRoutes(app) {
     }
   });
   
+  // 11. AI Tech Lead Code Review
+  app.post('/api/ai/code-review', async (req, res) => {
+    try {
+      const { code, language, context } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ success: false, error: 'Code is required' });
+      }
+      
+      const result = await reviewCodeAsTechLead(code, language, context);
+      res.json({ success: true, review: result });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+  
   // List all AI features
   app.get('/api/ai/features', (req, res) => {
     res.json({
@@ -488,12 +601,13 @@ function setupRoutes(app) {
         { id: 'password-audit', name: 'AI Password Auditor', endpoint: 'POST /api/ai/password-audit', description: 'Check password strength' },
         { id: 'compliance-check', name: 'AI Compliance Checker', endpoint: 'POST /api/ai/compliance-check', description: 'GDPR, HIPAA, SOC2 compliance' },
         { id: 'vuln-prioritize', name: 'AI Vulnerability Prioritizer', endpoint: 'POST /api/ai/vuln-prioritize', description: 'Smart triage of findings' },
-        { id: 'security-copilot', name: 'AI Security Copilot', endpoint: 'GET /api/ai/security-copilot', description: 'Proactive security recommendations' }
+        { id: 'security-copilot', name: 'AI Security Copilot', endpoint: 'GET /api/ai/security-copilot', description: 'Proactive security recommendations' },
+        { id: 'code-review', name: 'AI Tech Lead Code Review', endpoint: 'POST /api/ai/code-review', description: 'Senior engineer code review' }
       ]
     });
   });
   
-  console.log('✅ Advanced AI Features module loaded (10 new AI capabilities)');
+  console.log('✅ Advanced AI Features module loaded (11 new AI capabilities)');
 }
 
 module.exports = { setupRoutes };

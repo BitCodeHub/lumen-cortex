@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumen Cortex - Security Report Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d1f47 100%);
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .glow-red {
+      box-shadow: 0 0 30px rgba(220, 38, 38, 0.3);
+    }
+    
+    .report-preview {
+      background: #fff;
+      color: #1a1a2e;
+    }
+    
+    .report-preview h1 { font-size: 1.75rem; color: #0f0f23; border-bottom: 3px solid #dc2626; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+    .report-preview h2 { font-size: 1.25rem; color: #1e40af; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+    .report-preview h3 { font-size: 1.1rem; color: #374151; margin-top: 1rem; margin-bottom: 0.5rem; }
+    .report-preview table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.875rem; }
+    .report-preview th { background: #1e40af; color: white; padding: 0.75rem; text-align: left; }
+    .report-preview td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; }
+    .report-preview tr:nth-child(even) { background: #f9fafb; }
+    .report-preview pre { background: #1e1e2e; color: #cdd6f4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; }
+    .report-preview code { background: #f3f4f6; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; }
+    .report-preview pre code { background: none; padding: 0; }
+    .report-preview blockquote { border-left: 4px solid #fbbf24; background: #fef3c7; padding: 1rem; margin: 1rem 0; }
+    .report-preview ul, .report-preview ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+    .report-preview li { margin-bottom: 0.25rem; }
+    
+    .pulse-glow {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(220, 38, 38, 0.4); }
+      50% { box-shadow: 0 0 40px rgba(220, 38, 38, 0.8); }
+    }
+    
+    .loading-spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-left-color: #dc2626;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  
+  <!-- Header -->
+  <header class="border-b border-white/10 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🔐</span>
+        <div>
+          <h1 class="text-xl font-bold text-white">LUMEN CORTEX</h1>
+          <p class="text-xs text-gray-400">AI-Powered Security Report Generator</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">
+          ● Azure Claude Active
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    
+    <!-- Input Section -->
+    <div id="input-section" class="space-y-6">
+      
+      <div class="glass-card rounded-xl p-6">
+        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+          <span class="text-2xl">🎯</span> Target Information
+        </h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Target Name / URL</label>
+            <input type="text" id="targetName" placeholder="e.g., api.example.com"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-red-500 focus:outline-none transition">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Scan Date</label>
+            <input type="date" id="scanDate"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-red-500 focus:outline-none transition">
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-xl p-6">
+        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+          <span class="text-2xl">📊</span> Scan Data
+        </h2>
+        <p class="text-sm text-gray-400 mb-4">Paste your scan results (JSON, text, or structured data). Lumen Cortex AI will analyze and generate a professional report.</p>
+        
+        <div class="mb-4 flex gap-2">
+          <button onclick="loadSampleData()" class="px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg text-sm hover:bg-blue-600/30 transition border border-blue-500/30">
+            📋 Load Sample Data
+          </button>
+          <button onclick="clearData()" class="px-4 py-2 bg-gray-600/20 text-gray-400 rounded-lg text-sm hover:bg-gray-600/30 transition border border-gray-500/30">
+            🗑️ Clear
+          </button>
+        </div>
+        
+        <textarea id="scanData" rows="12" placeholder='Paste scan results here...
+
+Example:
+{
+  "nmap": {
+    "ports": [80, 443, 8080],
+    "services": ["http", "https", "http-proxy"]
+  },
+  "nikto": {
+    "findings": [
+      "CORS wildcard detected",
+      "Missing security headers"
+    ]
+  }
+}'
+          class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-mono text-sm placeholder-gray-600 focus:border-red-500 focus:outline-none transition resize-none"></textarea>
+      </div>
+
+      <div class="flex justify-center">
+        <button onclick="generateReport()" id="generateBtn"
+          class="px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition transform hover:scale-105 glow-red flex items-center gap-3">
+          <span class="text-xl">⚡</span>
+          Generate AI Security Report
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-section" class="hidden">
+      <div class="glass-card rounded-xl p-12 text-center">
+        <div class="loading-spinner mx-auto mb-6"></div>
+        <h3 class="text-xl font-semibold mb-2">🤖 AI Analyzing Scan Data...</h3>
+        <p class="text-gray-400">Azure Claude Sonnet is generating your enterprise security report</p>
+        <p class="text-sm text-gray-500 mt-4" id="loadingStatus">Initializing analysis...</p>
+      </div>
+    </div>
+
+    <!-- Report Section -->
+    <div id="report-section" class="hidden space-y-6">
+      
+      <!-- Report Actions -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📄</span>
+          <h2 class="text-xl font-semibold">Security Assessment Report</h2>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="exportPDF()" id="exportBtn"
+            class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg hover:from-green-700 hover:to-green-800 transition flex items-center gap-2">
+            <span>📥</span> Export to PDF
+          </button>
+          <button onclick="newReport()"
+            class="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition flex items-center gap-2 border border-white/20">
+            <span>🔄</span> New Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Metadata -->
+      <div class="glass-card rounded-xl p-4 flex items-center justify-between">
+        <div class="flex items-center gap-6 text-sm">
+          <span class="text-gray-400">Target: <span id="metaTarget" class="text-white font-medium">-</span></span>
+          <span class="text-gray-400">Date: <span id="metaDate" class="text-white font-medium">-</span></span>
+          <span class="text-gray-400">Generated: <span id="metaGenerated" class="text-white font-medium">-</span></span>
+        </div>
+        <span class="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-full border border-red-500/30 font-semibold">
+          CONFIDENTIAL
+        </span>
+      </div>
+
+      <!-- Report Content -->
+      <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div id="reportContent" class="report-preview p-8 max-h-[70vh] overflow-y-auto">
+          <!-- Report will be rendered here -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 px-6 py-4 mt-auto">
+    <div class="max-w-7xl mx-auto text-center text-sm text-gray-500">
+      <p>Powered by Lumen Cortex AI Security Platform | Azure Claude Sonnet 4.6</p>
+      <p class="mt-1">© 2026 Lumen AI Solutions. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Set default date to today
+    document.getElementById('scanDate').valueAsDate = new Date();
+    
+    let currentReportMarkdown = '';
+    
+    const sampleData = {
+      target: "command-center-api.onrender.com",
+      scan_date: new Date().toISOString().split('T')[0],
+      nmap: {
+        host: "command-center-api.onrender.com",
+        ip_addresses: ["216.24.57.7", "216.24.57.251"],
+        open_ports: [
+          { port: 80, service: "http", state: "open" },
+          { port: 443, service: "https", state: "open" },
+          { port: 8080, service: "http-proxy", state: "open" },
+          { port: 8443, service: "https-alt", state: "open" }
+        ]
+      },
+      nikto: {
+        server: "cloudflare",
+        findings: [
+          { severity: "medium", title: "CORS Wildcard", description: "Access-Control-Allow-Origin: *" },
+          { severity: "low", title: "BREACH Risk", description: "Content-Encoding: deflate enabled" },
+          { severity: "low", title: "Missing Header", description: "permissions-policy not configured" },
+          { severity: "info", title: "Info Disclosure", description: "x-render-origin-server header exposes platform" }
+        ]
+      },
+      ssl: {
+        valid_from: "Jan 28, 2026",
+        valid_to: "Apr 28, 2026",
+        issuer: "Google Trust Services",
+        cipher: "AEAD-CHACHA20-POLY1305-SHA256"
+      },
+      endpoints: [
+        { path: "/health", status: 200 },
+        { path: "/Health", status: 200 }
+      ]
+    };
+    
+    function loadSampleData() {
+      document.getElementById('targetName').value = sampleData.target;
+      document.getElementById('scanData').value = JSON.stringify(sampleData, null, 2);
+    }
+    
+    function clearData() {
+      document.getElementById('targetName').value = '';
+      document.getElementById('scanData').value = '';
+    }
+    
+    async function generateReport() {
+      const targetName = document.getElementById('targetName').value || 'Unknown Target';
+      const scanDate = document.getElementById('scanDate').value;
+      const scanDataRaw = document.getElementById('scanData').value;
+      
+      if (!scanDataRaw.trim()) {
+        alert('Please enter scan data');
+        return;
+      }
+      
+      let scanData;
+      try {
+        scanData = JSON.parse(scanDataRaw);
+      } catch {
+        scanData = { raw_data: scanDataRaw };
+      }
+      
+      // Show loading
+      document.getElementById('input-section').classList.add('hidden');
+      document.getElementById('loading-section').classList.remove('hidden');
+      
+      const statusEl = document.getElementById('loadingStatus');
+      const statuses = [
+        'Analyzing network topology...',
+        'Evaluating vulnerability severity...',
+        'Mapping to OWASP Top 10...',
+        'Generating CVSS scores...',
+        'Creating remediation steps...',
+        'Compiling executive summary...',
+        'Formatting report...'
+      ];
+      
+      let statusIndex = 0;
+      const statusInterval = setInterval(() => {
+        statusEl.textContent = statuses[statusIndex % statuses.length];
+        statusIndex++;
+      }, 2000);
+      
+      try {
+        const response = await fetch('/api/generate-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scanData, targetName, scanDate })
+        });
+        
+        const result = await response.json();
+        
+        clearInterval(statusInterval);
+        
+        if (result.success) {
+          currentReportMarkdown = result.report;
+          
+          // Render markdown
+          const html = marked.parse(result.report);
+          document.getElementById('reportContent').innerHTML = html;
+          
+          // Update metadata
+          document.getElementById('metaTarget').textContent = targetName;
+          document.getElementById('metaDate').textContent = scanDate;
+          document.getElementById('metaGenerated').textContent = new Date(result.metadata.generatedAt).toLocaleString();
+          
+          // Show report
+          document.getElementById('loading-section').classList.add('hidden');
+          document.getElementById('report-section').classList.remove('hidden');
+        } else {
+          throw new Error(result.error);
+        }
+        
+      } catch (error) {
+        clearInterval(statusInterval);
+        alert('Error generating report: ' + error.message);
+        document.getElementById('loading-section').classList.add('hidden');
+        document.getElementById('input-section').classList.remove('hidden');
+      }
+    }
+    
+    async function exportPDF() {
+      const btn = document.getElementById('exportBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="loading-spinner" style="width:20px;height:20px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></span> Generating PDF...';
+      btn.disabled = true;
+      
+      try {
+        const reportHtml = document.getElementById('reportContent').innerHTML;
+        const targetName = document.getElementById('metaTarget').textContent;
+        const date = document.getElementById('metaDate').textContent;
+        
+        const response = await fetch('/api/export-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reportHtml,
+            filename: `Lumen-Cortex-Report-${targetName.replace(/[^a-z0-9]/gi, '-')}-${date}`
+          })
+        });
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Lumen-Cortex-Report-${targetName.replace(/[^a-z0-9]/gi, '-')}-${date}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        } else {
+          throw new Error('PDF generation failed');
+        }
+        
+      } catch (error) {
+        alert('Error exporting PDF: ' + error.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+    
+    function newReport() {
+      document.getElementById('report-section').classList.add('hidden');
+      document.getElementById('input-section').classList.remove('hidden');
+      currentReportMarkdown = '';
+    }
+  </script>
+</body>
+</html>

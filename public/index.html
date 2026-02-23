@@ -880,6 +880,42 @@
                     </div>
                 </div>
 
+                <!-- DAST & SAST Panel -->
+                <div class="panel-card" style="border: 1px solid #00ff41;">
+                    <div class="panel-title" style="color: #00ff41;">🛡️ DAST & SAST</div>
+                    
+                    <!-- Target input -->
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="dastSastTarget" placeholder="URL (DAST) or /path/to/code (SAST)" style="width: 100%; background: #1a1a25; border: 1px solid #00ff41; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                    </div>
+                    
+                    <!-- DAST Section -->
+                    <div style="font-size: 10px; color: #ff6b6b; margin-bottom: 6px; font-weight: bold;">🔴 DAST (Dynamic - Running Apps)</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="runDASTScan('zap')" style="border-color: #ff6b6b;">🕷️ ZAP</button>
+                        <button class="quick-btn" onclick="runDASTScan('nikto')" style="border-color: #ff6b6b;">🔍 Nikto</button>
+                        <button class="quick-btn" onclick="runDASTScan('nuclei')" style="border-color: #ff6b6b;">⚡ Nuclei</button>
+                        <button class="quick-btn" onclick="runDASTScan('sqlmap')" style="border-color: #ff6b6b;">💉 SQLMap</button>
+                    </div>
+                    <div class="quick-actions" style="margin-top: 6px;">
+                        <button class="quick-btn" onclick="runDASTScan('xsstrike')" style="border-color: #ff6b6b;">🔥 XSS</button>
+                        <button class="quick-btn" onclick="runDASTScan('full_dast')" style="flex: 1; background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">⚡ Full DAST</button>
+                    </div>
+                    
+                    <!-- SAST Section -->
+                    <div style="font-size: 10px; color: #4dabf7; margin: 12px 0 6px 0; font-weight: bold;">🔵 SAST (Static - Source Code)</div>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="runSASTScan('semgrep')" style="border-color: #4dabf7;">🔬 Semgrep</button>
+                        <button class="quick-btn" onclick="runSASTScan('bandit')" style="border-color: #4dabf7;">🐍 Bandit</button>
+                        <button class="quick-btn" onclick="runSASTScan('bearer')" style="border-color: #4dabf7;">🔒 Bearer</button>
+                        <button class="quick-btn" onclick="runSASTScan('codeql')" style="border-color: #4dabf7;">🧬 CodeQL</button>
+                    </div>
+                    <div class="quick-actions" style="margin-top: 6px;">
+                        <button class="quick-btn" onclick="runSASTScan('secrets')" style="border-color: #4dabf7;">🔑 Secrets</button>
+                        <button class="quick-btn" onclick="runSASTScan('full_sast')" style="flex: 1; background: linear-gradient(135deg, #4dabf7, #0abdc6); color: #0a0a0f;">⚡ Full SAST</button>
+                    </div>
+                </div>
+
                 <div class="panel-card" style="border: 1px solid #8b5cf6;">
                     <div class="panel-title" style="color: #8b5cf6;">🔍 GitHub Secret Hunter</div>
                     
@@ -1017,8 +1053,11 @@
                         <button class="quick-btn" onclick="runAIFeature('copilot')" title="Get security recommendations">🛡️ Security Copilot</button>
                     </div>
                     <div style="margin-top: 8px; display: flex; gap: 5px;">
-                        <button class="quick-btn" onclick="runAIFeature('attack')" style="flex: 1; background: linear-gradient(135deg, #ff6b35, #ff00ff);" title="Red team simulation">⚔️ Attack Simulation</button>
-                        <button class="quick-btn" onclick="runAIFeature('prioritize')" style="flex: 1; background: linear-gradient(135deg, #ff6b35, #00ff41);" title="Prioritize vulnerabilities">📈 Vuln Prioritizer</button>
+                        <button class="quick-btn" onclick="runAIFeature('attack')" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6);" title="Red team simulation">⚔️ Attack Simulation</button>
+                        <button class="quick-btn" onclick="runAIFeature('prioritize')" style="flex: 1; background: linear-gradient(135deg, #0abdc6, #00ff41);" title="Prioritize vulnerabilities">📈 Vuln Prioritizer</button>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <button class="quick-btn" onclick="runAIFeature('code_review')" style="width: 100%; background: linear-gradient(135deg, #a855f7, #6366f1); color: white;" title="Senior engineer code review">👨‍💻 Tech Lead Code Review</button>
                     </div>
                 </div>
 
@@ -1294,6 +1333,12 @@
             const text = input.value.trim();
             
             if (!text) return;
+            
+            // Check for pending AI feature input FIRST
+            if (checkPendingAIFeature(text)) {
+                input.value = '';
+                return;
+            }
             
             // Detect input type
             const isUrl = /^(https?:\/\/|[a-z0-9][-a-z0-9]*\.[a-z]{2,})/i.test(text);
@@ -4054,7 +4099,7 @@
             }
         }
         
-        function displayNetworkResults(data, captureType) {
+        async function displayNetworkResults(data, captureType) {
             let html = `<div style="background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(255,0,255,0.1)); border: 2px solid #ff00ff; border-radius: 12px; padding: 20px;">`;
             html += `<div style="text-align: center; margin-bottom: 15px;">`;
             html += `<div style="font-family: 'Orbitron', sans-serif; font-size: 1.3em; color: #ff00ff;">📡 NETWORK CAPTURE RESULTS</div>`;
@@ -4074,6 +4119,22 @@
             
             html += `</div>`;
             addMessage(html);
+            
+            // 🔧 FIX: Attach network capture results to chat context so Neo can reference them
+            try {
+                await fetch('/api/chat/attach-context', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId,
+                        contextType: `Network Capture (${captureType.toUpperCase()})`,
+                        context: data.output || 'No traffic captured'
+                    })
+                });
+                console.log('Network capture context attached to session');
+            } catch (e) {
+                console.warn('Failed to attach network capture context:', e);
+            }
         }
         
         async function startPortScan(scanType) {
@@ -4122,7 +4183,7 @@
             }
         }
         
-        function displayPortScanResults(data) {
+        async function displayPortScanResults(data) {
             let html = `<div style="background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,255,65,0.1)); border: 2px solid #00ff41; border-radius: 12px; padding: 20px;">`;
             html += `<div style="text-align: center; margin-bottom: 15px;">`;
             html += `<div style="font-family: 'Orbitron', sans-serif; font-size: 1.3em; color: #00ff41;">🔍 PORT SCAN RESULTS</div>`;
@@ -4153,6 +4214,28 @@
             
             html += `</div>`;
             addMessage(html);
+            
+            // 🔧 FIX: Attach port scan results to chat context so Neo can reference them
+            try {
+                const contextData = {
+                    target: data.target,
+                    openPorts: data.openPorts || [],
+                    rawOutput: data.rawOutput,
+                    aiAnalysis: data.aiAnalysis
+                };
+                await fetch('/api/chat/attach-context', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId,
+                        contextType: 'Port Scan',
+                        context: JSON.stringify(contextData, null, 2)
+                    })
+                });
+                console.log('Port scan context attached to session');
+            } catch (e) {
+                console.warn('Failed to attach port scan context:', e);
+            }
         }
         
         async function startMobileProxy() {
@@ -5104,6 +5187,31 @@
                 // Update sidebar count
                 document.getElementById('deviceCount').textContent = `${data.devices.length} devices`;
                 
+                // 🔧 FIX: Attach network scan results to chat context
+                try {
+                    const contextData = {
+                        summary: `${data.devices.length} devices found: ${trusted} trusted, ${unknown} unknown`,
+                        devices: data.devices.map(d => ({
+                            ip: d.ip,
+                            mac: d.mac,
+                            vendor: d.vendor,
+                            whitelisted: d.whitelisted,
+                            whitelistName: d.whitelistName
+                        }))
+                    };
+                    await fetch('/api/chat/attach-context', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId,
+                            contextType: 'Network Guardian Quick Scan',
+                            context: JSON.stringify(contextData, null, 2)
+                        })
+                    });
+                } catch (e) {
+                    console.warn('Failed to attach network scan context:', e);
+                }
+                
             } catch (e) {
                 addMessage(`❌ Scan error: ${e.message}`);
             }
@@ -5168,6 +5276,34 @@
                 
                 // Update sidebar count
                 document.getElementById('deviceCount').textContent = `${devices.length} devices`;
+                
+                // 🔧 FIX: Attach AI network scan results to chat context
+                try {
+                    const contextData = {
+                        summary: `${devices.length} devices: ${trusted} trusted, ${unknown} unknown, ${threats} potential threats`,
+                        aiSummary: data.aiAnalysis?.summary,
+                        devices: devices.map(d => ({
+                            ip: d.ip,
+                            mac: d.mac,
+                            vendor: d.vendor,
+                            deviceType: d.deviceType,
+                            threatLevel: d.threatLevel,
+                            analysis: d.analysis,
+                            recommendation: d.recommendation
+                        }))
+                    };
+                    await fetch('/api/chat/attach-context', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId,
+                            contextType: 'Network Guardian AI Scan',
+                            context: JSON.stringify(contextData, null, 2)
+                        })
+                    });
+                } catch (e) {
+                    console.warn('Failed to attach AI network scan context:', e);
+                }
                 
             } catch (e) {
                 addMessage(`❌ Scan error: ${e.message}`);
@@ -5354,6 +5490,212 @@
             githubHunt(type);
         }
         
+        // ═══════════════════════════════════════════════════════════════
+        // DAST & SAST SCANNING
+        // ═══════════════════════════════════════════════════════════════
+        
+        // DAST Scan (Dynamic Application Security Testing)
+        async function runDASTScan(tool) {
+            const target = document.getElementById('dastSastTarget').value.trim();
+            
+            if (!target) {
+                addMessage(`
+                    <div style="background: rgba(255,107,107,0.1); border: 1px solid #ff6b6b; border-radius: 8px; padding: 15px;">
+                        <strong style="color: #ff6b6b;">🔴 DAST Scan</strong><br><br>
+                        Please enter a <strong>URL</strong> in the target field above.<br>
+                        Example: <code>https://example.com</code>
+                    </div>
+                `, false);
+                document.getElementById('dastSastTarget').focus();
+                return;
+            }
+            
+            const toolNames = {
+                'zap': '🕷️ OWASP ZAP (Full Web Scanner)',
+                'nikto': '🔍 Nikto (Web Server Scanner)',
+                'nuclei': '⚡ Nuclei (Vulnerability Templates)',
+                'sqlmap': '💉 SQLMap (SQL Injection)',
+                'xsstrike': '🔥 XSStrike (XSS Detection)',
+                'full_dast': '⚡ Full DAST Suite (All Tools)'
+            };
+            
+            addMessage(`
+                <div style="background: rgba(255,107,107,0.1); border: 1px solid #ff6b6b; border-radius: 8px; padding: 15px;">
+                    <strong style="color: #ff6b6b;">🔴 DAST Scan Started</strong><br><br>
+                    <strong>Tool:</strong> ${toolNames[tool] || tool}<br>
+                    <strong>Target:</strong> ${target}<br>
+                    <strong>Type:</strong> Dynamic Analysis (Testing Running Application)<br><br>
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                </div>
+            `, false);
+            
+            try {
+                const response = await fetch('/api/dast-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target, tool, scanType: 'dast' })
+                });
+                
+                const result = await response.json();
+                
+                if (result.scanId) {
+                    // Poll for results
+                    pollDASTSASTResults(result.scanId, 'DAST', tool);
+                } else if (result.error) {
+                    addMessage(`❌ <strong>DAST Error:</strong> ${result.error}`, false);
+                }
+            } catch (error) {
+                addMessage(`❌ <strong>DAST Error:</strong> ${error.message}`, false);
+            }
+        }
+        
+        // SAST Scan (Static Application Security Testing)
+        async function runSASTScan(tool) {
+            const target = document.getElementById('dastSastTarget').value.trim();
+            
+            if (!target) {
+                addMessage(`
+                    <div style="background: rgba(77,171,247,0.1); border: 1px solid #4dabf7; border-radius: 8px; padding: 15px;">
+                        <strong style="color: #4dabf7;">🔵 SAST Scan</strong><br><br>
+                        Please enter a <strong>path to source code</strong> or <strong>GitHub repo URL</strong>.<br>
+                        Examples:<br>
+                        • <code>/path/to/project</code><br>
+                        • <code>https://github.com/user/repo</code><br>
+                        • <code>.</code> (current directory)
+                    </div>
+                `, false);
+                document.getElementById('dastSastTarget').focus();
+                return;
+            }
+            
+            const toolNames = {
+                'semgrep': '🔬 Semgrep (AI Code Analysis)',
+                'bandit': '🐍 Bandit (Python Security)',
+                'bearer': '🔒 Bearer (Code Scanner)',
+                'codeql': '🧬 CodeQL (Semantic Analysis)',
+                'secrets': '🔑 Secret Detection (TruffleHog + GitLeaks)',
+                'full_sast': '⚡ Full SAST Suite (All Tools)'
+            };
+            
+            addMessage(`
+                <div style="background: rgba(77,171,247,0.1); border: 1px solid #4dabf7; border-radius: 8px; padding: 15px;">
+                    <strong style="color: #4dabf7;">🔵 SAST Scan Started</strong><br><br>
+                    <strong>Tool:</strong> ${toolNames[tool] || tool}<br>
+                    <strong>Target:</strong> ${target}<br>
+                    <strong>Type:</strong> Static Analysis (Source Code Review)<br><br>
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                </div>
+            `, false);
+            
+            try {
+                const response = await fetch('/api/sast-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target, tool, scanType: 'sast' })
+                });
+                
+                const result = await response.json();
+                
+                if (result.scanId) {
+                    // Poll for results
+                    pollDASTSASTResults(result.scanId, 'SAST', tool);
+                } else if (result.error) {
+                    addMessage(`❌ <strong>SAST Error:</strong> ${result.error}`, false);
+                }
+            } catch (error) {
+                addMessage(`❌ <strong>SAST Error:</strong> ${error.message}`, false);
+            }
+        }
+        
+        // Poll for DAST/SAST scan results
+        async function pollDASTSASTResults(scanId, scanType, tool) {
+            const endpoint = scanType === 'DAST' ? '/api/dast-scan' : '/api/sast-scan';
+            const color = scanType === 'DAST' ? '#ff6b6b' : '#4dabf7';
+            
+            const poll = setInterval(async () => {
+                try {
+                    const response = await fetch(`${endpoint}/${scanId}`);
+                    const result = await response.json();
+                    
+                    if (result.status === 'complete') {
+                        clearInterval(poll);
+                        
+                        const findings = result.findings || [];
+                        const critical = findings.filter(f => f.severity === 'CRITICAL' || f.severity === 'HIGH').length;
+                        const medium = findings.filter(f => f.severity === 'MEDIUM').length;
+                        const low = findings.filter(f => f.severity === 'LOW' || f.severity === 'INFO').length;
+                        
+                        let html = `
+                            <div style="background: linear-gradient(135deg, #1a1a25, #0a0a15); border: 2px solid ${color}; border-radius: 12px; padding: 20px;">
+                                <div style="font-size: 1.2em; color: ${color}; margin-bottom: 15px;">
+                                    <strong>${scanType === 'DAST' ? '🔴' : '🔵'} ${scanType} Scan Complete</strong>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                                    <div style="background: rgba(255,0,64,0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                                        <div style="color: #ff0040; font-size: 1.5em; font-weight: bold;">${critical}</div>
+                                        <div style="color: #888; font-size: 0.8em;">Critical/High</div>
+                                    </div>
+                                    <div style="background: rgba(255,170,0,0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                                        <div style="color: #ffaa00; font-size: 1.5em; font-weight: bold;">${medium}</div>
+                                        <div style="color: #888; font-size: 0.8em;">Medium</div>
+                                    </div>
+                                    <div style="background: rgba(0,255,65,0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                                        <div style="color: #00ff41; font-size: 1.5em; font-weight: bold;">${low}</div>
+                                        <div style="color: #888; font-size: 0.8em;">Low/Info</div>
+                                    </div>
+                                </div>
+                        `;
+                        
+                        if (findings.length > 0) {
+                            html += `<div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto;">`;
+                            findings.slice(0, 10).forEach(f => {
+                                const sevColor = f.severity === 'CRITICAL' ? '#ff0040' : f.severity === 'HIGH' ? '#ff4444' : f.severity === 'MEDIUM' ? '#ffaa00' : '#00ff41';
+                                html += `
+                                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-left: 3px solid ${sevColor}; border-radius: 4px;">
+                                        <div style="color: ${sevColor}; font-weight: bold;">${f.severity}: ${f.title || f.name || 'Finding'}</div>
+                                        <div style="color: #888; font-size: 0.85em; margin-top: 5px;">${f.description || f.message || ''}</div>
+                                        ${f.location ? `<div style="color: #666; font-size: 0.8em; margin-top: 5px;">📍 ${f.location}</div>` : ''}
+                                    </div>
+                                `;
+                            });
+                            if (findings.length > 10) {
+                                html += `<div style="color: #888; text-align: center; margin-top: 10px;">... and ${findings.length - 10} more findings</div>`;
+                            }
+                            html += `</div>`;
+                        } else {
+                            html += `<div style="color: #00ff41; text-align: center; padding: 20px;">✅ No vulnerabilities found!</div>`;
+                        }
+                        
+                        html += `</div>`;
+                        addMessage(html, false);
+                        
+                        // Attach to chat context
+                        try {
+                            await fetch('/api/chat/attach-context', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    sessionId,
+                                    contextType: `${scanType} Scan (${tool})`,
+                                    context: JSON.stringify({ findings, scanType, tool }, null, 2)
+                                })
+                            });
+                        } catch (e) {
+                            console.warn('Failed to attach scan context:', e);
+                        }
+                        
+                    } else if (result.status === 'error') {
+                        clearInterval(poll);
+                        addMessage(`❌ <strong>${scanType} Error:</strong> ${result.error}`, false);
+                    }
+                } catch (error) {
+                    clearInterval(poll);
+                    addMessage(`❌ <strong>${scanType} Error:</strong> ${error.message}`, false);
+                }
+            }, 3000);
+        }
+        
         // Port scan with chat integration
         function startPortScanWithChat(type) {
             const target = document.getElementById('networkTarget').value.trim();
@@ -5381,154 +5723,229 @@
         }
         
         // ═══════════════════════════════════════════════════════════════
-        // AI-POWERED FEATURES
+        // AI-POWERED FEATURES (Chat-based input)
         // ═══════════════════════════════════════════════════════════════
         
-        async function runAIFeature(feature) {
-            const featureConfig = {
-                'phishing': {
-                    name: '🎣 AI Phishing Detection',
-                    endpoint: '/api/ai/phishing-detect',
-                    prompt: 'Paste the suspicious email, URL, or message to analyze:',
-                    inputRequired: true
-                },
-                'password': {
-                    name: '🔐 AI Password Auditor',
-                    endpoint: '/api/ai/password-audit',
-                    prompt: 'Enter the password to analyze (we never store passwords):',
-                    inputRequired: true,
-                    inputType: 'password'
-                },
-                'threat': {
-                    name: '🔮 AI Threat Prediction',
-                    endpoint: '/api/ai/threat-predict',
-                    prompt: 'Analyzing your network for potential threats...',
-                    inputRequired: false
-                },
-                'compliance': {
-                    name: '📋 AI Compliance Checker',
-                    endpoint: '/api/ai/compliance-check',
-                    prompt: 'Select compliance framework (GDPR, HIPAA, SOC2, PCI, or "all"):',
-                    inputRequired: true,
-                    defaultValue: 'all'
-                },
-                'privacy': {
-                    name: '🔒 AI Privacy Audit',
-                    endpoint: '/api/ai/privacy-audit',
-                    prompt: 'Enter app name or URL to audit:',
-                    inputRequired: true
-                },
-                'logs': {
-                    name: '📊 AI Log Analysis',
-                    endpoint: '/api/ai/log-analyze',
-                    prompt: 'Paste log entries to analyze (security logs, access logs, etc.):',
-                    inputRequired: true
-                },
-                'malware': {
-                    name: '🦠 AI Malware Analysis',
-                    endpoint: '/api/ai/malware-analyze',
-                    prompt: 'Enter file hash (MD5/SHA256) or paste file metadata:',
-                    inputRequired: true
-                },
-                'copilot': {
-                    name: '🛡️ AI Security Copilot',
-                    endpoint: '/api/ai/security-copilot',
-                    prompt: 'Getting personalized security recommendations...',
-                    inputRequired: false,
-                    method: 'GET'
-                },
-                'attack': {
-                    name: '⚔️ AI Attack Simulation',
-                    endpoint: '/api/ai/attack-simulate',
-                    prompt: 'Enter target domain or IP for red team simulation:',
-                    inputRequired: true
-                },
-                'prioritize': {
-                    name: '📈 AI Vulnerability Prioritizer',
-                    endpoint: '/api/ai/vuln-prioritize',
-                    prompt: 'Paste vulnerability findings (JSON or text) to prioritize:',
-                    inputRequired: true
+        // Store pending AI feature awaiting user input
+        let pendingAIFeature = null;
+        
+        const aiFeatureConfig = {
+            'phishing': {
+                name: '🎣 AI Phishing Detection',
+                endpoint: '/api/ai/phishing-detect',
+                prompt: 'Paste the suspicious **email, URL, or message** below and press Enter:',
+                placeholder: 'Paste suspicious content here...',
+                inputRequired: true,
+                buildBody: (input) => ({ content: input })
+            },
+            'password': {
+                name: '🔐 AI Password Auditor',
+                endpoint: '/api/ai/password-audit',
+                prompt: 'Enter the **password** to analyze (we never store passwords):',
+                placeholder: 'Enter password to audit...',
+                inputRequired: true,
+                buildBody: (input) => ({ password: input })
+            },
+            'threat': {
+                name: '🔮 AI Threat Prediction',
+                endpoint: '/api/ai/threat-predict',
+                prompt: 'Analyzing your network for potential threats...',
+                inputRequired: false
+            },
+            'compliance': {
+                name: '📋 AI Compliance Checker',
+                endpoint: '/api/ai/compliance-check',
+                prompt: 'Enter compliance framework to check: **GDPR**, **HIPAA**, **SOC2**, **PCI**, or **all**:',
+                placeholder: 'e.g., GDPR, HIPAA, SOC2, PCI, or all',
+                inputRequired: true,
+                buildBody: (input) => ({ framework: input })
+            },
+            'privacy': {
+                name: '🔒 AI Privacy Audit',
+                endpoint: '/api/ai/privacy-audit',
+                prompt: 'Enter the **app name or URL** to audit for privacy concerns:',
+                placeholder: 'e.g., facebook.com or TikTok',
+                inputRequired: true,
+                buildBody: (input) => ({ appInfo: { name: input } })
+            },
+            'logs': {
+                name: '📊 AI Log Analysis',
+                endpoint: '/api/ai/log-analyze',
+                prompt: 'Paste the **log entries** to analyze (security logs, access logs, etc.):',
+                placeholder: 'Paste log entries here...',
+                inputRequired: true,
+                buildBody: (input) => ({ logs: input })
+            },
+            'malware': {
+                name: '🦠 AI Malware Analysis',
+                endpoint: '/api/ai/malware-analyze',
+                prompt: 'Enter the **file hash** (MD5/SHA256) or paste file metadata:',
+                placeholder: 'e.g., d41d8cd98f00b204e9800998ecf8427e',
+                inputRequired: true,
+                buildBody: (input) => ({ fileInfo: { hash: input } })
+            },
+            'copilot': {
+                name: '🛡️ AI Security Copilot',
+                endpoint: '/api/ai/security-copilot',
+                prompt: 'Getting personalized security recommendations...',
+                inputRequired: false,
+                method: 'GET'
+            },
+            'attack': {
+                name: '⚔️ AI Attack Simulation',
+                endpoint: '/api/ai/attack-simulate',
+                prompt: 'Enter the **target domain or IP** for red team simulation:',
+                placeholder: 'e.g., example.com or 192.168.1.1',
+                inputRequired: true,
+                buildBody: (input) => ({ target: input })
+            },
+            'prioritize': {
+                name: '📈 AI Vulnerability Prioritizer',
+                endpoint: '/api/ai/vuln-prioritize',
+                prompt: 'Paste **vulnerability findings** (JSON or text description) to prioritize:',
+                placeholder: 'Paste vulnerability data here...',
+                inputRequired: true,
+                buildBody: (input) => {
+                    try {
+                        return { findings: JSON.parse(input) };
+                    } catch {
+                        return { findings: [{ description: input }] };
+                    }
                 }
-            };
-            
-            const config = featureConfig[feature];
+            },
+            'code_review': {
+                name: '👨‍💻 AI Tech Lead Code Review',
+                endpoint: '/api/ai/code-review',
+                prompt: `Paste your **code** for a senior engineer review.
+
+**What you'll get:**
+- Architecture & Design feedback
+- Code quality assessment  
+- Performance analysis
+- Security review
+- Best practices suggestions
+- Refactoring recommendations
+
+Paste your code below:`,
+                placeholder: 'Paste your code here for tech lead review...',
+                inputRequired: true,
+                buildBody: (input) => ({ code: input, language: 'auto' })
+            }
+        };
+        
+        function runAIFeature(feature) {
+            const config = aiFeatureConfig[feature];
             if (!config) {
-                addMessage('❌ Unknown AI feature', true);
+                addMessage('❌ Unknown AI feature', false);
                 return;
             }
             
-            addMessage(`<strong>${config.name}</strong><br>${config.prompt}`, true);
-            
             if (config.inputRequired) {
-                // Set up input mode for this feature
-                const input = config.inputType === 'password' 
-                    ? prompt(config.prompt) 
-                    : prompt(config.prompt, config.defaultValue || '');
+                // Show prompt in chat and wait for user input
+                pendingAIFeature = { feature, config };
                 
-                if (!input) {
-                    addMessage('❌ Cancelled', true);
-                    return;
-                }
+                addMessage(`
+                    <div style="background: linear-gradient(135deg, #1a1a25, #0a0a15); border: 2px solid #0abdc6; border-radius: 12px; padding: 20px;">
+                        <div style="font-size: 1.2em; color: #0abdc6; margin-bottom: 10px;"><strong>${config.name}</strong></div>
+                        <div style="color: #e0e0e0; margin-bottom: 15px;">${config.prompt}</div>
+                        <div style="color: #888; font-size: 0.85em;">💡 Type your input in the chat box below and press <strong>Enter</strong></div>
+                    </div>
+                `, false);
                 
-                addMessage(`🔄 Analyzing with AI...`, true);
+                // Update input placeholder
+                const input = document.getElementById('userInput');
+                input.placeholder = config.placeholder || 'Enter input...';
+                input.focus();
                 
-                try {
-                    const body = {};
-                    if (feature === 'phishing') body.content = input;
-                    else if (feature === 'password') body.password = input;
-                    else if (feature === 'compliance') body.framework = input;
-                    else if (feature === 'privacy') body.appInfo = { name: input };
-                    else if (feature === 'logs') body.logs = input;
-                    else if (feature === 'malware') body.fileInfo = { hash: input };
-                    else if (feature === 'attack') body.target = input;
-                    else if (feature === 'prioritize') {
-                        try {
-                            body.findings = JSON.parse(input);
-                        } catch {
-                            body.findings = [{ description: input }];
-                        }
-                    }
-                    
-                    const response = await fetch(config.endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        const analysis = result.analysis || result.audit || result.prediction || result.compliance || result.attackPlan || result.prioritized;
-                        addMessage(`<strong>✅ ${config.name} Results:</strong><br><pre style="white-space: pre-wrap; font-size: 11px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin-top: 5px;">${typeof analysis === 'string' ? analysis : JSON.stringify(analysis, null, 2)}</pre>`, true);
-                    } else {
-                        addMessage(`❌ Error: ${result.error || 'Analysis failed'}`, true);
-                    }
-                } catch (error) {
-                    addMessage(`❌ Error: ${error.message}`, true);
+                // Update context indicator
+                const contextDiv = document.getElementById('inputContext');
+                const contextIcon = document.getElementById('contextIcon');
+                const contextText = document.getElementById('contextText');
+                if (contextDiv) {
+                    contextDiv.style.display = 'block';
+                    contextDiv.style.borderColor = '#0abdc6';
+                    contextIcon.textContent = '🤖';
+                    contextText.textContent = `${config.name} - awaiting input`;
                 }
             } else {
-                // No input required - just call the API
-                addMessage(`🔄 Running ${config.name}...`, true);
-                
-                try {
-                    const response = await fetch(config.endpoint, {
-                        method: config.method || 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: config.method === 'GET' ? undefined : JSON.stringify({})
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        const analysis = result.recommendations || result.prediction || result.analysis;
-                        addMessage(`<strong>✅ ${config.name} Results:</strong><br><pre style="white-space: pre-wrap; font-size: 11px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; margin-top: 5px;">${typeof analysis === 'string' ? analysis : JSON.stringify(analysis, null, 2)}</pre>`, true);
-                    } else {
-                        addMessage(`❌ Error: ${result.error || 'Analysis failed'}`, true);
-                    }
-                } catch (error) {
-                    addMessage(`❌ Error: ${error.message}`, true);
-                }
+                // No input required - run immediately
+                executeAIFeature(feature, config, null);
             }
+        }
+        
+        async function executeAIFeature(feature, config, userInput) {
+            addMessage(`🔄 Running <strong>${config.name}</strong>...`, false);
+            
+            try {
+                const body = userInput && config.buildBody ? config.buildBody(userInput) : {};
+                
+                const response = await fetch(config.endpoint, {
+                    method: config.method || 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: config.method === 'GET' ? undefined : JSON.stringify(body)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const analysis = result.analysis || result.audit || result.prediction || 
+                                     result.compliance || result.attackPlan || result.prioritized ||
+                                     result.recommendations || result;
+                    
+                    let displayContent = typeof analysis === 'string' ? analysis : JSON.stringify(analysis, null, 2);
+                    
+                    addMessage(`
+                        <div style="background: linear-gradient(135deg, #1a1a25, #0a0a15); border: 2px solid #00ff41; border-radius: 12px; padding: 20px;">
+                            <div style="font-size: 1.1em; color: #00ff41; margin-bottom: 10px;"><strong>✅ ${config.name} Results</strong></div>
+                            <pre style="white-space: pre-wrap; font-size: 11px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; color: #e0e0e0; overflow-x: auto;">${displayContent}</pre>
+                        </div>
+                    `, false);
+                    
+                    // Attach results to chat context
+                    try {
+                        await fetch('/api/chat/attach-context', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sessionId,
+                                contextType: config.name,
+                                context: displayContent
+                            })
+                        });
+                    } catch (e) {
+                        console.warn('Failed to attach AI feature context:', e);
+                    }
+                } else {
+                    addMessage(`❌ <strong>${config.name} Error:</strong> ${result.error || 'Analysis failed'}`, false);
+                }
+            } catch (error) {
+                addMessage(`❌ <strong>${config.name} Error:</strong> ${error.message}`, false);
+            }
+            
+            // Reset input placeholder
+            document.getElementById('userInput').placeholder = 'Ask Neo anything or paste a URL to scan...';
+        }
+        
+        // Check for pending AI feature input when user sends a message
+        function checkPendingAIFeature(message) {
+            if (pendingAIFeature) {
+                const { feature, config } = pendingAIFeature;
+                pendingAIFeature = null; // Clear pending state
+                
+                // Reset context indicator
+                const contextDiv = document.getElementById('inputContext');
+                if (contextDiv) {
+                    contextDiv.style.display = 'none';
+                }
+                
+                // Show user input
+                addMessage(message, true);
+                
+                // Execute the feature with user input
+                executeAIFeature(feature, config, message);
+                return true; // Handled
+            }
+            return false; // Not handled, continue normal flow
         }
         
         // Add message helper that scrolls to bottom

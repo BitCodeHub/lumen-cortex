@@ -1,0 +1,30 @@
+{
+  "apiKey": "u3326329-72d9367d037364d9d00d3c8c",
+  "monitors": {
+    "802399061": {
+      "id": 802399061,
+      "url": "https://owners.hyundaiusa.com/us/en/index.html",
+      "friendlyName": "Hyundai Owners - Full Path",
+      "createdAt": "2026-02-21T22:14:49.147Z"
+    }
+  },
+  "alertContacts": [],
+  "account": {
+    "email": "ocspsreefer@gmail.com",
+    "user_id": 3326329,
+    "firstname": "BitCodeHub",
+    "sms_credits": 0,
+    "payment_processor": null,
+    "payment_period": null,
+    "subscription_expiry_date": null,
+    "monitor_limit": 50,
+    "monitor_interval": 5,
+    "up_monitors": 0,
+    "down_monitors": 1,
+    "paused_monitors": 0,
+    "total_monitors_count": 1,
+    "registered_at": "2026-02-21T22:08:43.000Z",
+    "active_subscription": null,
+    "organizations": []
+  }
+}

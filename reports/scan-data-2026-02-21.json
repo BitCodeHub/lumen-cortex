@@ -1,0 +1,84 @@
+{
+  "scan_info": {
+    "target": "command-center-api.onrender.com",
+    "scan_date": "2026-02-21T16:25:00-08:00",
+    "scanner": "Lumen Cortex v1.0",
+    "scan_type": "Quick Security Assessment"
+  },
+  "nmap_results": {
+    "host": "command-center-api.onrender.com",
+    "ip_addresses": ["216.24.57.7", "216.24.57.251"],
+    "status": "up",
+    "latency": "0.013s",
+    "open_ports": [
+      {"port": 80, "service": "http", "state": "open"},
+      {"port": 443, "service": "https", "state": "open"},
+      {"port": 8080, "service": "http-proxy", "state": "open"},
+      {"port": 8443, "service": "https-alt", "state": "open"}
+    ],
+    "filtered_ports": 96
+  },
+  "nikto_results": {
+    "server": "cloudflare",
+    "ssl_info": {
+      "subject": "/CN=onrender.com",
+      "san": ["onrender.com", "*.onrender.com"],
+      "ciphers": "AEAD-CHACHA20-POLY1305-SHA256",
+      "issuer": "/C=US/O=Google Trust Services/CN=WE1"
+    },
+    "findings": [
+      {
+        "id": "999986",
+        "severity": "medium",
+        "title": "CORS Wildcard",
+        "description": "Retrieved access-control-allow-origin header: *",
+        "impact": "Allows any origin to make cross-origin requests"
+      },
+      {
+        "id": "999100",
+        "severity": "info",
+        "title": "Infrastructure Disclosure",
+        "description": "Uncommon header 'x-render-origin-server' found with contents: Render"
+      },
+      {
+        "id": "999100",
+        "severity": "info", 
+        "title": "Request ID Disclosure",
+        "description": "Uncommon header 'rndr-id' found with contents: e2c1e77a-efb5-4349"
+      },
+      {
+        "id": "999966",
+        "severity": "low",
+        "title": "Potential BREACH Vulnerability",
+        "description": "Content-Encoding header is set to 'deflate' which may mean the server is vulnerable to BREACH attack",
+        "reference": "http://breachattack.com/"
+      },
+      {
+        "id": "013587",
+        "severity": "low",
+        "title": "Missing Security Header",
+        "description": "Suggested security header missing: permissions-policy",
+        "reference": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy"
+      },
+      {
+        "id": "999992",
+        "severity": "info",
+        "title": "Wildcard Certificate",
+        "description": "Server is using a wildcard certificate: *.onrender.com"
+      }
+    ],
+    "protection": "Cloudflare detected via cf-ray header"
+  },
+  "ffuf_results": {
+    "discovered_endpoints": [
+      {"path": "/health", "status": 200, "size": 108},
+      {"path": "/Health", "status": 200, "size": 108}
+    ]
+  },
+  "ssl_results": {
+    "valid_from": "Jan 28 21:05:47 2026 GMT",
+    "valid_to": "Apr 28 22:05:44 2026 GMT",
+    "subject": "CN=onrender.com",
+    "certificate_type": "wildcard"
+  }
+}

@@ -1,0 +1,19 @@
+[
+   {
+      "end_time" : "2026-02-21 01:01:44 -0800",
+      "host" : "httpbin.org",
+      "ip" : "44.195.71.76",
+      "port" : "443",
+      "server_banner" : null,
+      "start_time" : "2026-02-21 01:01:44 -0800",
+      "vulnerabilities" : [
+         {
+            "id" : "FAIL",
+            "method" : "GET",
+            "msg" : "Unable to connect to httpbin.org:443.",
+            "references" : "",
+            "url" : "/"
+         }
+      ]
+   }
+]

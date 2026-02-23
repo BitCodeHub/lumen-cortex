@@ -1,0 +1,61 @@
+[
+   {
+      "end_time" : "2026-02-21 21:24:39 -0800",
+      "host" : "owners.hyundaiusa.com",
+      "ip" : "104.18.27.186",
+      "port" : "443",
+      "server_banner" : null,
+      "ssl_info" : {
+         "altnames" : "owners.hyundaiusa.com",
+         "ciphers" : "AEAD-CHACHA20-POLY1305-SHA256",
+         "cn" : "owners.hyundaiusa.com",
+         "issuer" : "/C=US/O=Google Trust Services/CN=WE1",
+         "subject" : "/CN=owners.hyundaiusa.com"
+      },
+      "start_time" : "2026-02-21 21:24:30 -0800",
+      "vulnerabilities" : [
+         {
+            "id" : "011799",
+            "method" : "GET",
+            "msg" : "An alt-svc header was found which is advertising HTTP/3. The endpoint is: ':443'. Nikto cannot test HTTP/3 over QUIC.",
+            "references" : "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/alt-svc",
+            "url" : "/us/en/"
+         },
+         {
+            "id" : 999106,
+            "method" : "GET",
+            "msg" : "Cloudflare detected via cf-ray header. Recommend proxying via Burp or mitmproxy to avoid TLS fingerprint blocks.",
+            "references" : "https://github.com/sullo/nikto/wiki/Using-a-Proxy",
+            "url" : "/us/en/"
+         },
+         {
+            "id" : 999966,
+            "method" : "GET",
+            "msg" : "The Content-Encoding header is set to \"deflate\" which may mean that the server is vulnerable to the BREACH attack.",
+            "references" : "http://breachattack.com/",
+            "url" : "/us/en/"
+         },
+         {
+            "id" : "013587",
+            "method" : "GET",
+            "msg" : "Suggested security header missing: permissions-policy.",
+            "references" : "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy",
+            "url" : "/us/en/"
+         },
+         {
+            "id" : "013587",
+            "method" : "GET",
+            "msg" : "Suggested security header missing: content-security-policy.",
+            "references" : "https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP",
+            "url" : "/us/en/"
+         },
+         {
+            "id" : "013587",
+            "method" : "GET",
+            "msg" : "Suggested security header missing: x-content-type-options.",
+            "references" : "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options",
+            "url" : "/us/en/"
+         }
+      ]
+   }
+]
