@@ -5332,6 +5332,91 @@ app.get('/api/network-guardian/vendor/:mac', async (req, res) => {
 console.log('🛡️ Network Guardian module loaded');
 
 // ═══════════════════════════════════════════════════════════════════════════
+// NETWORK AUTO-KICK - Device Removal & Blacklisting
+// ═══════════════════════════════════════════════════════════════════════════
+
+const networkAutoKick = require('./network-autokick');
+
+// Get blacklist
+app.get('/api/network-guardian/blacklist', (req, res) => {
+  res.json(networkAutoKick.getBlacklist());
+});
+
+// Add to blacklist
+app.post('/api/network-guardian/blacklist', (req, res) => {
+  const { mac, reason, autoKick } = req.body;
+  if (!mac) {
+    return res.status(400).json({ error: 'MAC address required' });
+  }
+  res.json(networkAutoKick.addToBlacklist(mac, reason, autoKick));
+});
+
+// Remove from blacklist
+app.delete('/api/network-guardian/blacklist/:mac', (req, res) => {
+  const mac = decodeURIComponent(req.params.mac);
+  res.json(networkAutoKick.removeFromBlacklist(mac));
+});
+
+// Toggle auto-kick mode
+app.post('/api/network-guardian/autokick/toggle', (req, res) => {
+  const { enabled } = req.body;
+  res.json(networkAutoKick.setAutoKickEnabled(enabled === true));
+});
+
+// Kick device (with safety confirmation)
+app.post('/api/network-guardian/kick', async (req, res) => {
+  const { mac, execute, confirm } = req.body;
+  
+  if (!mac) {
+    return res.status(400).json({ error: 'MAC address required' });
+  }
+  
+  // Require confirmation for actual execution
+  if (execute && !confirm) {
+    return res.json({
+      warning: '⚠️ This will attempt to disconnect the device from your network.',
+      legal: 'Only kick devices on networks you own or have authorization to manage.',
+      confirm: 'Set confirm=true to proceed',
+      mac
+    });
+  }
+  
+  const result = await networkAutoKick.kickDevice(mac, { execute: execute && confirm });
+  res.json(result);
+});
+
+// Get kick log
+app.get('/api/network-guardian/kick/log', (req, res) => {
+  const limit = parseInt(req.query.limit) || 20;
+  res.json(networkAutoKick.getKickLog(limit));
+});
+
+// Monitoring status
+app.get('/api/network-guardian/monitoring/status', (req, res) => {
+  res.json(networkAutoKick.getMonitoringStatus());
+});
+
+// Start monitoring (auto-kick blacklisted devices)
+app.post('/api/network-guardian/monitoring/start', (req, res) => {
+  const { intervalMs } = req.body;
+  const result = networkAutoKick.startMonitoring(intervalMs || 60000);
+  res.json(result);
+});
+
+// Stop monitoring
+app.post('/api/network-guardian/monitoring/stop', (req, res) => {
+  res.json(networkAutoKick.stopMonitoring());
+});
+
+// AT&T Gateway status
+app.get('/api/network-guardian/gateway/status', async (req, res) => {
+  const result = await networkAutoKick.attGatewayStatus();
+  res.json(result);
+});
+
+console.log('🚫 Network Auto-Kick module loaded');
+
+// ═══════════════════════════════════════════════════════════════════════════
 // IP INVESTIGATOR - White Hat IP Intelligence Tool
 // ═══════════════════════════════════════════════════════════════════════════
 
