@@ -1189,6 +1189,50 @@
                     </div>
                 </div>
 
+                <!-- 📈 SEO ANALYZER -->
+                <div class="accordion-section" data-section="seo">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <div class="accordion-header-left">
+                            <span class="accordion-icon">📈</span>
+                            <span class="accordion-title">SEO Analyzer</span>
+                            <span class="accordion-badge" style="background: #8b5cf6;">PRO</span>
+                        </div>
+                        <span class="accordion-toggle">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            <div style="font-size: 11px; color: #8b5cf6; margin-bottom: 8px; font-weight: bold;">🔍 Full SEO Audit</div>
+                            <input type="text" id="seoTargetUrl" class="tool-input" placeholder="Enter URL to analyze (e.g., example.com)" style="border-color: #8b5cf6;">
+                            <div class="quick-actions" style="margin-top: 8px;">
+                                <button class="quick-btn primary" onclick="runSEOAnalysis()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); flex: 2;">🔍 Analyze SEO</button>
+                                <button class="quick-btn" onclick="askSEOQuestion()" style="border-color: #8b5cf6;">💬 Ask</button>
+                            </div>
+                            <div id="seoStatus" class="tool-status"></div>
+                            
+                            <!-- Quick SEO Questions -->
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                                <div style="font-size: 10px; color: #666; margin-bottom: 6px;">Quick Questions:</div>
+                                <div class="quick-actions" style="flex-wrap: wrap;">
+                                    <button class="quick-btn" onclick="askSEOTopic('title')" style="font-size: 10px;">Title Tags</button>
+                                    <button class="quick-btn" onclick="askSEOTopic('meta')" style="font-size: 10px;">Meta Desc</button>
+                                    <button class="quick-btn" onclick="askSEOTopic('headings')" style="font-size: 10px;">Headings</button>
+                                    <button class="quick-btn" onclick="askSEOTopic('speed')" style="font-size: 10px;">Page Speed</button>
+                                    <button class="quick-btn" onclick="askSEOTopic('images')" style="font-size: 10px;">Images</button>
+                                    <button class="quick-btn" onclick="askSEOTopic('schema')" style="font-size: 10px;">Schema</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Export Options (shown after analysis) -->
+                            <div id="seoExportOptions" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                                <div class="quick-actions">
+                                    <button class="quick-btn" onclick="exportSEOReport('pdf')" style="border-color: #8b5cf6;">📄 Export PDF</button>
+                                    <button class="quick-btn" onclick="exportSEOReport('json')" style="border-color: #8b5cf6;">📋 Export JSON</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 🔍 INVESTIGATION TOOLS -->
                 <div class="accordion-section" data-section="investigation">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -3763,6 +3807,293 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
         });
 
         // ═══════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════
+        // 📈 SEO ANALYZER FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════
+        
+        let currentSEOAnalysisId = null;
+        let currentSEOResults = null;
+        
+        async function runSEOAnalysis() {
+            const urlInput = document.getElementById('seoTargetUrl');
+            const statusEl = document.getElementById('seoStatus');
+            const exportEl = document.getElementById('seoExportOptions');
+            
+            let url = urlInput.value.trim();
+            if (!url) {
+                statusEl.innerHTML = '<span style="color: #ff6b6b;">Please enter a URL</span>';
+                return;
+            }
+            
+            // Add protocol if missing
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+            
+            statusEl.innerHTML = '<span style="color: #8b5cf6;">🔍 Analyzing... (this may take 30-60 seconds)</span>';
+            exportEl.style.display = 'none';
+            updateLastScanTime();
+            
+            // Add message to chat
+            addMessage(`🔍 <strong>Starting SEO Analysis</strong><br>URL: ${url}<br><span style="color: #666;">Analyzing meta tags, content, performance, and more...</span>`, true);
+            
+            try {
+                const response = await fetch('/api/seo/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                currentSEOAnalysisId = data.analysisId;
+                currentSEOResults = data.results;
+                
+                // Update status
+                const scoreColor = data.results.scores.overall >= 80 ? '#00ff41' : 
+                                   data.results.scores.overall >= 60 ? '#ffaa00' : '#ff6b6b';
+                statusEl.innerHTML = `<span style="color: ${scoreColor};">Score: ${data.results.scores.overall}/100</span>`;
+                
+                // Show export options
+                exportEl.style.display = 'block';
+                
+                // Display results in chat
+                displaySEOResults(data.results);
+                
+            } catch (error) {
+                statusEl.innerHTML = `<span style="color: #ff6b6b;">Error: ${error.message}</span>`;
+                addMessage(`❌ <strong>SEO Analysis Failed</strong><br>${error.message}`, true);
+            }
+        }
+        
+        function displaySEOResults(results) {
+            const scoreEmoji = results.scores.overall >= 80 ? '🟢' : 
+                              results.scores.overall >= 60 ? '🟡' : '🔴';
+            
+            let html = `
+                <div style="background: linear-gradient(135deg, #1a1a25, #12121a); border: 1px solid #8b5cf6; border-radius: 12px; padding: 20px; margin-top: 10px;">
+                    <div style="font-family: 'Orbitron', sans-serif; font-size: 1.3em; color: #8b5cf6; margin-bottom: 15px;">📈 SEO ANALYSIS REPORT</div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+                        <div style="background: #0a0a0f; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: bold; color: ${results.scores.overall >= 80 ? '#00ff41' : results.scores.overall >= 60 ? '#ffaa00' : '#ff6b6b'};">${results.scores.overall}</div>
+                            <div style="font-size: 11px; color: #888;">Overall Score</div>
+                        </div>
+                        <div style="background: #0a0a0f; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: bold; color: #0abdc6;">${results.scores.onPage}</div>
+                            <div style="font-size: 11px; color: #888;">On-Page SEO</div>
+                        </div>
+                        <div style="background: #0a0a0f; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: bold; color: #ff6b35;">${results.scores.performance || 'N/A'}</div>
+                            <div style="font-size: 11px; color: #888;">Performance</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: bold; color: #00ff41; margin-bottom: 8px;">✅ What's Good</div>
+                        <ul style="margin: 0; padding-left: 20px; color: #888; font-size: 12px;">
+                            ${results.meta.title.value ? '<li>Title tag is set</li>' : ''}
+                            ${results.meta.description.value ? '<li>Meta description is set</li>' : ''}
+                            ${results.headings.counts.h1 === 1 ? '<li>Single H1 heading</li>' : ''}
+                            ${results.technical.url.isHttps ? '<li>HTTPS enabled</li>' : ''}
+                            ${results.meta.viewport.isMobileOptimized ? '<li>Mobile optimized</li>' : ''}
+                            ${results.meta.hasStructuredData ? '<li>Structured data present</li>' : ''}
+                        </ul>
+                    </div>
+                    
+                    ${results.issues.critical.length > 0 ? `
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: bold; color: #ff6b6b; margin-bottom: 8px;">🔴 Critical Issues (${results.issues.critical.length})</div>
+                        <ul style="margin: 0; padding-left: 20px; color: #ff6b6b; font-size: 12px;">
+                            ${results.issues.critical.map(i => `<li>${i.issue}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    
+                    ${results.issues.warning.length > 0 ? `
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: bold; color: #ffaa00; margin-bottom: 8px;">🟡 Warnings (${results.issues.warning.length})</div>
+                        <ul style="margin: 0; padding-left: 20px; color: #ffaa00; font-size: 12px;">
+                            ${results.issues.warning.slice(0, 5).map(i => `<li>${i.issue}</li>`).join('')}
+                            ${results.issues.warning.length > 5 ? `<li>...and ${results.issues.warning.length - 5} more</li>` : ''}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: bold; color: #8b5cf6; margin-bottom: 8px;">📊 Key Metrics</div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 11px;">
+                            <div style="background: #0a0a0f; padding: 8px; border-radius: 4px;">
+                                <span style="color: #666;">Title:</span> 
+                                <span style="color: ${results.meta.title.length > 0 ? '#00ff41' : '#ff6b6b'};">${results.meta.title.length} chars</span>
+                            </div>
+                            <div style="background: #0a0a0f; padding: 8px; border-radius: 4px;">
+                                <span style="color: #666;">Description:</span> 
+                                <span style="color: ${results.meta.description.length > 0 ? '#00ff41' : '#ff6b6b'};">${results.meta.description.length} chars</span>
+                            </div>
+                            <div style="background: #0a0a0f; padding: 8px; border-radius: 4px;">
+                                <span style="color: #666;">Words:</span> 
+                                <span style="color: #0abdc6;">${results.content.wordCount}</span>
+                            </div>
+                            <div style="background: #0a0a0f; padding: 8px; border-radius: 4px;">
+                                <span style="color: #666;">Images:</span> 
+                                <span style="color: #0abdc6;">${results.images.withAlt}/${results.images.total} with alt</span>
+                            </div>
+                            <div style="background: #0a0a0f; padding: 8px; border-radius: 4px;">
+                                <span style="color: #666;">Links:</span> 
+                                <span style="color: #0abdc6;">${results.links.internal.count} int / ${results.links.external.count} ext</span>
+                            </div>
+                            <div style="background: #0a0a0f; padding: 8px; border-radius: 4px;">
+                                <span style="color: #666;">Load Time:</span> 
+                                <span style="color: #0abdc6;">${results.performance?.loadTime || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${results.recommendations.length > 0 ? `
+                    <div>
+                        <div style="font-weight: bold; color: #0abdc6; margin-bottom: 8px;">💡 Top Recommendations</div>
+                        <ol style="margin: 0; padding-left: 20px; color: #888; font-size: 12px;">
+                            ${results.recommendations.slice(0, 3).map(r => `<li><strong>${r.title}</strong>: ${r.description}</li>`).join('')}
+                        </ol>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; font-size: 11px; color: #666;">
+                        💬 Ask me anything about this report! Try: "What does the title score mean?" or "How do I fix the meta description?"
+                    </div>
+                </div>
+            `;
+            
+            addMessage(html, true);
+        }
+        
+        function askSEOQuestion() {
+            const input = document.getElementById('userInput');
+            input.value = 'Explain my SEO results and what I should fix first';
+            input.focus();
+            setInputMode('chat');
+        }
+        
+        function askSEOTopic(topic) {
+            const questions = {
+                'title': 'What makes a good SEO title tag and how should I optimize mine?',
+                'meta': 'How do I write an effective meta description for SEO?',
+                'headings': 'What is the correct heading structure for SEO (H1, H2, H3)?',
+                'speed': 'How do Core Web Vitals affect SEO and how can I improve page speed?',
+                'images': 'What are the best practices for image SEO and alt text?',
+                'schema': 'What is structured data (Schema.org) and how does it help SEO?'
+            };
+            
+            const input = document.getElementById('userInput');
+            input.value = questions[topic] || 'Tell me about SEO best practices';
+            handleSmartSend();
+        }
+        
+        async function exportSEOReport(format) {
+            if (!currentSEOAnalysisId) {
+                alert('No SEO analysis to export. Run an analysis first.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/seo/report/${currentSEOAnalysisId}`);
+                const data = await response.json();
+                
+                if (format === 'json') {
+                    // Download JSON
+                    const blob = new Blob([JSON.stringify(data.results, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `seo-report-${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } else if (format === 'pdf') {
+                    // Generate PDF using browser print
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write(`
+                        <html>
+                        <head>
+                            <title>SEO Report - ${data.results.url}</title>
+                            <style>
+                                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+                                h1 { color: #8b5cf6; border-bottom: 2px solid #8b5cf6; padding-bottom: 10px; }
+                                h2 { color: #333; margin-top: 30px; }
+                                .score { font-size: 48px; font-weight: bold; text-align: center; padding: 20px; }
+                                .score.good { color: #00aa00; }
+                                .score.ok { color: #ff9900; }
+                                .score.bad { color: #ff0000; }
+                                .metric { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+                                .critical { color: #ff0000; }
+                                .warning { color: #ff9900; }
+                                pre { background: #f5f5f5; padding: 15px; overflow-x: auto; font-size: 12px; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>📈 SEO Analysis Report</h1>
+                            <p><strong>URL:</strong> ${data.results.url}</p>
+                            <p><strong>Generated:</strong> ${new Date(data.results.analyzedAt).toLocaleString()}</p>
+                            
+                            <div class="score ${data.results.scores.overall >= 80 ? 'good' : data.results.scores.overall >= 60 ? 'ok' : 'bad'}">
+                                ${data.results.scores.overall}/100
+                            </div>
+                            
+                            <h2>Scores</h2>
+                            <div class="metric"><span>On-Page SEO</span><span>${data.results.scores.onPage}/100</span></div>
+                            <div class="metric"><span>Performance</span><span>${data.results.scores.performance || 'N/A'}/100</span></div>
+                            <div class="metric"><span>Accessibility</span><span>${data.results.scores.accessibility || 'N/A'}/100</span></div>
+                            
+                            <h2>Meta Tags</h2>
+                            <div class="metric"><span>Title (${data.results.meta.title.length} chars)</span><span>${data.results.meta.title.value || 'Missing'}</span></div>
+                            <div class="metric"><span>Description (${data.results.meta.description.length} chars)</span><span>${data.results.meta.description.value ? data.results.meta.description.value.substring(0, 80) + '...' : 'Missing'}</span></div>
+                            
+                            <h2>Content</h2>
+                            <div class="metric"><span>Word Count</span><span>${data.results.content.wordCount}</span></div>
+                            <div class="metric"><span>H1 Tags</span><span>${data.results.headings.counts.h1}</span></div>
+                            <div class="metric"><span>Images</span><span>${data.results.images.total} (${data.results.images.withAlt} with alt)</span></div>
+                            
+                            <h2>Critical Issues</h2>
+                            <ul class="critical">
+                                ${data.results.issues.critical.map(i => `<li>${i.issue}</li>`).join('') || '<li>None found!</li>'}
+                            </ul>
+                            
+                            <h2>Warnings</h2>
+                            <ul class="warning">
+                                ${data.results.issues.warning.map(i => `<li>${i.issue}</li>`).join('') || '<li>None found!</li>'}
+                            </ul>
+                            
+                            <h2>Recommendations</h2>
+                            <ol>
+                                ${data.results.recommendations.map(r => `<li><strong>${r.title}</strong>: ${r.description}</li>`).join('')}
+                            </ol>
+                            
+                            <hr>
+                            <p style="color: #888; font-size: 12px;">Generated by Lumen Cortex SEO Analyzer | Lumen AI Solutions</p>
+                        </body>
+                        </html>
+                    `);
+                    printWindow.document.close();
+                    setTimeout(() => printWindow.print(), 500);
+                }
+                
+                addMessage(`✅ SEO report exported as ${format.toUpperCase()}`, true);
+            } catch (error) {
+                alert('Error exporting report: ' + error.message);
+            }
+        }
+        
+        // Integrate SEO with chat - detect SEO questions
+        function detectSEOQuestion(text) {
+            const seoKeywords = ['seo', 'search engine', 'ranking', 'google', 'meta tag', 'title tag', 'description', 'h1', 'heading', 'backlink', 'keyword', 'organic', 'serp', 'crawl', 'index', 'sitemap', 'robots.txt', 'canonical', 'schema', 'structured data', 'core web vitals', 'page speed'];
+            const lower = text.toLowerCase();
+            return seoKeywords.some(kw => lower.includes(kw));
+        }
+
         // MONITORING FUNCTIONS (UptimeRobot Integration)
         // ═══════════════════════════════════════════════════════════════
         

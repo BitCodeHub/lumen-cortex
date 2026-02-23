@@ -5846,6 +5846,232 @@ const mobsf = require('./mobsf');
 mobsf.setupRoutes(app);
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 🔍 SEO ANALYZER MODULE - Enterprise-Grade SEO Analysis
+// ═══════════════════════════════════════════════════════════════════════════
+const SEOAnalyzer = require('./seo-analyzer');
+
+// Store active SEO analyses
+const seoAnalyses = new Map();
+
+// POST /api/seo/analyze - Run full SEO analysis
+app.post('/api/seo/analyze', async (req, res) => {
+    const { url } = req.body;
+    
+    if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+    }
+    
+    // Validate URL
+    try {
+        new URL(url.startsWith('http') ? url : 'https://' + url);
+    } catch (e) {
+        return res.status(400).json({ error: 'Invalid URL format' });
+    }
+    
+    const targetUrl = url.startsWith('http') ? url : 'https://' + url;
+    const analysisId = 'seo-' + Date.now();
+    
+    console.log(`🔍 [SEO] Starting analysis for: ${targetUrl}`);
+    
+    try {
+        const analyzer = new SEOAnalyzer();
+        const results = await analyzer.analyze(targetUrl);
+        
+        // Store results for later retrieval
+        seoAnalyses.set(analysisId, {
+            results,
+            analyzer,
+            createdAt: new Date()
+        });
+        
+        // Clean up old analyses (keep last 50)
+        if (seoAnalyses.size > 50) {
+            const oldest = [...seoAnalyses.keys()][0];
+            seoAnalyses.delete(oldest);
+        }
+        
+        console.log(`✅ [SEO] Analysis complete: Score ${results.scores.overall}/100`);
+        
+        res.json({
+            success: true,
+            analysisId,
+            results
+        });
+    } catch (error) {
+        console.error('[SEO] Analysis error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/seo/report/:id - Get text report for PDF generation
+app.get('/api/seo/report/:id', (req, res) => {
+    const analysis = seoAnalyses.get(req.params.id);
+    
+    if (!analysis) {
+        return res.status(404).json({ error: 'Analysis not found' });
+    }
+    
+    const textReport = analysis.analyzer.generateTextReport();
+    
+    res.json({
+        success: true,
+        report: textReport,
+        results: analysis.results
+    });
+});
+
+// GET /api/seo/summary/:id - Get quick summary for chat
+app.get('/api/seo/summary/:id', (req, res) => {
+    const analysis = seoAnalyses.get(req.params.id);
+    
+    if (!analysis) {
+        return res.status(404).json({ error: 'Analysis not found' });
+    }
+    
+    res.json({
+        success: true,
+        summary: analysis.analyzer.getSummary()
+    });
+});
+
+// POST /api/seo/chat - AI coaching about SEO results
+app.post('/api/seo/chat', async (req, res) => {
+    const { question, analysisId, context } = req.body;
+    
+    if (!question) {
+        return res.status(400).json({ error: 'Question is required' });
+    }
+    
+    // Get analysis context if available
+    let analysisContext = '';
+    if (analysisId && seoAnalyses.has(analysisId)) {
+        const analysis = seoAnalyses.get(analysisId);
+        analysisContext = `
+SEO Analysis Context:
+- URL: ${analysis.results.url}
+- Overall Score: ${analysis.results.scores.overall}/100
+- On-Page SEO: ${analysis.results.scores.onPage}/100
+- Performance: ${analysis.results.scores.performance}/100
+- Critical Issues: ${analysis.results.issues.critical.length}
+- Warnings: ${analysis.results.issues.warning.length}
+- Title: ${analysis.results.meta.title.value || 'Missing'}
+- Description: ${analysis.results.meta.description.value || 'Missing'}
+- Word Count: ${analysis.results.content.wordCount}
+- H1 Count: ${analysis.results.headings.counts.h1}
+- Images without alt: ${analysis.results.images.missingAlt}
+`;
+    }
+    
+    // Use Claude for SEO coaching if available
+    if (anthropicClient) {
+        try {
+            const systemPrompt = `You are an expert SEO consultant and coach. You help users understand SEO concepts and improve their website's search engine optimization.
+
+Your role:
+- Explain SEO concepts in simple, clear language
+- Provide actionable advice
+- Be encouraging but honest about issues
+- Reference the analysis data when available
+- Suggest specific fixes with examples
+
+${analysisContext}`;
+
+            const response = await anthropicClient.messages.create({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1500,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: question }]
+            });
+            
+            res.json({
+                success: true,
+                answer: response.content[0].text,
+                hasContext: !!analysisId
+            });
+        } catch (error) {
+            console.error('[SEO Chat] AI error:', error.message);
+            res.json({
+                success: true,
+                answer: generateBasicSEOAnswer(question, analysisContext),
+                hasContext: !!analysisId,
+                aiError: true
+            });
+        }
+    } else {
+        // Fallback without AI
+        res.json({
+            success: true,
+            answer: generateBasicSEOAnswer(question, analysisContext),
+            hasContext: !!analysisId
+        });
+    }
+});
+
+// Basic SEO answers without AI
+function generateBasicSEOAnswer(question, context) {
+    const q = question.toLowerCase();
+    
+    if (q.includes('title')) {
+        return `**Title Tags** are crucial for SEO. A good title should be:
+- 50-60 characters long
+- Include your main keyword near the beginning
+- Be unique for each page
+- Compelling to encourage clicks
+
+Example: "Best Running Shoes 2024 | Free Shipping | ShoeStore"`;
+    }
+    
+    if (q.includes('description') || q.includes('meta')) {
+        return `**Meta Descriptions** appear in search results below the title. Best practices:
+- 150-160 characters
+- Include a call-to-action
+- Summarize the page content
+- Include your target keyword naturally
+
+Example: "Shop our top-rated running shoes with free shipping. Read reviews, compare prices, and find your perfect fit. Order now!"`;
+    }
+    
+    if (q.includes('h1') || q.includes('heading')) {
+        return `**Heading Structure** helps search engines understand your content:
+- Use exactly ONE H1 per page (main topic)
+- H2s for major sections
+- H3s for subsections
+- Keep hierarchy logical (don't skip levels)
+- Include keywords naturally in headings`;
+    }
+    
+    if (q.includes('image') || q.includes('alt')) {
+        return `**Image SEO** improves accessibility and rankings:
+- Always add descriptive alt text
+- Use keywords naturally in alt text
+- Compress images for speed
+- Use descriptive filenames (running-shoes.jpg not IMG001.jpg)
+- Add width/height attributes to prevent layout shift`;
+    }
+    
+    if (q.includes('speed') || q.includes('performance') || q.includes('core web vitals')) {
+        return `**Page Speed & Core Web Vitals** directly impact rankings:
+- LCP (Largest Contentful Paint): < 2.5s = Good
+- FID (First Input Delay): < 100ms = Good  
+- CLS (Cumulative Layout Shift): < 0.1 = Good
+
+Quick wins: Compress images, enable caching, minimize JavaScript, use a CDN.`;
+    }
+    
+    return `That's a great SEO question! Here are some general tips:
+
+1. **Content is King** - Create valuable, original content
+2. **Keywords** - Research and target relevant keywords
+3. **Technical SEO** - Fast loading, mobile-friendly, secure (HTTPS)
+4. **Links** - Build quality backlinks, use good internal linking
+5. **User Experience** - Easy navigation, readable content
+
+Would you like me to explain any of these in more detail?`;
+}
+
+console.log('🔍 SEO Analyzer module loaded');
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 app.listen(PORT, () => {
   const aiCount = Object.values(AI_TOOLS).filter(t => t.ai).length;
