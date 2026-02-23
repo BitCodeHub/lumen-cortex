@@ -1066,6 +1066,40 @@
                     </div>
                 </div>
 
+                <!-- Mobile App Security (MobSF) -->
+                <div class="panel-card" style="border: 1px solid #ff6b35;">
+                    <div class="panel-title" style="color: #ff6b35;">📱 Mobile App Security</div>
+                    <div style="font-size: 10px; color: #888; margin-bottom: 10px;">Powered by MobSF • APK/IPA Analysis</div>
+                    
+                    <!-- File upload area -->
+                    <div id="mobileUploadArea" style="border: 2px dashed #ff6b35; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s;"
+                         onclick="document.getElementById('mobileFileInput').click()"
+                         ondragover="event.preventDefault(); this.style.borderColor='#00ff41'; this.style.background='rgba(0,255,65,0.1)';"
+                         ondragleave="this.style.borderColor='#ff6b35'; this.style.background='transparent';"
+                         ondrop="handleMobileDrop(event)">
+                        <div style="font-size: 2em; margin-bottom: 5px;">📲</div>
+                        <div style="color: #ff6b35; font-size: 0.85em;">Drop APK/IPA here</div>
+                        <div style="color: #666; font-size: 0.75em; margin-top: 5px;">or click to browse</div>
+                    </div>
+                    <input type="file" id="mobileFileInput" accept=".apk,.ipa,.zip,.appx" style="display: none;" onchange="handleMobileUpload(this.files[0])">
+                    
+                    <!-- Scan progress -->
+                    <div id="mobileScanProgress" style="display: none; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span id="mobileScanStatus" style="color: #ff6b35; font-size: 0.8em;">Uploading...</span>
+                            <span id="mobileScanPercent" style="color: #00ff41; font-size: 0.8em;">0%</span>
+                        </div>
+                        <div style="background: #1a1a25; border-radius: 4px; height: 6px; overflow: hidden;">
+                            <div id="mobileScanBar" style="background: linear-gradient(90deg, #ff6b35, #00ff41); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- What it scans -->
+                    <div style="margin-top: 10px; font-size: 0.7em; color: #666;">
+                        <strong style="color: #888;">Scans for:</strong> Hardcoded secrets • SSL issues • Dangerous permissions • Malware • Code vulnerabilities
+                    </div>
+                </div>
+
                 <div class="panel-card" style="border: 1px solid #8b5cf6;">
                     <div class="panel-title" style="color: #8b5cf6;">🔍 GitHub Secret Hunter</div>
                     
@@ -6210,6 +6244,208 @@ Paste your code below:`,
             } catch (e) {
                 console.log('Network status fetch error:', e);
             }
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // MOBILE APP SECURITY (MobSF)
+        // ═══════════════════════════════════════════════════════════════
+        
+        let currentMobileScanId = null;
+        
+        // Handle file drop
+        function handleMobileDrop(event) {
+            event.preventDefault();
+            const uploadArea = document.getElementById('mobileUploadArea');
+            uploadArea.style.borderColor = '#ff6b35';
+            uploadArea.style.background = 'transparent';
+            
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                handleMobileUpload(file);
+            }
+        }
+        
+        // Handle file upload
+        async function handleMobileUpload(file) {
+            if (!file) return;
+            
+            const validExtensions = ['.apk', '.ipa', '.zip', '.appx'];
+            const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+            
+            if (!validExtensions.includes(ext)) {
+                addMessage(`❌ Invalid file type: ${ext}. Supported: APK, IPA, ZIP, APPX`, false);
+                return;
+            }
+            
+            // Show progress
+            document.getElementById('mobileScanProgress').style.display = 'block';
+            document.getElementById('mobileScanStatus').textContent = 'Uploading...';
+            document.getElementById('mobileScanPercent').textContent = '0%';
+            document.getElementById('mobileScanBar').style.width = '0%';
+            
+            addMessage(`📱 <strong>Mobile App Scan:</strong> Uploading ${file.name}...`, true);
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('/api/mobsf/scan', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    addMessage(`❌ <strong>MobSF Error:</strong> ${result.error}${result.message ? '. ' + result.message : ''}`, false);
+                    document.getElementById('mobileScanProgress').style.display = 'none';
+                    return;
+                }
+                
+                currentMobileScanId = result.scanId;
+                addMessage(`🔄 <strong>Scanning ${file.name}</strong> with MobSF...`, false);
+                
+                // Poll for results
+                pollMobileScan(result.scanId);
+                
+            } catch (error) {
+                addMessage(`❌ <strong>Upload Error:</strong> ${error.message}`, false);
+                document.getElementById('mobileScanProgress').style.display = 'none';
+            }
+        }
+        
+        // Poll for scan results
+        function pollMobileScan(scanId) {
+            const poll = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/mobsf/scan/${scanId}`);
+                    const scan = await response.json();
+                    
+                    // Update progress
+                    document.getElementById('mobileScanStatus').textContent = scan.status.charAt(0).toUpperCase() + scan.status.slice(1) + '...';
+                    document.getElementById('mobileScanPercent').textContent = scan.progress + '%';
+                    document.getElementById('mobileScanBar').style.width = scan.progress + '%';
+                    
+                    if (scan.status === 'complete') {
+                        clearInterval(poll);
+                        document.getElementById('mobileScanProgress').style.display = 'none';
+                        displayMobileScanResults(scan);
+                    } else if (scan.status === 'error') {
+                        clearInterval(poll);
+                        document.getElementById('mobileScanProgress').style.display = 'none';
+                        addMessage(`❌ <strong>Scan Error:</strong> ${scan.error}`, false);
+                    }
+                } catch (error) {
+                    clearInterval(poll);
+                    document.getElementById('mobileScanProgress').style.display = 'none';
+                    addMessage(`❌ <strong>Poll Error:</strong> ${error.message}`, false);
+                }
+            }, 2000);
+        }
+        
+        // Display scan results
+        function displayMobileScanResults(scan) {
+            const s = scan.summary;
+            const scoreColor = s.securityScore >= 70 ? '#00ff41' : s.securityScore >= 40 ? '#ffaa00' : '#ff0040';
+            
+            let html = `
+                <div style="background: linear-gradient(135deg, #1a1a25, #0a0a15); border: 2px solid #ff6b35; border-radius: 12px; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-family: 'Orbitron', sans-serif; font-size: 1.3em; color: #ff6b35;">📱 MOBILE APP SECURITY REPORT</div>
+                        <div style="color: #888; font-size: 0.85em;">${s.appName} • ${s.packageName}</div>
+                    </div>
+                    
+                    <!-- Security Score -->
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 3em; color: ${scoreColor}; font-weight: bold;">${s.securityScore}</div>
+                        <div style="color: #888;">Security Score</div>
+                    </div>
+                    
+                    <!-- Severity Summary -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="background: rgba(255,0,64,0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="color: #ff0040; font-size: 1.5em; font-weight: bold;">${s.high}</div>
+                            <div style="color: #888; font-size: 0.75em;">High</div>
+                        </div>
+                        <div style="background: rgba(255,170,0,0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="color: #ffaa00; font-size: 1.5em; font-weight: bold;">${s.medium}</div>
+                            <div style="color: #888; font-size: 0.75em;">Medium</div>
+                        </div>
+                        <div style="background: rgba(0,255,65,0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="color: #00ff41; font-size: 1.5em; font-weight: bold;">${s.low}</div>
+                            <div style="color: #888; font-size: 0.75em;">Low</div>
+                        </div>
+                        <div style="background: rgba(10,189,198,0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                            <div style="color: #0abdc6; font-size: 1.5em; font-weight: bold;">${s.info}</div>
+                            <div style="color: #888; font-size: 0.75em;">Info</div>
+                        </div>
+                    </div>
+            `;
+            
+            // Dangerous Permissions
+            if (s.dangerousPermissions && s.dangerousPermissions.length > 0) {
+                html += `
+                    <div style="margin-bottom: 15px;">
+                        <div style="color: #ff6b35; font-weight: bold; margin-bottom: 8px;">⚠️ Dangerous Permissions (${s.dangerousPermissions.length})</div>
+                        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; font-size: 0.8em;">
+                            ${s.dangerousPermissions.map(p => `<span style="color: #ffaa00;">• ${p}</span>`).join('<br>')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Key Findings
+            if (s.findings && s.findings.length > 0) {
+                html += `
+                    <div style="margin-bottom: 15px;">
+                        <div style="color: #0abdc6; font-weight: bold; margin-bottom: 8px;">🔍 Key Findings</div>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                `;
+                
+                s.findings.slice(0, 10).forEach(f => {
+                    const sevColor = f.severity === 'HIGH' ? '#ff0040' : f.severity === 'MEDIUM' ? '#ffaa00' : '#00ff41';
+                    html += `
+                        <div style="background: rgba(0,0,0,0.3); padding: 10px; margin-bottom: 8px; border-left: 3px solid ${sevColor}; border-radius: 4px;">
+                            <div style="color: ${sevColor}; font-size: 0.85em; font-weight: bold;">${f.severity}: ${f.title}</div>
+                            <div style="color: #888; font-size: 0.75em; margin-top: 4px;">${f.description?.slice(0, 150) || ''}${f.description?.length > 150 ? '...' : ''}</div>
+                        </div>
+                    `;
+                });
+                
+                if (s.findings.length > 10) {
+                    html += `<div style="color: #666; text-align: center; font-size: 0.8em;">... and ${s.findings.length - 10} more findings</div>`;
+                }
+                
+                html += `</div></div>`;
+            }
+            
+            html += `
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button onclick="askAboutMobileScan()" class="quick-btn" style="background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f; padding: 10px 20px;">
+                            💬 Ask Neo about these findings
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            addMessage(html, false);
+            
+            // Attach to chat context
+            fetch('/api/chat/attach-context', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId,
+                    contextType: 'Mobile App Security Scan (MobSF)',
+                    context: JSON.stringify(s, null, 2)
+                })
+            }).catch(e => console.warn('Failed to attach mobile scan context:', e));
+        }
+        
+        // Ask Neo about mobile scan
+        function askAboutMobileScan() {
+            document.getElementById('userInput').value = 'Explain the mobile app security findings and what are the most critical issues I should fix?';
+            document.getElementById('userInput').focus();
         }
         
         // ═══════════════════════════════════════════════════════════════
