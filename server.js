@@ -941,6 +941,89 @@ app.post('/api/chat', async (req, res) => {
 
   const session = getSession(sessionId);
   
+  // Check if message contains an IP address for investigation
+  const ipMatch = message.match(/\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/);
+  const isIPRequest = ipMatch && /\b(ip|investigate|lookup|check|who|where|locate|whois|trace|find|info|about|tell me|what is|analyze)\b/i.test(message);
+  const isJustIP = ipMatch && message.trim().match(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/);
+  
+  if (isIPRequest || isJustIP) {
+    const ip = ipMatch[0];
+    console.log(`🔍 [Chat] IP investigation request: ${ip}`);
+    
+    try {
+      const results = await ipInvestigator.investigate(ip);
+      
+      // Store in history
+      const id = `ip-${Date.now()}`;
+      ipInvestigations.set(id, { ip, results, timestamp: new Date().toISOString() });
+      
+      // Format response for chat
+      const geo = results.geolocation || {};
+      const whois = results.whois || {};
+      const ports = results.ports || {};
+      const threat = results.threatIntel || {};
+      const summary = results.summary || {};
+      
+      let response = `🔍 **IP Investigation: ${ip}**\n\n`;
+      response += `**Risk Assessment:** ${summary.riskAssessment || 'Unknown'}\n\n`;
+      
+      response += `📍 **Location:**\n`;
+      response += `• ${geo.city || 'Unknown'}, ${geo.region || ''}, ${geo.country || 'Unknown'}\n`;
+      response += `• ISP: ${geo.isp || 'Unknown'}\n`;
+      response += `• Org: ${geo.organization || 'Unknown'}\n`;
+      if (geo.isProxy) response += `• ⚠️ Proxy/VPN Detected\n`;
+      if (geo.isHosting) response += `• 🖥️ Hosting/Datacenter IP\n`;
+      response += `• [View on Map](${geo.mapUrl || '#'})\n\n`;
+      
+      response += `🏛️ **Ownership:**\n`;
+      response += `• ${whois.organization || 'Unknown'}\n`;
+      response += `• Range: ${whois.netRange || 'N/A'}\n`;
+      if (whois.abuseEmail) response += `• Abuse: ${whois.abuseEmail}\n`;
+      response += '\n';
+      
+      if (results.reverseDns?.hostnames?.length > 0) {
+        response += `🌐 **Hostname:** ${results.reverseDns.hostnames.join(', ')}\n\n`;
+      }
+      
+      response += `🚪 **Open Ports:** ${ports.totalOpen || 0}\n`;
+      if (ports.openPorts?.length > 0) {
+        response += `• ${ports.openPorts.slice(0, 8).map(p => `${p.port}/${p.service}`).join(', ')}`;
+        if (ports.openPorts.length > 8) response += ` +${ports.openPorts.length - 8} more`;
+        response += '\n';
+      }
+      response += '\n';
+      
+      if (threat.abuseConfidenceScore !== undefined) {
+        response += `🛡️ **Threat Intel:**\n`;
+        response += `• Abuse Score: ${threat.abuseConfidenceScore}% (${threat.threatLevel?.level || 'unknown'})\n`;
+        response += `• Reports: ${threat.totalReports || 0} from ${threat.numDistinctUsers || 0} users\n`;
+        if (threat.isTor) response += `• 🧅 Tor Exit Node\n`;
+        response += '\n';
+      }
+      
+      if (summary.concerns?.length > 0) {
+        response += `⚠️ **Concerns:**\n`;
+        summary.concerns.forEach(c => response += `• ${c}\n`);
+      }
+      
+      return res.json({
+        success: true,
+        message: response,
+        action: 'ip-investigate',
+        ip: ip,
+        investigationId: id,
+        sessionId: session.id
+      });
+    } catch (error) {
+      console.error(`❌ [Chat] IP investigation error: ${error.message}`);
+      return res.json({
+        success: true,
+        message: `❌ Failed to investigate IP **${ip}**: ${error.message}`,
+        sessionId: session.id
+      });
+    }
+  }
+  
   // Check if message is a scan request
   const urlMatch = message.match(/(https?:\/\/[^\s]+|[a-z0-9][-a-z0-9]*\.[a-z]{2,})/i);
   const isScanRequest = /\b(scan|check|test|analyze|audit)\b/i.test(message) && urlMatch;
