@@ -11,6 +11,7 @@ const execPromise = util.promisify(exec);
 // UptimeRobot integration for Cloudflare bypass
 const uptimeRobot = require('./uptimerobot-integration');
 const alertForwarder = require('./alert-forwarder');
+const keywordResearch = require('./keyword-research');
 
 // Azure Claude AI for report generation
 const AZURE_CLAUDE_CONFIG = {
@@ -5914,6 +5915,115 @@ const SEOAnalyzer = require('./seo-analyzer');
 
 // Store active SEO analyses
 const seoAnalyses = new Map();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KEYWORD RESEARCH API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// POST /api/keywords/research - Research a keyword with location
+app.post('/api/keywords/research', async (req, res) => {
+  try {
+    const { keyword, location, country = 'us' } = req.body;
+    
+    if (!keyword) {
+      return res.status(400).json({ error: 'Keyword is required' });
+    }
+    
+    console.log(`[Keyword Research] Request: "${keyword}" in "${location || 'Global'}"`);
+    
+    const result = await keywordResearch.researchKeyword(keyword, location, country);
+    
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('[Keyword Research] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/keywords/suggestions - Get autocomplete suggestions
+app.get('/api/keywords/suggestions', async (req, res) => {
+  try {
+    const { q, country = 'us' } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({ error: 'Query (q) is required' });
+    }
+    
+    const suggestions = await keywordResearch.getAutocompleteSuggestions(q, 'en', country);
+    
+    res.json({
+      success: true,
+      keyword: q,
+      suggestions
+    });
+  } catch (error) {
+    console.error('[Keyword Suggestions] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/keywords/places - Get place suggestions for location autocomplete
+app.get('/api/keywords/places', async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({ error: 'Query (q) is required' });
+    }
+    
+    const result = await keywordResearch.getPlaceSuggestions(q);
+    
+    res.json({
+      success: true,
+      query: q,
+      ...result
+    });
+  } catch (error) {
+    console.error('[Places Suggestions] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/keywords/bulk - Research multiple keywords at once
+app.post('/api/keywords/bulk', async (req, res) => {
+  try {
+    const { keywords, location, country = 'us' } = req.body;
+    
+    if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+      return res.status(400).json({ error: 'Keywords array is required' });
+    }
+    
+    if (keywords.length > 10) {
+      return res.status(400).json({ error: 'Maximum 10 keywords per request' });
+    }
+    
+    console.log(`[Bulk Keyword Research] Analyzing ${keywords.length} keywords`);
+    
+    const results = [];
+    for (const keyword of keywords) {
+      const result = await keywordResearch.researchKeyword(keyword, location, country);
+      results.push(result);
+    }
+    
+    // Sort by SEO score
+    results.sort((a, b) => b.seo.score - a.seo.score);
+    
+    res.json({
+      success: true,
+      count: results.length,
+      location: location || 'Global',
+      country: country.toUpperCase(),
+      results,
+      bestKeyword: results[0]
+    });
+  } catch (error) {
+    console.error('[Bulk Keyword Research] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // POST /api/seo/analyze - Run full SEO analysis
 // Set quick=true for fast results (skips PageSpeed), quick=false for full analysis (30-60 seconds)

@@ -1235,6 +1235,70 @@
                     </div>
                 </div>
 
+                <!-- 🎯 KEYWORD RESEARCH -->
+                <div class="accordion-section" data-section="keywords">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <div class="accordion-header-left">
+                            <span class="accordion-icon">🎯</span>
+                            <span class="accordion-title">Keyword Research</span>
+                        </div>
+                        <span class="accordion-toggle">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="tool-section">
+                            <div style="font-size: 11px; color: #10b981; margin-bottom: 8px; font-weight: bold;">🔍 Find #1 Ranking Keywords</div>
+                            
+                            <!-- Keyword Input -->
+                            <input type="text" id="keywordInput" class="tool-input" placeholder="Enter keyword (e.g., pizza delivery)" style="border-color: #10b981; margin-bottom: 8px;">
+                            
+                            <!-- Location Input with Autocomplete -->
+                            <div style="position: relative;">
+                                <input type="text" id="locationInput" class="tool-input" placeholder="Location (e.g., Los Angeles, CA)" style="border-color: #10b981; margin-bottom: 8px;" oninput="debounceLocationSearch(this.value)">
+                                <div id="locationSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100;"></div>
+                            </div>
+                            
+                            <!-- Country Selector -->
+                            <select id="countrySelect" class="tool-input" style="border-color: #10b981; margin-bottom: 8px;">
+                                <option value="us">🇺🇸 United States</option>
+                                <option value="gb">🇬🇧 United Kingdom</option>
+                                <option value="ca">🇨🇦 Canada</option>
+                                <option value="au">🇦🇺 Australia</option>
+                                <option value="de">🇩🇪 Germany</option>
+                                <option value="fr">🇫🇷 France</option>
+                                <option value="es">🇪🇸 Spain</option>
+                                <option value="it">🇮🇹 Italy</option>
+                                <option value="jp">🇯🇵 Japan</option>
+                                <option value="br">🇧🇷 Brazil</option>
+                                <option value="in">🇮🇳 India</option>
+                                <option value="mx">🇲🇽 Mexico</option>
+                            </select>
+                            
+                            <div class="quick-actions">
+                                <button class="quick-btn primary" onclick="runKeywordResearch()" style="background: linear-gradient(135deg, #10b981, #059669); flex: 1;">🔍 Research Keyword</button>
+                            </div>
+                            
+                            <div style="font-size: 9px; color: #666; margin-top: 4px;">Analyzes popularity, competition, SEO potential & suggests best keywords to rank #1</div>
+                            
+                            <div id="keywordStatus" class="tool-status"></div>
+                            
+                            <!-- Keyword Results -->
+                            <div id="keywordResults" style="display: none; margin-top: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border);">
+                            </div>
+                            
+                            <!-- Quick Keyword Topics -->
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+                                <div style="font-size: 10px; color: #666; margin-bottom: 8px;">💬 Ask Neo about keywords:</div>
+                                <div class="quick-actions" style="flex-wrap: wrap; gap: 4px;">
+                                    <button class="quick-btn" onclick="askKeywordTopic('longtail')" style="font-size: 10px;">Long-tail Strategy</button>
+                                    <button class="quick-btn" onclick="askKeywordTopic('local')" style="font-size: 10px;">Local SEO</button>
+                                    <button class="quick-btn" onclick="askKeywordTopic('competition')" style="font-size: 10px;">Beat Competition</button>
+                                    <button class="quick-btn" onclick="askKeywordTopic('intent')" style="font-size: 10px;">Search Intent</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 🔍 INVESTIGATION TOOLS -->
                 <div class="accordion-section" data-section="investigation">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -3806,6 +3870,228 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🎯 KEYWORD RESEARCH FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════
+        
+        let currentKeywordResults = null;
+        let locationSearchTimeout = null;
+        
+        // Debounce location search
+        function debounceLocationSearch(query) {
+            clearTimeout(locationSearchTimeout);
+            if (query.length < 2) {
+                document.getElementById('locationSuggestions').style.display = 'none';
+                return;
+            }
+            locationSearchTimeout = setTimeout(() => searchLocations(query), 300);
+        }
+        
+        // Search locations using Google Places API
+        async function searchLocations(query) {
+            const suggestionsEl = document.getElementById('locationSuggestions');
+            try {
+                const response = await fetch(`/api/keywords/places?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.suggestions && data.suggestions.length > 0) {
+                    suggestionsEl.innerHTML = data.suggestions.map(s => `
+                        <div style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 12px;" 
+                             onclick="selectLocation('${s.description.replace(/'/g, "\\'")}')">
+                            📍 ${s.description}
+                        </div>
+                    `).join('');
+                    suggestionsEl.style.display = 'block';
+                } else {
+                    suggestionsEl.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Location search error:', error);
+                suggestionsEl.style.display = 'none';
+            }
+        }
+        
+        // Select a location from suggestions
+        function selectLocation(location) {
+            document.getElementById('locationInput').value = location;
+            document.getElementById('locationSuggestions').style.display = 'none';
+        }
+        
+        // Run keyword research
+        async function runKeywordResearch() {
+            const keyword = document.getElementById('keywordInput').value.trim();
+            const location = document.getElementById('locationInput').value.trim();
+            const country = document.getElementById('countrySelect').value;
+            const statusEl = document.getElementById('keywordStatus');
+            const resultsEl = document.getElementById('keywordResults');
+            
+            if (!keyword) {
+                statusEl.innerHTML = '<span style="color: #ef4444;">❌ Please enter a keyword</span>';
+                return;
+            }
+            
+            statusEl.innerHTML = '<span style="color: #10b981;">🔍 Researching keyword...</span>';
+            resultsEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/keywords/research', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword, location, country })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentKeywordResults = data.data;
+                    displayKeywordResults(data.data);
+                    statusEl.innerHTML = '<span style="color: #10b981;">✅ Research complete!</span>';
+                    
+                    // Auto-send to Neo chat
+                    const summary = generateKeywordSummary(data.data);
+                    addMessage('assistant', summary);
+                } else {
+                    throw new Error(data.error || 'Research failed');
+                }
+            } catch (error) {
+                statusEl.innerHTML = `<span style="color: #ef4444;">❌ ${error.message}</span>`;
+            }
+        }
+        
+        // Display keyword results
+        function displayKeywordResults(data) {
+            const resultsEl = document.getElementById('keywordResults');
+            
+            // Score colors
+            const getScoreColor = (score) => score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+            const getDifficultyColor = (diff) => diff === 'easy' ? '#10b981' : diff === 'medium' ? '#f59e0b' : '#ef4444';
+            const getPotentialColor = (pot) => pot === 'high' ? '#10b981' : pot === 'medium' ? '#f59e0b' : '#ef4444';
+            
+            resultsEl.innerHTML = `
+                <!-- Main Scores -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+                    <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                        <div style="font-size: 24px; font-weight: bold; color: ${getScoreColor(data.popularity.score)};">${data.popularity.score}</div>
+                        <div style="font-size: 10px; color: #888;">Popularity</div>
+                        <div style="font-size: 9px; color: ${data.popularity.trend === 'rising' ? '#10b981' : '#888'};">📈 ${data.popularity.trend}</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                        <div style="font-size: 24px; font-weight: bold; color: ${getScoreColor(data.seo.score)};">${data.seo.score}</div>
+                        <div style="font-size: 10px; color: #888;">SEO Score</div>
+                        <div style="font-size: 9px; color: ${getPotentialColor(data.seo.rankingPotential)};">⭐ ${data.seo.rankingPotential} potential</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                        <div style="font-size: 18px; font-weight: bold; color: ${getDifficultyColor(data.seo.difficulty)};">${data.seo.difficulty.toUpperCase()}</div>
+                        <div style="font-size: 10px; color: #888;">Difficulty</div>
+                        <div style="font-size: 9px; color: #888;">Competition: ${data.seo.competition}</div>
+                    </div>
+                </div>
+                
+                <!-- Recommendations -->
+                <div style="margin-bottom: 12px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; border-left: 3px solid #10b981;">
+                    <div style="font-size: 11px; font-weight: bold; color: #10b981; margin-bottom: 6px;">💡 Recommendations</div>
+                    ${data.recommendation.map(r => `<div style="font-size: 11px; color: #ccc; margin-bottom: 4px;">${r}</div>`).join('')}
+                </div>
+                
+                <!-- Best Keywords to Target -->
+                <div style="margin-bottom: 12px;">
+                    <div style="font-size: 11px; font-weight: bold; color: #10b981; margin-bottom: 8px;">🎯 Best Keywords to Target (Ranked)</div>
+                    ${data.bestKeywordsToTarget.map((k, i) => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 4px; cursor: pointer;" onclick="copyKeyword('${k.keyword.replace(/'/g, "\\'")}')">
+                            <div>
+                                <span style="color: #10b981; font-weight: bold;">#${i + 1}</span>
+                                <span style="margin-left: 8px; font-size: 12px;">${k.keyword}</span>
+                            </div>
+                            <div style="display: flex; gap: 8px; font-size: 10px;">
+                                <span style="color: ${getScoreColor(k.seoScore)};">SEO: ${k.seoScore}</span>
+                                <span style="color: ${getDifficultyColor(k.difficulty)};">${k.difficulty}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Related Keywords -->
+                <div style="margin-bottom: 8px;">
+                    <div style="font-size: 11px; font-weight: bold; color: #888; margin-bottom: 6px;">🔗 Related Keywords</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                        ${data.relatedKeywords.slice(0, 8).map(k => `
+                            <span style="padding: 4px 8px; background: var(--bg-tertiary); border-radius: 12px; font-size: 10px; cursor: pointer;" onclick="searchRelatedKeyword('${k.replace(/'/g, "\\'")}')">${k}</span>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                ${data.localKeywords.length > 0 ? `
+                    <div>
+                        <div style="font-size: 11px; font-weight: bold; color: #888; margin-bottom: 6px;">📍 Local Keywords</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            ${data.localKeywords.slice(0, 6).map(k => `
+                                <span style="padding: 4px 8px; background: var(--bg-tertiary); border-radius: 12px; font-size: 10px; cursor: pointer;" onclick="searchRelatedKeyword('${k.replace(/'/g, "\\'")}')">${k}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            
+            resultsEl.style.display = 'block';
+        }
+        
+        // Generate summary for Neo chat
+        function generateKeywordSummary(data) {
+            return `🎯 **Keyword Research: "${data.keyword}"**
+${data.location !== 'Global' ? `📍 Location: ${data.location}` : ''}
+
+**Scores:**
+- Popularity: ${data.popularity.score}/100 (${data.popularity.trend})
+- SEO Score: ${data.seo.score}/100
+- Difficulty: ${data.seo.difficulty.toUpperCase()}
+- Ranking Potential: ${data.seo.rankingPotential.toUpperCase()}
+
+**Best Keywords to Target:**
+${data.bestKeywordsToTarget.slice(0, 3).map((k, i) => `${i + 1}. "${k.keyword}" (SEO: ${k.seoScore}, ${k.difficulty})`).join('\n')}
+
+**Recommendations:**
+${data.recommendation.join('\n')}
+
+💬 Ask me anything about these keywords or how to rank for them!`;
+        }
+        
+        // Copy keyword to clipboard
+        function copyKeyword(keyword) {
+            navigator.clipboard.writeText(keyword);
+            document.getElementById('keywordStatus').innerHTML = `<span style="color: #10b981;">📋 Copied: "${keyword}"</span>`;
+            setTimeout(() => {
+                document.getElementById('keywordStatus').innerHTML = '';
+            }, 2000);
+        }
+        
+        // Search a related keyword
+        function searchRelatedKeyword(keyword) {
+            document.getElementById('keywordInput').value = keyword;
+            runKeywordResearch();
+        }
+        
+        // Ask Neo about keyword topics
+        function askKeywordTopic(topic) {
+            const topics = {
+                'longtail': 'What are long-tail keywords and how do I find the best ones for my business? Give me examples.',
+                'local': 'How do I optimize for local SEO keywords? What\'s the best strategy for ranking in my city?',
+                'competition': 'How do I analyze my competitors\' keywords and find opportunities they\'re missing?',
+                'intent': 'Explain search intent types (informational, navigational, transactional, commercial) and how to match keywords to intent.'
+            };
+            
+            const question = topics[topic] || 'Tell me about keyword research best practices.';
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+            toggleAccordion(document.querySelector('.accordion-section[data-section="keywords"] .accordion-header'));
+        }
+        
+        // Close location suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#locationInput') && !e.target.closest('#locationSuggestions')) {
+                document.getElementById('locationSuggestions').style.display = 'none';
+            }
         });
 
         // ═══════════════════════════════════════════════════════════════
