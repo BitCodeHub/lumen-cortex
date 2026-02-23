@@ -9,5 +9,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: AZURE_ANTHROPIC_API_KEY
+        sync: false
+      - key: MOBSF_API_KEY
+        sync: false
+      - key: GOOGLE_PAGESPEED_API_KEY
+        sync: false
+      - key: RAPIDAPI_KEY
+        sync: false
     healthCheckPath: /
     autoDeploy: true
