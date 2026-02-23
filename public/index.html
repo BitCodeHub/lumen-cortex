@@ -1011,46 +1011,237 @@
             </div>
 
             <div class="side-panel">
-                <!-- Monitoring Dashboard (First) -->
-                <div class="panel-card">
-                    <div class="panel-title">📡 Monitoring</div>
-                    <div id="monitoringList" style="max-height: 200px; overflow-y: auto;">
-                        <div class="tool-item" style="justify-content: space-between;">
-                            <span style="color: #666;">No sites monitored</span>
-                            <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
-                        </div>
-                    </div>
-                    <div id="addMonitoringForm" style="display: none; margin-top: 10px;">
-                        <input type="text" id="monitorUrl" placeholder="https://example.com" style="width: 100%; background: #1a1a25; border: 1px solid #2a2a3a; color: #e0e0e0; padding: 8px; margin-bottom: 5px; border-radius: 4px;">
-                        <div style="display: flex; gap: 5px;">
-                            <button class="quick-btn" onclick="addMonitoringSite()" style="flex: 1;">Add Site</button>
-                            <button class="quick-btn" onclick="hideAddMonitoring()" style="background: #333;">Cancel</button>
-                        </div>
-                    </div>
-                    <button class="quick-btn" onclick="checkAllMonitoring()" style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">🔄 Refresh</button>
+                <!-- Tool Category Tabs -->
+                <div style="display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <button class="tool-tab active" onclick="showToolCategory('intel')" id="tab-intel" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #ff6b6b; color: #ff6b6b; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: bold;">🔍 Intel</button>
+                    <button class="tool-tab" onclick="showToolCategory('network')" id="tab-network" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">🛡️ Network</button>
+                    <button class="tool-tab" onclick="showToolCategory('scanners')" id="tab-scanners" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">🎯 Scan</button>
+                    <button class="tool-tab" onclick="showToolCategory('mobile')" id="tab-mobile" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">📱 Mobile</button>
+                    <button class="tool-tab" onclick="showToolCategory('more')" id="tab-more" style="flex: 1; min-width: 60px; padding: 8px 4px; background: #1a1a25; border: 1px solid #444; color: #888; border-radius: 6px; cursor: pointer; font-size: 10px;">⚡ More</button>
                 </div>
 
-                <!-- IP Investigator - White Hat Intelligence -->
-                <div class="panel-card" style="border: 1px solid #ff6b6b;">
-                    <div class="panel-title" style="color: #ff6b6b;">🔍 IP Investigator</div>
-                    <div style="margin-bottom: 10px;">
-                        <input type="text" id="ipInvestigatorTarget" placeholder="Enter IP address (e.g., 8.8.8.8)" style="width: 100%; background: #1a1a25; border: 1px solid #ff6b6b; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- INTEL CATEGORY - IP & Domain Investigation -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-intel" class="tool-category">
+                    <!-- IP Investigator -->
+                    <div class="panel-card" style="border: 1px solid #ff6b6b;">
+                        <div class="panel-title" style="color: #ff6b6b;">🔍 IP Investigator</div>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="ipInvestigatorTarget" placeholder="Enter IP address (e.g., 8.8.8.8)" style="width: 100%; background: #1a1a25; border: 1px solid #ff6b6b; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="investigateIP()" style="flex: 2; background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">🔍 Investigate</button>
+                            <button class="quick-btn" onclick="quickGeolocate()" style="flex: 1; border-color: #ff6b6b;">📍</button>
+                            <button class="quick-btn" onclick="quickPortScan()" style="flex: 1; border-color: #ff6b6b;">🚪</button>
+                        </div>
+                        <div id="ipInvestigatorStatus" style="margin-top: 6px; font-size: 10px; color: #666;"></div>
                     </div>
-                    <div class="quick-actions">
-                        <button class="quick-btn" onclick="investigateIP()" style="flex: 2; background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">🔍 Full Investigation</button>
-                        <button class="quick-btn" onclick="quickGeolocate()" style="flex: 1; border-color: #ff6b6b;">📍 Locate</button>
+
+                    <!-- Domain Investigator -->
+                    <div class="panel-card" style="border: 1px solid #0abdc6;">
+                        <div class="panel-title" style="color: #0abdc6;">🌐 Domain Investigator</div>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="domainInvestigatorTarget" placeholder="Enter domain (e.g., google.com)" style="width: 100%; background: #1a1a25; border: 1px solid #0abdc6; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="investigateDomain()" style="flex: 2; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">🌐 Investigate</button>
+                            <button class="quick-btn" onclick="quickDNS()" style="flex: 1; border-color: #0abdc6;">📋</button>
+                            <button class="quick-btn" onclick="quickSSL()" style="flex: 1; border-color: #0abdc6;">🔒</button>
+                        </div>
+                        <div id="domainInvestigatorStatus" style="margin-top: 6px; font-size: 10px; color: #666;"></div>
                     </div>
-                    <div class="quick-actions" style="margin-top: 6px;">
-                        <button class="quick-btn" onclick="quickWhois()" style="border-color: #ff6b6b;">🏛️ WHOIS</button>
-                        <button class="quick-btn" onclick="quickPortScan()" style="border-color: #ff6b6b;">🚪 Ports</button>
-                        <button class="quick-btn" onclick="showIPHistory()" style="border-color: #ff6b6b;">📋 History</button>
+
+                    <!-- GitHub Secret Hunter (compact) -->
+                    <div class="panel-card" style="border: 1px solid #8b5cf6;">
+                        <div class="panel-title" style="color: #8b5cf6;">🔑 Secret Hunter</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="githubHuntWithChat('aws')" style="border-color: #8b5cf6;">AWS</button>
+                            <button class="quick-btn" onclick="githubHuntWithChat('stripe')" style="border-color: #8b5cf6;">Stripe</button>
+                            <button class="quick-btn" onclick="githubHuntWithChat('openai')" style="border-color: #8b5cf6;">OpenAI</button>
+                            <button class="quick-btn" onclick="githubHuntWithChat('firebase')" style="border-color: #8b5cf6;">Firebase</button>
+                        </div>
                     </div>
-                    <div id="ipInvestigatorStatus" style="margin-top: 8px; font-size: 10px; color: #666;"></div>
                 </div>
 
-                <!-- Network Guardian - WiFi Intrusion Detection -->
-                <div class="panel-card" style="border: 1px solid #00ff41;">
-                    <div class="panel-title" style="color: #00ff41;">🛡️ Network Guardian</div>
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- NETWORK CATEGORY - Network Security & Monitoring -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-network" class="tool-category" style="display: none;">
+                    <!-- Network Guardian -->
+                    <div class="panel-card" style="border: 1px solid #00ff41;">
+                        <div class="panel-title" style="color: #00ff41;">🛡️ Network Guardian</div>
+                        <div id="networkGuardianStatus" style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #666; font-size: 11px;">WiFi: <span id="networkName">Loading...</span></span>
+                                <span id="deviceCount" style="color: #00ff41; font-size: 11px;">0 devices</span>
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="scanNetworkQuickWithChat()" style="flex: 1; border-color: #00ff41;">⚡ Quick</button>
+                            <button class="quick-btn" onclick="scanNetworkFullWithChat()" style="flex: 1; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f;">🤖 AI Scan</button>
+                        </div>
+                        <div class="quick-actions" style="margin-top: 6px;">
+                            <button class="quick-btn" onclick="showWhitelistInChat()" style="flex: 1;">📋 Whitelist</button>
+                            <button class="quick-btn" onclick="showNetworkHistoryInChat()" style="flex: 1;">📊 History</button>
+                        </div>
+                    </div>
+
+                    <!-- Monitoring -->
+                    <div class="panel-card">
+                        <div class="panel-title">📡 Monitoring</div>
+                        <div id="monitoringList" style="max-height: 150px; overflow-y: auto;">
+                            <div class="tool-item" style="justify-content: space-between;">
+                                <span style="color: #666;">No sites monitored</span>
+                                <button class="quick-btn" onclick="showAddMonitoring()" style="font-size: 10px; padding: 4px 8px;">+ Add</button>
+                            </div>
+                        </div>
+                        <div id="addMonitoringForm" style="display: none; margin-top: 10px;">
+                            <input type="text" id="monitorUrl" placeholder="https://example.com" style="width: 100%; background: #1a1a25; border: 1px solid #2a2a3a; color: #e0e0e0; padding: 8px; margin-bottom: 5px; border-radius: 4px;">
+                            <div style="display: flex; gap: 5px;">
+                                <button class="quick-btn" onclick="addMonitoringSite()" style="flex: 1;">Add</button>
+                                <button class="quick-btn" onclick="hideAddMonitoring()" style="background: #333;">✕</button>
+                            </div>
+                        </div>
+                        <button class="quick-btn" onclick="checkAllMonitoring()" style="width: 100%; margin-top: 8px; background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">🔄 Refresh</button>
+                    </div>
+
+                    <!-- Network Sniffer (compact) -->
+                    <div class="panel-card" style="border: 1px solid #ff00ff;">
+                        <div class="panel-title" style="color: #ff00ff;">📡 Traffic Sniffer</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="startPacketCapture()" style="border-color: #ff00ff;">▶️ Start</button>
+                            <button class="quick-btn" onclick="stopPacketCapture()" style="border-color: #ff00ff;">⏹️ Stop</button>
+                            <button class="quick-btn" onclick="analyzePackets()" style="border-color: #ff00ff;">🔍 Analyze</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- SCANNERS CATEGORY - DAST, SAST, Quick Scans -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-scanners" class="tool-category" style="display: none;">
+                    <!-- Quick Scans -->
+                    <div class="panel-card">
+                        <div class="panel-title">⚡ Quick Scans</div>
+                        <div style="margin-bottom: 8px;">
+                            <input type="text" id="quickScanTarget" placeholder="URL or domain to scan" style="width: 100%; background: #1a1a25; border: 1px solid #444; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="quickScanWithChat('web')">🌐 Web</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('recon')">🔍 Recon</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('secrets')">🔑 Secrets</button>
+                        </div>
+                        <div class="quick-actions" style="margin-top: 6px;">
+                            <button class="quick-btn" onclick="quickScanWithChat('code')">📝 Code</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('github')">🐙 GitHub</button>
+                            <button class="quick-btn" onclick="quickScanWithChat('full')" style="background: linear-gradient(135deg, #ff6b6b, #ff0040); color: #0a0a0f;">⚡ Full</button>
+                        </div>
+                    </div>
+
+                    <!-- DAST & SAST -->
+                    <div class="panel-card" style="border: 1px solid #00ff41;">
+                        <div class="panel-title" style="color: #00ff41;">🛡️ DAST & SAST</div>
+                        <div style="margin-bottom: 8px;">
+                            <input type="text" id="dastSastTarget" placeholder="URL (DAST) or /path (SAST)" style="width: 100%; background: #1a1a25; border: 1px solid #00ff41; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px;">
+                        </div>
+                        <div style="font-size: 10px; color: #ff6b6b; margin-bottom: 4px;">🔴 DAST</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="runDASTScan('zap')" style="border-color: #ff6b6b;">ZAP</button>
+                            <button class="quick-btn" onclick="runDASTScan('nikto')" style="border-color: #ff6b6b;">Nikto</button>
+                            <button class="quick-btn" onclick="runDASTScan('nuclei')" style="border-color: #ff6b6b;">Nuclei</button>
+                            <button class="quick-btn" onclick="runDASTScan('sqlmap')" style="border-color: #ff6b6b;">SQL</button>
+                        </div>
+                        <div style="font-size: 10px; color: #4dabf7; margin: 8px 0 4px 0;">🔵 SAST</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="runSASTScan('semgrep')" style="border-color: #4dabf7;">Semgrep</button>
+                            <button class="quick-btn" onclick="runSASTScan('bandit')" style="border-color: #4dabf7;">Bandit</button>
+                            <button class="quick-btn" onclick="runSASTScan('secrets')" style="border-color: #4dabf7;">Secrets</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- MOBILE CATEGORY - Mobile App Security -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-mobile" class="tool-category" style="display: none;">
+                    <!-- MobSF -->
+                    <div class="panel-card" style="border: 1px solid #ff6b35;">
+                        <div class="panel-title" style="color: #ff6b35;">📱 Mobile App Security</div>
+                        <div style="margin-bottom: 10px;">
+                            <input type="file" id="mobsfFileInput" accept=".apk,.ipa,.zip" style="display: none;" onchange="handleMobsfUpload(this)">
+                            <button class="quick-btn" onclick="document.getElementById('mobsfFileInput').click()" style="width: 100%; border-color: #ff6b35;">📤 Upload APK/IPA</button>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="listMobsfScans()" style="border-color: #ff6b35;">📋 Scans</button>
+                            <button class="quick-btn" onclick="showMobsfHelp()" style="border-color: #ff6b35;">❓ Help</button>
+                        </div>
+                        <div id="mobsfStatus" style="margin-top: 8px; font-size: 10px; color: #666;"></div>
+                    </div>
+
+                    <!-- AI Debugger -->
+                    <div class="panel-card" style="border: 1px solid #e91e63;">
+                        <div class="panel-title" style="color: #e91e63;">🐛 AI Debugger</div>
+                        <div style="margin-bottom: 10px;">
+                            <textarea id="debugCode" placeholder="Paste code to debug..." style="width: 100%; height: 80px; background: #1a1a25; border: 1px solid #e91e63; color: #e0e0e0; padding: 8px; border-radius: 4px; font-size: 11px; font-family: monospace; resize: vertical;"></textarea>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="debugCodeWithAI()" style="flex: 1; background: linear-gradient(135deg, #e91e63, #ff6b6b); color: #0a0a0f;">🐛 Debug</button>
+                            <button class="quick-btn" onclick="explainCodeWithAI()" style="flex: 1; border-color: #e91e63;">📖 Explain</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- MORE CATEGORY - Additional Tools -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <div id="category-more" class="tool-category" style="display: none;">
+                    <!-- Scan Stats -->
+                    <div class="panel-card">
+                        <div class="panel-title">📊 Stats</div>
+                        <div id="scanStatsContent" style="font-size: 11px; color: #888;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>Total Scans:</span><span id="totalScans" style="color: #00ff41;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span>Vulns Found:</span><span id="totalVulns" style="color: #ff6b6b;">0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>IP Investigations:</span><span id="totalIPInvestigations" style="color: #0abdc6;">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Tools -->
+                    <div class="panel-card">
+                        <div class="panel-title">🔧 Active Tools</div>
+                        <div id="activeToolsPanel" style="font-size: 10px; color: #666;">No active scans</div>
+                    </div>
+
+                    <!-- AI Features -->
+                    <div class="panel-card" style="border: 1px solid #ff6b35;">
+                        <div class="panel-title" style="color: #ff6b35;">🤖 AI Features</div>
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="generateSecurityReport()" style="border-color: #ff6b35;">📄 Report</button>
+                            <button class="quick-btn" onclick="showAIHelp()" style="border-color: #ff6b35;">❓ Help</button>
+                        </div>
+                    </div>
+
+                    <!-- Scan Progress (hidden by default) -->
+                    <div class="panel-card" id="scanProgressPanel" style="display: none; border-color: #ffaa00;">
+                        <div class="panel-title" style="color: #ffaa00;">⏳ Scan in Progress</div>
+                        <div id="scanProgressContent" style="font-size: 11px;"></div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                <!-- LEGACY PANELS (kept for compatibility) -->
+                <!-- ═══════════════════════════════════════════════════════════ -->
+                
+                <!-- Hidden: Original Network Guardian (for functions) -->
+                <div id="legacy-network-guardian" style="display: none;">
+                    <div id="networkGuardianAlerts"></div>
+                </div>
                     <div id="networkGuardianStatus" style="margin-bottom: 10px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: #666; font-size: 11px;">WiFi: <span id="networkName">Loading...</span></span>
@@ -6018,6 +6209,193 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
                 closeDeviceModal();
             }
         });
+        
+        // ═══════════════════════════════════════════════════════════════
+        // 📁 TOOL CATEGORY TABS
+        // ═══════════════════════════════════════════════════════════════
+        
+        function showToolCategory(category) {
+            // Hide all categories
+            document.querySelectorAll('.tool-category').forEach(el => el.style.display = 'none');
+            // Show selected category
+            const cat = document.getElementById(`category-${category}`);
+            if (cat) cat.style.display = 'block';
+            
+            // Update tab styles
+            document.querySelectorAll('.tool-tab').forEach(tab => {
+                tab.style.borderColor = '#444';
+                tab.style.color = '#888';
+                tab.classList.remove('active');
+            });
+            const activeTab = document.getElementById(`tab-${category}`);
+            if (activeTab) {
+                const colors = { intel: '#ff6b6b', network: '#00ff41', scanners: '#0abdc6', mobile: '#ff6b35', more: '#8b5cf6' };
+                activeTab.style.borderColor = colors[category] || '#0abdc6';
+                activeTab.style.color = colors[category] || '#0abdc6';
+                activeTab.classList.add('active');
+            }
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // 🌐 DOMAIN INVESTIGATOR - White Hat Domain Intelligence Tool
+        // ═══════════════════════════════════════════════════════════════
+        
+        async function investigateDomain() {
+            const domain = document.getElementById('domainInvestigatorTarget').value.trim();
+            if (!domain) {
+                addMessage('❌ Please enter a domain to investigate.', true);
+                return;
+            }
+            
+            const statusEl = document.getElementById('domainInvestigatorStatus');
+            statusEl.innerHTML = '<span style="color: #0abdc6;">🌐 Investigating...</span>';
+            
+            addMessage(`🌐 <strong>Starting Domain Investigation:</strong> ${domain}`, true);
+            
+            try {
+                const response = await fetch('/api/domain-investigator/investigate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ domain })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    addMessage(`❌ Error: ${data.error}`, true);
+                    statusEl.innerHTML = `<span style="color: #ff0040;">Error</span>`;
+                    return;
+                }
+                
+                const whois = data.whois || {};
+                const dns = data.dns || {};
+                const ssl = data.ssl || {};
+                const headers = data.headers || {};
+                const summary = data.summary || {};
+                
+                let html = `
+                    <div style="background: #1a1a25; padding: 15px; border-radius: 8px; border: 1px solid #0abdc6;">
+                        <strong style="color: #0abdc6; font-size: 14px;">🌐 Domain Investigation: ${domain}</strong><br>
+                        <span style="color: #666; font-size: 10px;">Completed in ${data.investigationTime}</span><br><br>
+                        
+                        <div style="background: #0a0a0f; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                            <strong style="font-size: 16px;">${summary.riskAssessment || 'Unknown'}</strong>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #ff6b6b;">🏛️ Registration</strong><br>
+                            <span style="color: #e0e0e0;">Registrar: ${whois.registrar || 'Unknown'}</span><br>
+                            <span style="color: #888;">Created: ${whois.creationDate || 'Unknown'}</span><br>
+                            <span style="color: #888;">Expires: ${whois.expirationDate || 'Unknown'}</span><br>
+                            ${whois.registrant?.organization ? `<span style="color: #888;">Owner: ${whois.registrant.organization}</span><br>` : ''}
+                        </div>
+                        
+                        ${data.ip ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #ff6b6b;">🌐 Hosting</strong><br>
+                            <span style="color: #e0e0e0;">IP: ${data.ip}</span><br>
+                            ${data.geolocation ? `<span style="color: #888;">Location: ${data.geolocation.city || ''}, ${data.geolocation.country || 'Unknown'}</span><br>
+                            <span style="color: #888;">Provider: ${data.geolocation.isp || 'Unknown'}</span>` : ''}
+                        </div>
+                        ` : ''}
+                        
+                        ${ssl.subject ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #ff6b6b;">🔒 SSL Certificate</strong><br>
+                            <span style="color: #e0e0e0;">Issuer: ${ssl.issuer || 'Unknown'}</span><br>
+                            <span style="color: ${ssl.isExpired ? '#ff6b6b' : '#00ff41'};">${ssl.isExpired ? '❌ EXPIRED' : '✅ Valid'} (${ssl.daysRemaining} days)</span>
+                        </div>
+                        ` : ''}
+                        
+                        ${headers.score ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #ff6b6b;">🛡️ Security Headers</strong><br>
+                            <span style="color: #e0e0e0;">Score: ${headers.score} (Grade ${headers.grade})</span>
+                        </div>
+                        ` : ''}
+                        
+                        ${dns.A?.length > 0 ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #ff6b6b;">📋 DNS Records</strong><br>
+                            <span style="color: #888;">A: ${dns.A.join(', ')}</span><br>
+                            ${dns.MX?.length > 0 ? `<span style="color: #888;">MX: ${dns.MX.slice(0, 2).map(m => m.exchange).join(', ')}</span><br>` : ''}
+                            ${dns.NS?.length > 0 ? `<span style="color: #888;">NS: ${dns.NS.slice(0, 2).join(', ')}</span>` : ''}
+                        </div>
+                        ` : ''}
+                        
+                        ${data.subdomains?.found?.length > 0 ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #ff6b6b;">🔍 Subdomains (${data.subdomains.found.length})</strong><br>
+                            ${data.subdomains.found.slice(0, 5).map(s => `<span style="background: #2a2a35; padding: 2px 6px; border-radius: 3px; margin: 2px; display: inline-block; font-size: 10px;">${s.subdomain}</span>`).join('')}
+                        </div>
+                        ` : ''}
+                        
+                        ${summary.concerns?.length > 0 ? `
+                        <div style="margin-bottom: 10px; background: #2a1a1a; padding: 8px; border-radius: 4px;">
+                            <strong style="color: #ff6b6b;">⚠️ Concerns</strong><br>
+                            ${summary.concerns.map(c => `<span style="color: #e0e0e0; font-size: 11px;">${c}</span><br>`).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                addMessage(html, true);
+                statusEl.innerHTML = `<span style="color: #00ff41;">✅ ${summary.riskAssessment}</span>`;
+                
+            } catch (error) {
+                addMessage(`❌ Investigation failed: ${error.message}`, true);
+                statusEl.innerHTML = `<span style="color: #ff0040;">Failed</span>`;
+            }
+        }
+        
+        async function quickDNS() {
+            const domain = document.getElementById('domainInvestigatorTarget').value.trim();
+            if (!domain) { addMessage('❌ Please enter a domain.', true); return; }
+            
+            addMessage(`📋 <strong>DNS Lookup:</strong> ${domain}`, true);
+            try {
+                const response = await fetch(`/api/domain-investigator/dns/${domain}`);
+                const dns = await response.json();
+                
+                addMessage(`
+                    <div style="background: #1a1a25; padding: 12px; border-radius: 8px; border: 1px solid #0abdc6;">
+                        <strong style="color: #0abdc6;">📋 DNS Records: ${domain}</strong><br><br>
+                        <strong>A:</strong> ${dns.A?.join(', ') || 'None'}<br>
+                        <strong>AAAA:</strong> ${dns.AAAA?.join(', ') || 'None'}<br>
+                        <strong>MX:</strong> ${dns.MX?.map(m => m.exchange).join(', ') || 'None'}<br>
+                        <strong>NS:</strong> ${dns.NS?.join(', ') || 'None'}<br>
+                        <strong>TXT:</strong> ${dns.TXT?.slice(0, 2).join(' | ') || 'None'}
+                    </div>
+                `, true);
+            } catch (error) {
+                addMessage(`❌ DNS lookup failed: ${error.message}`, true);
+            }
+        }
+        
+        async function quickSSL() {
+            const domain = document.getElementById('domainInvestigatorTarget').value.trim();
+            if (!domain) { addMessage('❌ Please enter a domain.', true); return; }
+            
+            addMessage(`🔒 <strong>SSL Check:</strong> ${domain}`, true);
+            try {
+                const response = await fetch(`/api/domain-investigator/ssl/${domain}`);
+                const ssl = await response.json();
+                
+                addMessage(`
+                    <div style="background: #1a1a25; padding: 12px; border-radius: 8px; border: 1px solid ${ssl.isExpired ? '#ff6b6b' : '#00ff41'};">
+                        <strong style="color: ${ssl.isExpired ? '#ff6b6b' : '#00ff41'};">🔒 SSL Certificate: ${domain}</strong><br><br>
+                        <strong>Subject:</strong> ${ssl.subject || 'N/A'}<br>
+                        <strong>Issuer:</strong> ${ssl.issuer || 'N/A'}<br>
+                        <strong>Valid From:</strong> ${ssl.validFrom || 'N/A'}<br>
+                        <strong>Valid To:</strong> ${ssl.validTo || 'N/A'}<br>
+                        <strong>Days Remaining:</strong> ${ssl.daysRemaining || 'N/A'}<br>
+                        <strong>Status:</strong> ${ssl.isExpired ? '❌ EXPIRED' : ssl.isValid ? '✅ Valid' : '⚠️ Invalid'}
+                    </div>
+                `, true);
+            } catch (error) {
+                addMessage(`❌ SSL check failed: ${error.message}`, true);
+            }
+        }
         
         // ═══════════════════════════════════════════════════════════════
         // 🔍 IP INVESTIGATOR - White Hat Intelligence Tool

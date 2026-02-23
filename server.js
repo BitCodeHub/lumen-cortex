@@ -1024,6 +1024,97 @@ app.post('/api/chat', async (req, res) => {
     }
   }
   
+  // Check if message contains a domain for investigation
+  const domainMatch = message.match(/\b([a-z0-9][-a-z0-9]*\.(?:com|net|org|io|co|ai|dev|app|xyz|me|info|biz|us|uk|ca|de|fr|jp|cn|ru|br|au|in|gov|edu|mil)[a-z]*)\b/i);
+  const isDomainRequest = domainMatch && /\b(domain|investigate|lookup|check|who owns|whois|ssl|cert|dns|info|about|tell me|what is|analyze|security)\b/i.test(message);
+  
+  if (isDomainRequest) {
+    const domain = domainMatch[1].toLowerCase();
+    console.log(`🌐 [Chat] Domain investigation request: ${domain}`);
+    
+    try {
+      const results = await domainInvestigator.investigate(domain);
+      
+      // Store in history
+      const id = `domain-${Date.now()}`;
+      domainInvestigations.set(id, { domain, results, timestamp: new Date().toISOString() });
+      
+      // Format response for chat
+      const whois = results.whois || {};
+      const dns = results.dns || {};
+      const ssl = results.ssl || {};
+      const headers = results.headers || {};
+      const summary = results.summary || {};
+      
+      let response = `🌐 **Domain Investigation: ${domain}**\n\n`;
+      response += `**Risk Assessment:** ${summary.riskAssessment || 'Unknown'}\n\n`;
+      
+      response += `🏛️ **Registration:**\n`;
+      response += `• Registrar: ${whois.registrar || 'Unknown'}\n`;
+      response += `• Created: ${whois.creationDate || 'Unknown'}\n`;
+      response += `• Expires: ${whois.expirationDate || 'Unknown'}\n`;
+      if (whois.registrant?.organization) response += `• Owner: ${whois.registrant.organization}\n`;
+      response += '\n';
+      
+      if (results.ip) {
+        response += `🌐 **Hosting:**\n`;
+        response += `• IP: ${results.ip}\n`;
+        if (results.geolocation) {
+          response += `• Location: ${results.geolocation.city || ''}, ${results.geolocation.country || 'Unknown'}\n`;
+          response += `• Provider: ${results.geolocation.isp || 'Unknown'}\n`;
+        }
+        response += '\n';
+      }
+      
+      if (ssl.subject) {
+        response += `🔒 **SSL Certificate:**\n`;
+        response += `• Issuer: ${ssl.issuer || 'Unknown'}\n`;
+        response += `• Status: ${ssl.isExpired ? '❌ EXPIRED' : ssl.isValid ? '✅ Valid' : '⚠️ Invalid'}\n`;
+        response += `• Expires: ${ssl.daysRemaining} days\n`;
+        response += '\n';
+      }
+      
+      if (headers.score) {
+        response += `🛡️ **Security Headers:** ${headers.score} (Grade ${headers.grade})\n\n`;
+      }
+      
+      if (dns.A?.length > 0) {
+        response += `📋 **DNS:**\n`;
+        response += `• A: ${dns.A.join(', ')}\n`;
+        if (dns.MX?.length > 0) response += `• MX: ${dns.MX.slice(0, 2).map(m => m.exchange).join(', ')}\n`;
+        if (dns.NS?.length > 0) response += `• NS: ${dns.NS.slice(0, 2).join(', ')}\n`;
+        response += '\n';
+      }
+      
+      if (results.subdomains?.found?.length > 0) {
+        response += `🔍 **Subdomains Found:** ${results.subdomains.found.length}\n`;
+        response += results.subdomains.found.slice(0, 5).map(s => `• ${s.subdomain}`).join('\n');
+        response += '\n';
+      }
+      
+      if (summary.concerns?.length > 0) {
+        response += `\n⚠️ **Concerns:**\n`;
+        summary.concerns.forEach(c => response += `• ${c}\n`);
+      }
+      
+      return res.json({
+        success: true,
+        message: response,
+        action: 'domain-investigate',
+        domain: domain,
+        investigationId: id,
+        sessionId: session.id
+      });
+    } catch (error) {
+      console.error(`❌ [Chat] Domain investigation error: ${error.message}`);
+      return res.json({
+        success: true,
+        message: `❌ Failed to investigate domain **${domain}**: ${error.message}`,
+        sessionId: session.id
+      });
+    }
+  }
+  
   // Check if message is a scan request
   const urlMatch = message.match(/(https?:\/\/[^\s]+|[a-z0-9][-a-z0-9]*\.[a-z]{2,})/i);
   const isScanRequest = /\b(scan|check|test|analyze|audit)\b/i.test(message) && urlMatch;
@@ -5187,8 +5278,12 @@ const ipInvestigator = new IPInvestigator({
   ipinfoKey: process.env.IPINFO_API_KEY
 });
 
+const DomainInvestigator = require('./domain-investigator');
+const domainInvestigator = new DomainInvestigator();
+
 // Store investigation history
 const ipInvestigations = new Map();
+const domainInvestigations = new Map();
 
 // Full IP investigation
 app.post('/api/ip-investigator/investigate', async (req, res) => {
@@ -5313,6 +5408,128 @@ app.get('/api/ip-investigator/:id/report', (req, res) => {
 });
 
 console.log('🔍 IP Investigator module loaded');
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DOMAIN INVESTIGATOR - White Hat Domain Intelligence Tool
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Full domain investigation
+app.post('/api/domain-investigator/investigate', async (req, res) => {
+  const { domain } = req.body;
+  
+  if (!domain) {
+    return res.status(400).json({ error: 'Domain required' });
+  }
+  
+  // Clean and validate domain
+  const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase();
+  const domainRegex = /^[a-z0-9][-a-z0-9]*(\.[a-z0-9][-a-z0-9]*)+$/i;
+  if (!domainRegex.test(cleanDomain)) {
+    return res.status(400).json({ error: 'Invalid domain format' });
+  }
+  
+  console.log(`🌐 [Domain Investigator] Starting investigation: ${cleanDomain}`);
+  
+  try {
+    const results = await domainInvestigator.investigate(cleanDomain);
+    
+    // Store in history
+    const id = `domain-${Date.now()}`;
+    domainInvestigations.set(id, { domain: cleanDomain, results, timestamp: new Date().toISOString() });
+    
+    // Keep only last 50 investigations
+    if (domainInvestigations.size > 50) {
+      const firstKey = domainInvestigations.keys().next().value;
+      domainInvestigations.delete(firstKey);
+    }
+    
+    console.log(`✅ [Domain Investigator] Completed: ${cleanDomain} - ${results.summary.riskAssessment}`);
+    res.json({ id, ...results });
+  } catch (error) {
+    console.error(`❌ [Domain Investigator] Error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Quick DNS lookup
+app.get('/api/domain-investigator/dns/:domain', async (req, res) => {
+  const domain = req.params.domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  
+  try {
+    const dns = await domainInvestigator.getDNSRecords(domain);
+    res.json(dns);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Quick WHOIS lookup
+app.get('/api/domain-investigator/whois/:domain', async (req, res) => {
+  const domain = req.params.domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  
+  try {
+    const whois = await domainInvestigator.getWhois(domain);
+    res.json(whois);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// SSL certificate check
+app.get('/api/domain-investigator/ssl/:domain', async (req, res) => {
+  const domain = req.params.domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  
+  try {
+    const ssl = await domainInvestigator.getSSLInfo(domain);
+    res.json(ssl);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get investigation history
+app.get('/api/domain-investigator/history', (req, res) => {
+  const limit = parseInt(req.query.limit) || 20;
+  const history = Array.from(domainInvestigations.entries())
+    .slice(-limit)
+    .reverse()
+    .map(([id, data]) => ({
+      id,
+      domain: data.domain,
+      timestamp: data.timestamp,
+      riskAssessment: data.results.summary.riskAssessment,
+      ip: data.results.ip || 'Unknown'
+    }));
+  
+  res.json(history);
+});
+
+// Get specific investigation
+app.get('/api/domain-investigator/:id', (req, res) => {
+  const { id } = req.params;
+  const data = domainInvestigations.get(id);
+  
+  if (!data) {
+    return res.status(404).json({ error: 'Investigation not found' });
+  }
+  
+  res.json(data);
+});
+
+// Generate text report
+app.get('/api/domain-investigator/:id/report', (req, res) => {
+  const { id } = req.params;
+  const data = domainInvestigations.get(id);
+  
+  if (!data) {
+    return res.status(404).json({ error: 'Investigation not found' });
+  }
+  
+  const report = domainInvestigator.generateReport(data.results);
+  res.type('text/plain').send(report);
+});
+
+console.log('🌐 Domain Investigator module loaded');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // AD BLOCKER - AI-Powered Network-Wide Ad Blocking

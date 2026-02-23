@@ -1,0 +1,102 @@
+{
+  "ip": "8.8.8.8",
+  "timestamp": "2026-02-23T08:47:47.575Z",
+  "geolocation": {
+    "source": "ip-api.com",
+    "country": "United States",
+    "countryCode": "US",
+    "region": "Virginia",
+    "city": "Ashburn",
+    "zip": "20149",
+    "latitude": 39.03,
+    "longitude": -77.5,
+    "timezone": "America/New_York",
+    "isp": "Google LLC",
+    "organization": "Google Public DNS",
+    "asn": "AS15169 Google LLC",
+    "asnName": "GOOGLE",
+    "isMobile": false,
+    "isProxy": false,
+    "isHosting": true,
+    "mapUrl": "https://www.google.com/maps?q=39.03,-77.5"
+  },
+  "whois": {
+    "raw": "% IANA WHOIS server\n% for more information on IANA, visit http://www.iana.org\n% This query returned 1 object\n\nrefer:        whois.arin.net\n\ninetnum:      8.0.0.0 - 8.255.255.255\norganisation: Administered by ARIN\nstatus:       LEGACY\n\nwhois:        whois.arin.net\n\nchanged:      1992-12\nsource:       IANA\n\n# whois.arin.net\n\nNetRange:       8.8.8.0 - 8.8.8.255\nCIDR:           8.8.8.0/24\nNetName:        GOGL\nNetHandle:      NET-8-8-8-0-2\nParent:         NET8 (NET-8-0-0-0-0)\nNetType:        Direct Allocation\nOriginAS:       \nOrganization:   Google LLC (GOGL)\nRegDate:        2023-12-28\nUpdated:        2023-12-28\nRef:            https://rdap.arin.net/registry/ip/8.8.8.0\n\n\nOrgName:        Google LLC\nOrgId:          GOGL\nAddress:        1600 Amphitheatre Parkway\nCity:           Mountain View\nStateProv:      CA\nPostalCode:     94043\nCountry:        US\nRegDate:        2000-03-30\nUpdated:        2019-10-31\nComment:        Please note that the recommended way to file abuse complaints are located in the following links. \nComment:        \nComment:        To report abuse and illegal activity: https://www.google.com/contact/\nComment:        \nComment:        For legal requests: http://support.google.com/legal \nComment:        \nComment:        Regards, \nComment:        The Google Team\nRef:            https://rdap.arin.net/registry/entity/GOGL\n\n\nOrgTechHandle: ZG39-ARIN\nOrgTechName:   Google LLC\nOrgTechPhone:  +1-650-253-0000 \nOrgTechEmail:  arin-contact@google.com\nOrgTechRef:    https://rdap.arin.net/registry/entity/ZG39-ARIN\n\nOrgAbuseHandle: ABUSE5250-ARIN\nOrgAbuseName:   Abuse\nOrgAbusePhone:  +1-650-253-0000 \nOrgAbuseEmail:  network-abuse@google.com\nOrgAbuseRef:    https://rdap.arin.net/registry/entity/ABUSE5250-ARIN\n\n\n",
+    "organization": "Google LLC",
+    "netRange": "8.8.8.0 - 8.8.8.255",
+    "netName": "GOGL",
+    "country": "US",
+    "address": "1600 Amphitheatre Parkway",
+    "city": "Mountain View",
+    "stateProv": "CA",
+    "postalCode": "94043",
+    "regDate": "2023-12-28",
+    "updated": "2023-12-28",
+    "abuseEmail": "network-abuse@google.com",
+    "abusePhone": "+1-650-253-0000",
+    "techEmail": "arin-contact@google.com",
+    "cidr": "8.8.8.0/24"
+  },
+  "reverseDns": {
+    "hostnames": [
+      "dns.google"
+    ],
+    "verified": [
+      {
+        "hostname": "dns.google",
+        "verified": true
+      }
+    ],
+    "primaryHostname": "dns.google"
+  },
+  "ports": {
+    "scanType": "quick (top 100)",
+    "hostUp": true,
+    "latency": null,
+    "openPorts": [
+      {
+        "port": 53,
+        "protocol": "tcp",
+        "state": "open",
+        "service": "domain"
+      },
+      {
+        "port": 443,
+        "protocol": "tcp",
+        "state": "open",
+        "service": "https"
+      }
+    ],
+    "totalOpen": 2,
+    "commonServices": [
+      "domain",
+      "https"
+    ]
+  },
+  "threatIntel": {
+    "available": false,
+    "reason": "No AbuseIPDB API key configured"
+  },
+  "shodan": {
+    "available": false,
+    "reason": "No Shodan API key configured"
+  },
+  "summary": {
+    "riskAssessment": "✅ Low Risk",
+    "highlights": [
+      "📍 Location: Ashburn, Virginia, United States",
+      "🏢 ISP: Google LLC",
+      "🏛️ Owner: Google LLC",
+      "🌐 Hostname: dns.google",
+      "🚪 Open ports: 2 (53, 443)"
+    ],
+    "concerns": [
+      "🖥️ Hosting/datacenter IP"
+    ],
+    "recommendations": [
+      "Consider blocking or monitoring this IP"
+    ]
+  },
+  "errors": [],
+  "investigationTime": "9565ms"
+}
