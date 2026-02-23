@@ -21,6 +21,7 @@ async function getRapidAPIKeywordData(keyword) {
   }
   
   try {
+    console.log(`[RapidAPI] Fetching data for: "${keyword}"`);
     const url = `https://${RAPIDAPI_HOST}/keywords/research?keyword=${encodeURIComponent(keyword)}`;
     
     const response = await fetch(url, {
@@ -33,17 +34,25 @@ async function getRapidAPIKeywordData(keyword) {
     
     const data = await response.json();
     
-    if (data.mainKeyword) {
+    // API returns: seedKeyword, keywords[], success, totalCount
+    if (data.success && data.keywords && data.keywords.length > 0) {
+      // Find the exact match or use first keyword
+      const mainKeyword = data.keywords.find(k => k.keyword.toLowerCase() === keyword.toLowerCase()) || data.keywords[0];
+      
+      console.log(`[RapidAPI] ✅ Got data: volume=${mainKeyword.searchVolume}, difficulty=${mainKeyword.difficulty}`);
+      
       return {
-        keyword: data.mainKeyword.keyword,
-        searchVolume: data.mainKeyword.searchVolume || 0,
-        cpc: data.mainKeyword.cpc,
-        difficulty: data.mainKeyword.difficulty,
-        relatedKeywords: data.relatedKeywords || [],
+        keyword: mainKeyword.keyword,
+        searchVolume: mainKeyword.searchVolume || 0,
+        cpc: mainKeyword.cpc,
+        difficulty: mainKeyword.difficulty,
+        relatedKeywords: data.keywords.filter(k => k.keyword !== mainKeyword.keyword).slice(0, 20),
+        totalCount: data.totalCount,
         source: 'rapidapi'
       };
     }
     
+    console.log('[RapidAPI] No data returned');
     return null;
   } catch (error) {
     console.error('[RapidAPI] API error:', error.message);
