@@ -133,6 +133,121 @@
             color: var(--primary);
         }
 
+        /* Code Selection Popup */
+        .code-selection-popup {
+            position: fixed;
+            background: linear-gradient(135deg, #1a1a25, #12121a);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 32px rgba(0, 255, 65, 0.3);
+            z-index: 10000;
+            display: none;
+            animation: popupFadeIn 0.2s ease;
+            max-width: 300px;
+        }
+        
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .code-selection-popup .popup-title {
+            color: var(--primary);
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .code-selection-popup .selected-code-preview {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 0.75em;
+            color: var(--secondary);
+            max-height: 60px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .code-selection-popup .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .code-selection-popup .quick-action-btn {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .code-selection-popup .quick-action-btn:hover {
+            background: var(--primary);
+            color: #0a0a0f;
+        }
+        
+        .code-selection-popup .custom-question {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            margin-top: 8px;
+            font-family: inherit;
+        }
+        
+        .code-selection-popup .custom-question:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .code-selection-popup .ask-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: #0a0a0f;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            font-family: inherit;
+        }
+        
+        .code-selection-popup .ask-btn:hover {
+            filter: brightness(1.1);
+        }
+        
+        .code-selection-popup .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 1em;
+            padding: 2px 6px;
+        }
+        
+        .code-selection-popup .close-btn:hover {
+            color: var(--danger);
+        }
+
         /* Main grid */
         .main-grid {
             display: grid;
@@ -763,6 +878,21 @@
 <body>
     <div class="scanlines"></div>
     <canvas class="matrix-bg" id="matrix"></canvas>
+    
+    <!-- Code Selection Popup -->
+    <div class="code-selection-popup" id="codeSelectionPopup">
+        <button class="close-btn" onclick="hideCodeSelectionPopup()">✕</button>
+        <div class="popup-title">💻 Ask about this code</div>
+        <div class="selected-code-preview" id="selectedCodePreview"></div>
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="askAboutCode('explain')">🔍 Explain</button>
+            <button class="quick-action-btn" onclick="askAboutCode('simplify')">✨ Simplify</button>
+            <button class="quick-action-btn" onclick="askAboutCode('improve')">⚡ Improve</button>
+            <button class="quick-action-btn" onclick="askAboutCode('bugs')">🐛 Find Bugs</button>
+        </div>
+        <input type="text" class="custom-question" id="customCodeQuestion" placeholder="Or ask your own question..." onkeypress="if(event.key==='Enter')askAboutCode('custom')">
+        <button class="ask-btn" onclick="askAboutCode('custom')">Ask Neo →</button>
+    </div>
 
     <div class="container">
         <header>
@@ -6128,6 +6258,167 @@ Paste your code below:`,
                 currentCharIndex = 0;
                 isDeleting = false;
                 startPlaceholderAnimation();
+            }
+        });
+        
+        // ═══════════════════════════════════════════════════════════════
+        // CODE SELECTION POPUP - Ask about highlighted code
+        // ═══════════════════════════════════════════════════════════════
+        
+        let selectedCodeText = '';
+        
+        // Listen for text selection in chat messages
+        document.addEventListener('mouseup', (e) => {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+            
+            // Check if selection is within chat messages area
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            // Check if selection contains code-like content
+            if (selectedText.length > 10 && isLikelyCode(selectedText)) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                // Check if selection is within chat area
+                const chatRect = chatMessages.getBoundingClientRect();
+                if (rect.top >= chatRect.top && rect.bottom <= chatRect.bottom + 100) {
+                    showCodeSelectionPopup(selectedText, rect);
+                }
+            } else {
+                // Hide popup if clicking elsewhere (not on popup itself)
+                const popup = document.getElementById('codeSelectionPopup');
+                if (popup && !popup.contains(e.target)) {
+                    hideCodeSelectionPopup();
+                }
+            }
+        });
+        
+        // Check if text looks like code
+        function isLikelyCode(text) {
+            const codeIndicators = [
+                /[{}\[\]();]/, // Brackets and semicolons
+                /\bfunction\b/, /\bconst\b/, /\blet\b/, /\bvar\b/, // JS keywords
+                /\bdef\b/, /\bclass\b/, /\bimport\b/, /\breturn\b/, // Python/general
+                /=>/, /===/, /!==/, // Operators
+                /\bif\s*\(/, /\bfor\s*\(/, /\bwhile\s*\(/, // Control structures
+                /^\s{2,}/m, // Indentation
+                /\.\w+\(/, // Method calls
+            ];
+            
+            const matches = codeIndicators.filter(pattern => pattern.test(text)).length;
+            return matches >= 2 || text.includes('```');
+        }
+        
+        // Show the popup near the selection
+        function showCodeSelectionPopup(text, rect) {
+            selectedCodeText = text;
+            
+            const popup = document.getElementById('codeSelectionPopup');
+            const preview = document.getElementById('selectedCodePreview');
+            const customInput = document.getElementById('customCodeQuestion');
+            
+            // Show preview (truncated)
+            const truncated = text.length > 100 ? text.substring(0, 100) + '...' : text;
+            preview.textContent = truncated;
+            
+            // Position popup near selection
+            const popupWidth = 280;
+            let left = rect.left + (rect.width / 2) - (popupWidth / 2);
+            let top = rect.bottom + 10;
+            
+            // Keep popup on screen
+            if (left < 10) left = 10;
+            if (left + popupWidth > window.innerWidth - 10) {
+                left = window.innerWidth - popupWidth - 10;
+            }
+            if (top + 250 > window.innerHeight) {
+                top = rect.top - 260;
+            }
+            
+            popup.style.left = left + 'px';
+            popup.style.top = top + 'px';
+            popup.style.display = 'block';
+            
+            // Clear custom question
+            customInput.value = '';
+        }
+        
+        // Hide the popup
+        function hideCodeSelectionPopup() {
+            const popup = document.getElementById('codeSelectionPopup');
+            if (popup) {
+                popup.style.display = 'none';
+            }
+            selectedCodeText = '';
+        }
+        
+        // Ask about the selected code
+        async function askAboutCode(action) {
+            if (!selectedCodeText) return;
+            
+            let question = '';
+            const customInput = document.getElementById('customCodeQuestion');
+            
+            switch (action) {
+                case 'explain':
+                    question = `Explain this code in detail - what does each part do?\n\n\`\`\`\n${selectedCodeText}\n\`\`\``;
+                    break;
+                case 'simplify':
+                    question = `Simplify this code and make it more readable:\n\n\`\`\`\n${selectedCodeText}\n\`\`\``;
+                    break;
+                case 'improve':
+                    question = `Improve this code - better performance, cleaner structure, best practices:\n\n\`\`\`\n${selectedCodeText}\n\`\`\``;
+                    break;
+                case 'bugs':
+                    question = `Find any bugs, issues, or potential problems in this code:\n\n\`\`\`\n${selectedCodeText}\n\`\`\``;
+                    break;
+                case 'custom':
+                    const customQuestion = customInput.value.trim();
+                    if (!customQuestion) {
+                        customInput.focus();
+                        return;
+                    }
+                    question = `${customQuestion}\n\n\`\`\`\n${selectedCodeText}\n\`\`\``;
+                    break;
+            }
+            
+            // Hide popup
+            hideCodeSelectionPopup();
+            
+            // Clear any text selection
+            window.getSelection().removeAllRanges();
+            
+            // Add user message to chat
+            addMessage(question, true);
+            
+            // Send to Neo
+            const typingId = addTypingIndicator();
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: question, sessionId })
+                });
+                
+                const data = await response.json();
+                removeTypingIndicator(typingId);
+                
+                if (data.message) {
+                    addAIMessage(data.message);
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage(`❌ Error: ${error.message}`, false);
+            }
+        }
+        
+        // Close popup on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideCodeSelectionPopup();
             }
         });
     </script>
