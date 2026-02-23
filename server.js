@@ -4651,6 +4651,13 @@ app.post('/api/network/monitor/stop', (req, res) => {
 console.log('🌐 Global Network Monitor endpoints loaded');
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FAMILY & PARENTAL CONTROLS MODULE
+// ═══════════════════════════════════════════════════════════════════════════
+const familyControls = require('./family-controls');
+familyControls.setupRoutes(app);
+console.log('👨‍👩‍👧‍👦 Family & Parental Controls loaded');
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 app.listen(PORT, () => {
   const aiCount = Object.values(AI_TOOLS).filter(t => t.ai).length;

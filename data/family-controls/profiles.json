@@ -1,0 +1,23 @@
+{
+  "profiles": {
+    "profile_1771814587398": {
+      "name": "Kids iPad",
+      "type": "child",
+      "devices": [],
+      "settings": {
+        "blockedCategories": [
+          "adult",
+          "gambling",
+          "malware",
+          "dating",
+          "drugs"
+        ],
+        "safeSearch": true,
+        "youtubeRestricted": true
+      },
+      "created": "2026-02-23T02:43:07.398Z",
+      "updated": "2026-02-23T02:43:07.398Z"
+    }
+  },
+  "devices": {}
+}
