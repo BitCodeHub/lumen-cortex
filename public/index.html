@@ -3980,73 +3980,67 @@ ${bestPractices ? `## 💡 Best Practices & Recommendations
             const getScoreEmoji = (score) => score >= 70 ? '🟢' : score >= 50 ? '🟡' : '🔴';
             const getDiffEmoji = (diff) => diff === 'easy' ? '🟢' : diff === 'medium' ? '🟡' : '🔴';
             
-            let summary = `## 🎯 Keyword Research: "${data.keyword}"
-${data.location !== 'Global' ? `📍 **Location:** ${data.location}\n` : ''}
----
+            let summary = `🎯 **Keyword Research: "${data.keyword}"**
+${data.location !== 'Global' ? `📍 Location: ${data.location}` : ''}
 
-### 📊 Scores Overview
-
-| Metric | Score | Status |
-|--------|-------|--------|
-| Popularity | **${data.popularity.score}/100** | ${getScoreEmoji(data.popularity.score)} ${data.popularity.trend} |
-| SEO Score | **${data.seo.score}/100** | ${getScoreEmoji(data.seo.score)} ${data.seo.rankingPotential} potential |
-| Difficulty | **${data.seo.difficulty.toUpperCase()}** | ${getDiffEmoji(data.seo.difficulty)} Competition: ${data.seo.competition} |`;
+**📊 SCORES**
+${getScoreEmoji(data.popularity.score)} Popularity: **${data.popularity.score}/100** (${data.popularity.trend})
+${getScoreEmoji(data.seo.score)} SEO Score: **${data.seo.score}/100** (${data.seo.rankingPotential} potential)
+${getDiffEmoji(data.seo.difficulty)} Difficulty: **${data.seo.difficulty.toUpperCase()}** (Competition: ${data.seo.competition})`;
 
             if (data.adsIntel) {
+                const cpc = data.adsIntel.cpc || 0;
+                const volume = data.adsIntel.searchVolume || 0;
+                const monthlySpend = data.adsIntel.estimatedMonthlySpend || 0;
+                const yearlySpend = data.adsIntel.estimatedYearlySpend || 0;
+                
                 summary += `
 
----
-
-### 💰 Ads Intelligence ${data.adsIntel.source === 'rapidapi' ? '(Real Data)' : '(Estimated)'}
-
-| Metric | Value |
-|--------|-------|
-| 🔍 Monthly Searches | **${(data.adsIntel.searchVolume || 0).toLocaleString()}** |
-| 💵 Cost Per Click | **$${data.adsIntel.cpc}** (${data.adsIntel.cpcRange}) |
-| 📈 Market Monthly Spend | **$${(data.adsIntel.estimatedMonthlySpend || 0).toLocaleString()}** |
-| 📅 Market Yearly Spend | **$${(data.adsIntel.estimatedYearlySpend || 0).toLocaleString()}** |`;
+**💰 ADS INTELLIGENCE** ${data.adsIntel.source === 'rapidapi' ? '(Real Data)' : '(Estimated)'}
+🔍 Monthly Searches: **${volume.toLocaleString()}**
+💵 Cost Per Click: **$${cpc.toFixed(2)}**
+📈 Market Monthly Spend: **$${monthlySpend.toLocaleString()}**
+📅 Market Yearly Spend: **$${yearlySpend.toLocaleString()}**`;
 
                 if (data.adsIntel.insights && data.adsIntel.insights.length > 0) {
                     summary += `
 
-**Insights:**
-${data.adsIntel.insights.map(i => `${i.icon} ${i.text}`).join('\n')}`;
+**Insights:**`;
+                    data.adsIntel.insights.forEach(i => {
+                        summary += `\n${i.icon} ${i.text}`;
+                    });
                 }
             }
 
             summary += `
 
----
+**🎯 BEST KEYWORDS TO TARGET**`;
+            data.bestKeywordsToTarget.slice(0, 5).forEach((k, i) => {
+                summary += `\n${i + 1}. "${k.keyword}" — SEO: ${k.seoScore}, ${k.difficulty}, ${k.rankingPotential} potential`;
+            });
 
-### 🎯 Best Keywords to Target
+            summary += `
 
-${data.bestKeywordsToTarget.slice(0, 5).map((k, i) => `${i + 1}. **"${k.keyword}"** — SEO: ${k.seoScore}, Difficulty: ${k.difficulty}, Potential: ${k.rankingPotential}`).join('\n')}
+**💡 RECOMMENDATIONS**`;
+            data.recommendation.forEach(r => {
+                summary += `\n${r}`;
+            });
 
----
+            summary += `
 
-### 💡 Recommendations
-
-${data.recommendation.join('\n')}
-
----
-
-### 🔗 Related Keywords
-
-${data.relatedKeywords.slice(0, 8).map(k => `\`${k}\``).join(' • ')}`;
+**🔗 RELATED KEYWORDS**
+${data.relatedKeywords.slice(0, 8).join(' • ')}`;
 
             if (data.localKeywords && data.localKeywords.length > 0) {
                 summary += `
 
-### 📍 Local Keywords
-
-${data.localKeywords.slice(0, 6).map(k => `\`${k}\``).join(' • ')}`;
+**📍 LOCAL KEYWORDS**
+${data.localKeywords.slice(0, 6).join(' • ')}`;
             }
 
             summary += `
 
----
-
-💬 **Ask me anything** about these keywords, how to rank for them, or ad strategy!`;
+💬 Ask me anything about these keywords or how to rank for them!`;
             
             return summary;
         }
