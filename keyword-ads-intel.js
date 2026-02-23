@@ -1,14 +1,58 @@
 // Keyword Ads Intelligence - CPC and Ad Spend Data
-// Uses DataForSEO API + fallback estimation
+// Uses RapidAPI SEO Keyword Research Tool + fallback estimation
 
 const fetch = require('node-fetch');
 
-// DataForSEO credentials (set in .env)
+// RapidAPI credentials (set in .env)
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
+const RAPIDAPI_HOST = 'seo-keyword-research-tool.p.rapidapi.com';
+
+// DataForSEO credentials (backup, set in .env)
 const DATAFORSEO_LOGIN = process.env.DATAFORSEO_LOGIN || '';
 const DATAFORSEO_PASSWORD = process.env.DATAFORSEO_PASSWORD || '';
 
 /**
- * Get keyword data from DataForSEO (CPC, volume, competition)
+ * Get keyword data from RapidAPI SEO Keyword Research Tool
+ */
+async function getRapidAPIKeywordData(keyword) {
+  if (!RAPIDAPI_KEY) {
+    console.log('[RapidAPI] No API key configured');
+    return null;
+  }
+  
+  try {
+    const url = `https://${RAPIDAPI_HOST}/keywords/research?keyword=${encodeURIComponent(keyword)}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': RAPIDAPI_KEY,
+        'x-rapidapi-host': RAPIDAPI_HOST
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.mainKeyword) {
+      return {
+        keyword: data.mainKeyword.keyword,
+        searchVolume: data.mainKeyword.searchVolume || 0,
+        cpc: data.mainKeyword.cpc,
+        difficulty: data.mainKeyword.difficulty,
+        relatedKeywords: data.relatedKeywords || [],
+        source: 'rapidapi'
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('[RapidAPI] API error:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Get keyword data from DataForSEO (CPC, volume, competition) - backup
  */
 async function getDataForSEO(keyword, location = 'United States', language = 'en') {
   if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
@@ -166,11 +210,43 @@ function estimateSearchVolume(keyword, suggestions) {
 async function getKeywordAdsIntel(keyword, location = 'United States', competitionScore = 50, isCommercial = false, suggestions = []) {
   console.log(`[Ads Intel] Analyzing: "${keyword}"`);
   
-  // Try DataForSEO first
+  // Try RapidAPI first
+  const rapidAPIData = await getRapidAPIKeywordData(keyword);
+  
+  if (rapidAPIData && rapidAPIData.searchVolume) {
+    // Real data from RapidAPI
+    const cpc = rapidAPIData.cpc || estimateCPC(keyword, competitionScore, isCommercial).cpc;
+    const cpcData = estimateCPC(keyword, competitionScore, isCommercial);
+    const marketSpend = estimateMarketAdSpend(rapidAPIData.searchVolume, cpc);
+    
+    // Map difficulty to competition
+    const difficultyMap = { 'EASY': 'LOW', 'MEDIUM': 'MEDIUM', 'HARD': 'HIGH' };
+    const competition = difficultyMap[rapidAPIData.difficulty] || 'MEDIUM';
+    
+    return {
+      keyword,
+      location,
+      source: 'rapidapi',
+      data: {
+        searchVolume: rapidAPIData.searchVolume,
+        cpc: cpc,
+        cpcLow: cpcData.cpcLow,
+        cpcHigh: cpcData.cpcHigh,
+        competition: competition,
+        competitionIndex: rapidAPIData.difficulty === 'EASY' ? 30 : rapidAPIData.difficulty === 'MEDIUM' ? 60 : 85,
+        difficulty: rapidAPIData.difficulty,
+        relatedKeywords: rapidAPIData.relatedKeywords?.slice(0, 10) || [],
+        ...marketSpend
+      },
+      insights: generateAdsInsights(cpc, rapidAPIData.searchVolume, competition)
+    };
+  }
+  
+  // Try DataForSEO as backup
   const dataForSEO = await getDataForSEO(keyword, location);
   
   if (dataForSEO) {
-    // Real data from API
+    // Real data from DataForSEO API
     const marketSpend = estimateMarketAdSpend(dataForSEO.searchVolume, dataForSEO.cpc);
     
     return {
@@ -340,6 +416,7 @@ async function compareKeywordsForAds(keywords, location = 'United States') {
 
 module.exports = {
   getKeywordAdsIntel,
+  getRapidAPIKeywordData,
   getDataForSEO,
   estimateCPC,
   estimateSearchVolume,
