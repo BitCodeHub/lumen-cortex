@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lumen Cortex - AI Security Platform</title>
+    <title>Lumen Cortex - AI Security & Coding Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -116,6 +116,21 @@
             font-size: 0.75rem;
             letter-spacing: 1px;
             opacity: 0.7;
+        }
+
+        /* Typewriter cursor animation for input */
+        @keyframes blink-cursor {
+            0%, 50% { border-right-color: var(--primary); }
+            51%, 100% { border-right-color: transparent; }
+        }
+        
+        .typewriter-input::placeholder {
+            color: var(--secondary);
+            opacity: 0.8;
+        }
+        
+        .typewriter-input:focus::placeholder {
+            color: var(--primary);
         }
 
         /* Main grid */
@@ -760,8 +775,8 @@
     ╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝     ╚═════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
             </div>
             <h1 class="logo">LUMEN CORTEX</h1>
-            <p class="tagline">[ THE BRAIN BEHIND YOUR SECURITY ]</p>
-            <p class="footnote">Lumen AI Solutions featuring Luna Labs</p>
+            <p class="tagline">[ AI SECURITY ANALYST • CODE EXPERT • YOUR TECH LEAD ]</p>
+            <p class="footnote">Paste code to explain, review, or continue • Ask Neo anything • Lumen AI Solutions</p>
         </header>
 
         <div class="main-grid">
@@ -769,6 +784,7 @@
                 <div class="chat-header">
                     <div class="status-indicator"></div>
                     <span>Neo • Online</span>
+                    <span style="margin-left: auto; font-size: 0.75em; color: var(--secondary);">💻 Code Expert • 🛡️ Security Analyst</span>
                 </div>
                 <div class="chat-messages" id="chatMessages">
                     <div class="message ai">
@@ -790,8 +806,8 @@
                         <button class="voice-btn" onclick="toggleVoiceInput()" id="voiceBtn" title="Voice Input">
                             🎤
                         </button>
-                        <input type="text" class="chat-input" id="userInput" 
-                               placeholder="Ask anything or enter a URL to scan..." 
+                        <input type="text" class="chat-input typewriter-input" id="userInput" 
+                               placeholder="💻 Paste code to explain, review, or continue..." 
                                onkeypress="handleSmartInput(event)"
                                onfocus="showInputContext()">
                         <button class="send-btn" onclick="handleSmartSend()" id="sendBtn" style="background: linear-gradient(135deg, #0abdc6, #00ff41); color: #0a0a0f;">💬 Send</button>
@@ -1057,7 +1073,7 @@
                         <button class="quick-btn" onclick="runAIFeature('prioritize')" style="flex: 1; background: linear-gradient(135deg, #0abdc6, #00ff41);" title="Prioritize vulnerabilities">📈 Vuln Prioritizer</button>
                     </div>
                     <div style="margin-top: 8px;">
-                        <button class="quick-btn" onclick="runAIFeature('code_review')" style="width: 100%; background: linear-gradient(135deg, #a855f7, #6366f1); color: white;" title="Senior engineer code review">👨‍💻 Tech Lead Code Review</button>
+                        <button class="quick-btn" onclick="runAIFeature('code_review')" style="width: 100%; background: linear-gradient(135deg, #00ff41, #0abdc6); color: #0a0a0f; font-weight: bold;" title="Senior engineer code review">👨‍💻 Tech Lead Code Review</button>
                     </div>
                 </div>
 
@@ -2205,20 +2221,37 @@
                     <div class="message ai">
                         <div class="message-label">🤖 Neo</div>
                         <div class="message-content">
-                            <strong>Welcome to Lumen Cortex AI Security Scanner!</strong><br><br>
-                            <strong style="color: #00ff41;">How to scan:</strong><br>
-                            <strong>1.</strong> Select scan mode below: <strong style="color: #00ff41;">⚡ Quick</strong> (~60s) or <strong style="color: #ff6600;">🔬 Deep</strong> (~3min)<br>
-                            <strong>2.</strong> Enter target URL and click <strong>🔍 SCAN</strong><br>
-                            <strong>3.</strong> Review AI-powered results and ask follow-up questions<br><br>
-                            <strong style="color: #0abdc6;">After scan, I can help you:</strong><br>
-                            • Explain any finding in detail<br>
-                            • Show exactly how to fix vulnerabilities<br>
-                            • Generate tickets for your dev team<br>
-                            • Map findings to OWASP Top 10<br>
+                            <div style="background: linear-gradient(135deg, rgba(0,255,65,0.1), rgba(10,189,198,0.1)); border: 1px solid var(--primary); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                <strong style="font-size: 1.1em;">👋 Welcome to Lumen Cortex!</strong><br>
+                                <span style="color: #0abdc6;">I'm Neo — your AI Security Analyst & Code Expert</span>
+                            </div>
+                            
+                            <strong style="color: #00ff41;">💻 CODING ASSISTANT</strong><br>
+                            <div style="margin: 8px 0 12px 0; padding-left: 10px; border-left: 2px solid #00ff41;">
+                                • <strong>Paste any code</strong> → I'll explain what it does<br>
+                                • <strong>"Review this"</strong> → Get tech lead code review<br>
+                                • <strong>"Continue this"</strong> → I'll complete your code<br>
+                                • <strong>"Fix this"</strong> → I'll debug and improve it<br>
+                                • <strong>Ask me to build anything</strong> → I'll write the code
+                            </div>
+                            
+                            <strong style="color: #0abdc6;">🛡️ SECURITY SCANNING</strong><br>
+                            <div style="margin: 8px 0 12px 0; padding-left: 10px; border-left: 2px solid #0abdc6;">
+                                • Enter a URL → Run DAST/SAST scans<br>
+                                • Ask about vulnerabilities<br>
+                                • Get remediation code
+                            </div>
+                            
+                            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 10px;">
+                                <strong style="color: #ffaa00;">⚡ Try it now:</strong> Paste some code below or ask me anything!
+                            </div>
                         </div>
                     </div>
                 `;
             }
+            
+            // Start typewriter placeholder animation
+            startPlaceholderAnimation();
         });
 
         // ═══════════════════════════════════════════════════════════════════
@@ -6015,6 +6048,84 @@ Paste your code below:`,
                 console.log('Network status fetch error:', e);
             }
         }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // TYPEWRITER PLACEHOLDER ANIMATION
+        // ═══════════════════════════════════════════════════════════════
+        
+        const placeholderMessages = [
+            "💻 Paste code to explain, review, or continue...",
+            "🔍 Enter URL to scan for vulnerabilities...",
+            "👨‍💻 Ask me to review your code like a tech lead...",
+            "⚡ \"Continue this code\" - I'll finish it for you...",
+            "🛠️ \"Fix this\" - I'll debug and improve your code...",
+            "📝 \"Write a function that...\" - I'll build it...",
+            "🔒 Paste suspicious email to check for phishing...",
+            "🤖 Ask me anything about security or coding..."
+        ];
+        
+        let currentPlaceholderIndex = 0;
+        let currentCharIndex = 0;
+        let isDeleting = false;
+        let typingTimeout = null;
+        
+        function startPlaceholderAnimation() {
+            const input = document.getElementById('userInput');
+            if (!input) return;
+            
+            function type() {
+                // Don't animate if user is typing
+                if (document.activeElement === input && input.value.length > 0) {
+                    typingTimeout = setTimeout(type, 1000);
+                    return;
+                }
+                
+                const currentMessage = placeholderMessages[currentPlaceholderIndex];
+                
+                if (isDeleting) {
+                    currentCharIndex--;
+                    input.placeholder = currentMessage.substring(0, currentCharIndex);
+                    
+                    if (currentCharIndex === 0) {
+                        isDeleting = false;
+                        currentPlaceholderIndex = (currentPlaceholderIndex + 1) % placeholderMessages.length;
+                        typingTimeout = setTimeout(type, 500);
+                    } else {
+                        typingTimeout = setTimeout(type, 30);
+                    }
+                } else {
+                    currentCharIndex++;
+                    input.placeholder = currentMessage.substring(0, currentCharIndex);
+                    
+                    if (currentCharIndex === currentMessage.length) {
+                        isDeleting = true;
+                        typingTimeout = setTimeout(type, 3000); // Pause before deleting
+                    } else {
+                        typingTimeout = setTimeout(type, 80);
+                    }
+                }
+            }
+            
+            // Start the animation
+            type();
+        }
+        
+        // Stop animation when user focuses input
+        document.getElementById('userInput')?.addEventListener('focus', () => {
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+        });
+        
+        // Resume animation when user blurs input (if empty)
+        document.getElementById('userInput')?.addEventListener('blur', () => {
+            const input = document.getElementById('userInput');
+            if (input && input.value.length === 0) {
+                currentCharIndex = 0;
+                isDeleting = false;
+                startPlaceholderAnimation();
+            }
+        });
     </script>
 </body>
 </html>
