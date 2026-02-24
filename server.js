@@ -2604,28 +2604,37 @@ async function runTool(toolName, cmdKey, target) {
     cmd = cmd.replace(target, hostname);
   }
 
-  return new Promise((resolve) => {
-    const env = {
-      ...process.env,
-      PATH: `${process.env.PATH}:${process.env.HOME}/go/bin:${process.env.HOME}/.local/bin:/opt/homebrew/bin:${process.env.HOME}/.npm-global/bin:/usr/local/bin`,
-      GITGUARDIAN_API_KEY: 'd5a39F6Cbdd1Ae5fc8d883e9B545a1f9d1A0b1009C47E6Af1d5f66ADd4CcDf818e67E3e'
-    };
+  const env = {
+    ...process.env,
+    PATH: `${process.env.PATH}:${process.env.HOME}/go/bin:${process.env.HOME}/.local/bin:/opt/homebrew/bin:${process.env.HOME}/.npm-global/bin:/usr/local/bin`,
+    GITGUARDIAN_API_KEY: 'd5a39F6Cbdd1Ae5fc8d883e9B545a1f9d1A0b1009C47E6Af1d5f66ADd4CcDf818e67E3e'
+  };
 
-    exec(cmd, { timeout: 300000, maxBuffer: 10 * 1024 * 1024, env }, async (error, stdout, stderr) => {
-      // FALLBACK: If tool not found locally, try remote scanner
-      const allOutput = (stdout || '') + (stderr || '');
-      if (error && (allOutput.includes('not found') || allOutput.includes('command not found') || allOutput.includes('No such file'))) {
-        console.log(`[${toolName}] Local tool not found, falling back to remote scanner at ${SCANNER_API_URL}...`);
-        try {
-          const remoteResult = await runToolRemote(toolName, cmdKey, target, tool);
-          resolve(remoteResult);
-          return;
-        } catch (remoteErr) {
-          console.error(`[${toolName}] Remote fallback also failed:`, remoteErr.message);
-        }
-      }
+  // Try local execution first, fallback to remote on failure
+  let stdout = '', stderr = '', error = null;
+  try {
+    const execResult = await execPromise(cmd, { timeout: 300000, maxBuffer: 10 * 1024 * 1024, env });
+    stdout = execResult.stdout || '';
+    stderr = execResult.stderr || '';
+  } catch (e) {
+    error = e;
+    stdout = e.stdout || '';
+    stderr = e.stderr || '';
+  }
+
+  // FALLBACK: If tool not found locally, try remote scanner
+  const allOutput = (stdout || '') + (stderr || '');
+  if (error && (allOutput.includes('not found') || allOutput.includes('command not found') || allOutput.includes('No such file'))) {
+    console.log(`[${toolName}] Local tool not found, falling back to remote scanner at ${SCANNER_API_URL}...`);
+    try {
+      return await runToolRemote(toolName, cmdKey, target, tool);
+    } catch (remoteErr) {
+      console.error(`[${toolName}] Remote fallback also failed:`, remoteErr.message);
+      // Continue with error result below
+    }
+  }
       
-      const result = {
+  const result = {
         tool: toolName,
         name: tool.name,
         ai: tool.ai,
@@ -2791,9 +2800,7 @@ async function runTool(toolName, cmdKey, target) {
         };
       }
 
-      resolve(result);
-    });
-  });
+      return result;
 }
 
 // API: Start a scan
