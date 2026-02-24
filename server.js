@@ -38,6 +38,25 @@ try {
 // Azure Claude is always available
 console.log('✅ Azure Claude Sonnet 4.6 enabled for AI reports');
 
+// Remote Scanner API (Mac Studio) - used when local tools aren't available
+const SCANNER_API_URL = process.env.SCANNER_API_URL || 'https://lumen-scanner.ngrok.app';
+let useRemoteScanner = false;
+
+// Check if local security tools are available
+const checkLocalTools = () => {
+  try {
+    require('child_process').execSync('which httpx nuclei 2>/dev/null', { timeout: 5000 });
+    console.log('✅ Local security tools detected');
+    return true;
+  } catch {
+    console.log('⚠️ Local security tools not found - using remote scanner at', SCANNER_API_URL);
+    return false;
+  }
+};
+
+// Set scanner mode on startup
+useRemoteScanner = !checkLocalTools();
+
 const app = express();
 const PORT = process.env.PORT || 3333;
 
@@ -2423,11 +2442,130 @@ function selectTools(request, target) {
   };
 }
 
-// Run a security tool
+// Run a security tool via remote Mac Studio scanner API
+async function runToolRemote(toolName, cmdKey, target, tool) {
+  console.log(`[Remote Scanner] Running ${toolName} on ${target}...`);
+  
+  // Map tool names to scanner API endpoints
+  const toolEndpoints = {
+    httpx: '/scan/httpx',
+    nuclei: '/scan/nuclei',
+    nikto: '/scan/nikto',
+    nmap: '/scan/nmap',
+    tlsx: '/scan/tlsx'
+  };
+  
+  const endpoint = toolEndpoints[toolName];
+  
+  if (!endpoint) {
+    // For tools not supported by remote scanner, return informative error
+    return {
+      tool: toolName,
+      name: tool.name,
+      ai: tool.ai,
+      status: 'skipped',
+      error: `Tool ${toolName} not available on remote scanner`,
+      output: '',
+      findingsCount: 0
+    };
+  }
+  
+  try {
+    const response = await fetch(`${SCANNER_API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target }),
+      timeout: 180000 // 3 min timeout
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      return {
+        tool: toolName,
+        name: tool.name,
+        ai: tool.ai,
+        status: 'error',
+        error: data.error || 'Remote scan failed',
+        output: '',
+        findingsCount: 0
+      };
+    }
+    
+    // Parse results based on tool type
+    let output = '';
+    let findingsCount = 0;
+    let parsed = null;
+    
+    if (data.results) {
+      if (Array.isArray(data.results)) {
+        output = data.results.map(r => typeof r === 'string' ? r : JSON.stringify(r)).join('\n');
+        findingsCount = data.results.length;
+        parsed = data.results;
+      } else if (typeof data.results === 'object') {
+        output = JSON.stringify(data.results);
+        parsed = data.results;
+      } else {
+        output = String(data.results);
+      }
+    } else if (data.data) {
+      output = data.data;
+      // Try to count findings from raw output
+      const lines = data.data.split('\n').filter(l => l.trim());
+      findingsCount = lines.length;
+      try {
+        parsed = lines.map(l => JSON.parse(l));
+      } catch {
+        // Not JSON, keep as raw
+      }
+    }
+    
+    // Determine status based on findings
+    let status = 'success';
+    if (findingsCount > 0) {
+      // Check if any are actual vulnerabilities
+      const hasVulns = output.toLowerCase().includes('vuln') || 
+                       output.toLowerCase().includes('critical') ||
+                       output.toLowerCase().includes('high');
+      status = hasVulns ? 'vuln_found' : 'success';
+    }
+    
+    return {
+      tool: toolName,
+      name: tool.name,
+      ai: tool.ai,
+      status,
+      output: output.slice(0, 50000),
+      parsed,
+      findingsCount,
+      remote: true,
+      scannerUrl: SCANNER_API_URL
+    };
+    
+  } catch (error) {
+    console.error(`[Remote Scanner] Error running ${toolName}:`, error.message);
+    return {
+      tool: toolName,
+      name: tool.name,
+      ai: tool.ai,
+      status: 'error',
+      error: `Remote scanner error: ${error.message}`,
+      output: '',
+      findingsCount: 0
+    };
+  }
+}
+
+// Run a security tool (local or remote)
 async function runTool(toolName, cmdKey, target) {
   const tool = AI_TOOLS[toolName];
   if (!tool || !tool.commands[cmdKey]) {
     return { tool: toolName, status: 'error', error: 'Tool or command not found', ai: false };
+  }
+
+  // Use remote scanner API if local tools aren't available
+  if (useRemoteScanner) {
+    return runToolRemote(toolName, cmdKey, target, tool);
   }
 
   const timestamp = Date.now();
