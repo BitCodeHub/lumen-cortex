@@ -3816,10 +3816,36 @@ app.post('/api/attack', async (req, res) => {
     console.log(`   Command: ${cmd}`);
 
     try {
-      const { stdout, stderr } = await execPromise(cmd, { 
-        timeout: toolTimeout,
-        maxBuffer: 10 * 1024 * 1024
-      });
+      let stdout = '', stderr = '';
+      
+      // Try local execution first
+      try {
+        const result = await execPromise(cmd, { 
+          timeout: toolTimeout,
+          maxBuffer: 10 * 1024 * 1024
+        });
+        stdout = result.stdout || '';
+        stderr = result.stderr || '';
+      } catch (localErr) {
+        // Check if tool not found - fall back to remote scanner
+        const errOutput = (localErr.stdout || '') + (localErr.stderr || '') + (localErr.message || '');
+        if (errOutput.includes('not found') || errOutput.includes('command not found') || errOutput.includes('ENOENT')) {
+          console.log(`🔄 [ATTACK] ${tool.name} not found locally, trying remote scanner at ${SCANNER_API_URL}...`);
+          try {
+            const cmdKey = toolConfig.cmd || Object.keys(tool.commands)[0];
+            const remoteResult = await runToolRemote(toolConfig.tool, cmdKey, target, tool);
+            console.log(`✅ [ATTACK] ${tool.name} remote scan completed: ${remoteResult.status}`);
+            return {
+              ...remoteResult,
+              remote: true
+            };
+          } catch (remoteErr) {
+            console.log(`❌ [ATTACK] ${tool.name} remote fallback failed: ${remoteErr.message}`);
+          }
+        }
+        // If not "not found" or remote failed, throw the original error
+        throw localErr;
+      }
       
       const output = stdout || stderr || '';
       let parsed = null;
