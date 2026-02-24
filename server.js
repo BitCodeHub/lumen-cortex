@@ -40,22 +40,35 @@ console.log('✅ Azure Claude Sonnet 4.6 enabled for AI reports');
 
 // Remote Scanner API (Mac Studio) - used when local tools aren't available
 const SCANNER_API_URL = process.env.SCANNER_API_URL || 'https://lumen-scanner.ngrok.app';
-let useRemoteScanner = false;
+let useRemoteScanner = process.env.USE_REMOTE_SCANNER === 'true' || process.env.RENDER === 'true';
 
-// Check if local security tools are available
+// Check if local security tools are available (only if not explicitly set to remote)
 const checkLocalTools = () => {
+  // If running on Render or explicitly set to use remote, skip local check
+  if (process.env.RENDER || process.env.USE_REMOTE_SCANNER === 'true') {
+    console.log('⚠️ Running on Render - using remote scanner at', SCANNER_API_URL);
+    return false;
+  }
+  
   try {
-    require('child_process').execSync('which httpx nuclei 2>/dev/null', { timeout: 5000 });
-    console.log('✅ Local security tools detected');
+    const result = require('child_process').execSync('which httpx 2>/dev/null || echo "not found"', { timeout: 5000 }).toString().trim();
+    if (result.includes('not found') || result === '') {
+      console.log('⚠️ Local security tools not found - using remote scanner at', SCANNER_API_URL);
+      return false;
+    }
+    console.log('✅ Local security tools detected at', result);
     return true;
-  } catch {
-    console.log('⚠️ Local security tools not found - using remote scanner at', SCANNER_API_URL);
+  } catch (e) {
+    console.log('⚠️ Could not detect local tools - using remote scanner at', SCANNER_API_URL);
     return false;
   }
 };
 
 // Set scanner mode on startup
-useRemoteScanner = !checkLocalTools();
+if (!useRemoteScanner) {
+  useRemoteScanner = !checkLocalTools();
+}
+console.log('🔧 Scanner mode:', useRemoteScanner ? 'REMOTE (Mac Studio)' : 'LOCAL');
 
 const app = express();
 const PORT = process.env.PORT || 3333;
