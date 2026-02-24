@@ -2613,8 +2613,9 @@ async function runTool(toolName, cmdKey, target) {
 
     exec(cmd, { timeout: 300000, maxBuffer: 10 * 1024 * 1024, env }, async (error, stdout, stderr) => {
       // FALLBACK: If tool not found locally, try remote scanner
-      if (error && (stderr?.includes('not found') || stderr?.includes('command not found') || stderr?.includes('No such file'))) {
-        console.log(`[${toolName}] Local tool not found, falling back to remote scanner...`);
+      const allOutput = (stdout || '') + (stderr || '');
+      if (error && (allOutput.includes('not found') || allOutput.includes('command not found') || allOutput.includes('No such file'))) {
+        console.log(`[${toolName}] Local tool not found, falling back to remote scanner at ${SCANNER_API_URL}...`);
         try {
           const remoteResult = await runToolRemote(toolName, cmdKey, target, tool);
           resolve(remoteResult);
