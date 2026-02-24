@@ -2612,24 +2612,39 @@ async function runTool(toolName, cmdKey, target) {
 
   // Try local execution first, fallback to remote on failure
   let stdout = '', stderr = '', error = null;
+  console.log(`[${toolName}] Executing: ${cmd.slice(0, 100)}...`);
   try {
     const execResult = await execPromise(cmd, { timeout: 300000, maxBuffer: 10 * 1024 * 1024, env });
     stdout = execResult.stdout || '';
     stderr = execResult.stderr || '';
+    console.log(`[${toolName}] Local execution succeeded`);
   } catch (e) {
     error = e;
     stdout = e.stdout || '';
     stderr = e.stderr || '';
+    console.log(`[${toolName}] Local execution failed:`, e.message?.slice(0, 200));
+    console.log(`[${toolName}] stderr:`, stderr?.slice(0, 200));
   }
 
   // FALLBACK: If tool not found locally, try remote scanner
-  const allOutput = (stdout || '') + (stderr || '');
-  if (error && (allOutput.includes('not found') || allOutput.includes('command not found') || allOutput.includes('No such file'))) {
-    console.log(`[${toolName}] Local tool not found, falling back to remote scanner at ${SCANNER_API_URL}...`);
+  const allOutput = (stdout || '') + (stderr || '') + (error?.message || '');
+  const shouldFallback = error && (
+    allOutput.includes('not found') || 
+    allOutput.includes('command not found') || 
+    allOutput.includes('No such file') ||
+    allOutput.includes('ENOENT')
+  );
+  
+  console.log(`[${toolName}] Should fallback: ${shouldFallback}, allOutput contains 'not found': ${allOutput.includes('not found')}`);
+  
+  if (shouldFallback) {
+    console.log(`[${toolName}] Falling back to remote scanner at ${SCANNER_API_URL}...`);
     try {
-      return await runToolRemote(toolName, cmdKey, target, tool);
+      const remoteResult = await runToolRemote(toolName, cmdKey, target, tool);
+      console.log(`[${toolName}] Remote scan completed:`, remoteResult.status);
+      return remoteResult;
     } catch (remoteErr) {
-      console.error(`[${toolName}] Remote fallback also failed:`, remoteErr.message);
+      console.error(`[${toolName}] Remote fallback failed:`, remoteErr.message);
       // Continue with error result below
     }
   }
