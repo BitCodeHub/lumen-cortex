@@ -2611,7 +2611,19 @@ async function runTool(toolName, cmdKey, target) {
       GITGUARDIAN_API_KEY: 'd5a39F6Cbdd1Ae5fc8d883e9B545a1f9d1A0b1009C47E6Af1d5f66ADd4CcDf818e67E3e'
     };
 
-    exec(cmd, { timeout: 300000, maxBuffer: 10 * 1024 * 1024, env }, (error, stdout, stderr) => {
+    exec(cmd, { timeout: 300000, maxBuffer: 10 * 1024 * 1024, env }, async (error, stdout, stderr) => {
+      // FALLBACK: If tool not found locally, try remote scanner
+      if (error && (stderr?.includes('not found') || stderr?.includes('command not found') || stderr?.includes('No such file'))) {
+        console.log(`[${toolName}] Local tool not found, falling back to remote scanner...`);
+        try {
+          const remoteResult = await runToolRemote(toolName, cmdKey, target, tool);
+          resolve(remoteResult);
+          return;
+        } catch (remoteErr) {
+          console.error(`[${toolName}] Remote fallback also failed:`, remoteErr.message);
+        }
+      }
+      
       const result = {
         tool: toolName,
         name: tool.name,
