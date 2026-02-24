@@ -1917,7 +1917,14 @@
         }
         
         // Trigger web security scan
-        async function triggerWebScan(target) {
+        async function triggerWebScan(input) {
+            // Extract URL from input (handle "scan http://..." or just URL)
+            let target = input;
+            const urlMatch = input.match(/(https?:\/\/[^\s]+|[a-z0-9][-a-z0-9]*\.[a-z]{2,}[^\s]*)/i);
+            if (urlMatch) {
+                target = urlMatch[0];
+            }
+            
             if (!target.startsWith('http')) {
                 target = 'https://' + target;
             }
@@ -1931,7 +1938,14 @@
         }
         
         // Trigger deep scan
-        async function triggerDeepScan(target) {
+        async function triggerDeepScan(input) {
+            // Extract URL from input (handle "scan http://..." or just URL)
+            let target = input;
+            const urlMatch = input.match(/(https?:\/\/[^\s]+|[a-z0-9][-a-z0-9]*\.[a-z]{2,}[^\s]*)/i);
+            if (urlMatch) {
+                target = urlMatch[0];
+            }
+            
             if (!target.startsWith('http')) {
                 target = 'https://' + target;
             }
