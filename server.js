@@ -40,35 +40,35 @@ console.log('✅ Azure Claude Sonnet 4.6 enabled for AI reports');
 
 // Remote Scanner API (Mac Studio) - used when local tools aren't available
 const SCANNER_API_URL = process.env.SCANNER_API_URL || 'https://lumen-scanner.ngrok.app';
-let useRemoteScanner = process.env.USE_REMOTE_SCANNER === 'true' || process.env.RENDER === 'true';
 
-// Check if local security tools are available (only if not explicitly set to remote)
-const checkLocalTools = () => {
-  // If running on Render or explicitly set to use remote, skip local check
-  if (process.env.RENDER || process.env.USE_REMOTE_SCANNER === 'true') {
-    console.log('⚠️ Running on Render - using remote scanner at', SCANNER_API_URL);
-    return false;
-  }
-  
-  try {
-    const result = require('child_process').execSync('which httpx 2>/dev/null || echo "not found"', { timeout: 5000 }).toString().trim();
-    if (result.includes('not found') || result === '') {
-      console.log('⚠️ Local security tools not found - using remote scanner at', SCANNER_API_URL);
-      return false;
-    }
-    console.log('✅ Local security tools detected at', result);
-    return true;
-  } catch (e) {
-    console.log('⚠️ Could not detect local tools - using remote scanner at', SCANNER_API_URL);
-    return false;
-  }
-};
+// FORCE remote scanner - Render doesn't have security tools installed
+// Check multiple ways to detect we're on Render
+const isRender = process.env.RENDER === 'true' || 
+                 process.env.USE_REMOTE_SCANNER === 'true' ||
+                 process.env.RENDER_SERVICE_ID ||  // Render sets this automatically
+                 !process.env.HOME?.includes('jimmysmacstudio'); // Not on Mac Studio
 
-// Set scanner mode on startup
+let useRemoteScanner = isRender;
+
+// Only check local tools if we think we're running locally
 if (!useRemoteScanner) {
-  useRemoteScanner = !checkLocalTools();
+  try {
+    const result = require('child_process').execSync('which httpx 2>/dev/null', { timeout: 5000 }).toString().trim();
+    if (!result || result === '') {
+      useRemoteScanner = true;
+      console.log('⚠️ httpx not found locally - using remote scanner');
+    } else {
+      console.log('✅ Local security tools detected at', result);
+    }
+  } catch (e) {
+    useRemoteScanner = true;
+    console.log('⚠️ Could not detect local tools - using remote scanner');
+  }
 }
+
 console.log('🔧 Scanner mode:', useRemoteScanner ? 'REMOTE (Mac Studio)' : 'LOCAL');
+console.log('   SCANNER_API_URL:', SCANNER_API_URL);
+console.log('   Env checks: RENDER=' + process.env.RENDER + ', USE_REMOTE_SCANNER=' + process.env.USE_REMOTE_SCANNER + ', RENDER_SERVICE_ID=' + process.env.RENDER_SERVICE_ID);
 
 const app = express();
 const PORT = process.env.PORT || 3333;
