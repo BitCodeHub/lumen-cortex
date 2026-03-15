@@ -7196,3 +7196,269 @@ if (!AI_TOOLS.wafw00f) {
     }
   };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ENTERPRISE SECURITY TOOLS — Phase 1
+// ═══════════════════════════════════════════════════════════════════════════
+
+const execAsync = util.promisify(exec);
+const crypto = require('crypto');
+
+// DGX Spark SSH helper — runs commands on DGX
+async function runOnDGX(cmd, timeoutMs = 120000) {
+  const escaped = cmd.replace(/'/g, `'\\''`);
+  const sshCmd = `ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 dgx-spark '${escaped}'`;
+  const result = await execAsync(sshCmd, { timeout: timeoutMs });
+  return result;
+}
+
+// ─── SEMGREP SAST SCAN ────────────────────────────────────────────────────
+// POST /api/semgrep-scan
+// Body: { code, language, rules } — code paste or { repoUrl } for remote
+// Returns: { success, findings[], stats, summary }
+app.post('/api/semgrep-scan', async (req, res) => {
+  const { code, language = 'auto', rules = 'auto', repoUrl } = req.body;
+
+  if (!code && !repoUrl) {
+    return res.status(400).json({ success: false, error: 'code or repoUrl required' });
+  }
+
+  const scanId = crypto.randomBytes(6).toString('hex');
+  const tmpDir = `/tmp/semgrep-${scanId}`;
+
+  try {
+    let targetPath;
+
+    if (repoUrl) {
+      // Clone repo on DGX
+      await runOnDGX(`git clone --depth=1 "${repoUrl}" ${tmpDir} 2>&1 | tail -3`);
+      targetPath = tmpDir;
+    } else {
+      // Write code to temp file
+      const ext = { javascript: 'js', typescript: 'ts', python: 'py', java: 'java',
+                    go: 'go', rust: 'rs', php: 'php', ruby: 'rb', swift: 'swift',
+                    kotlin: 'kt', 'c/c++': 'c', sql: 'sql', bash: 'sh', solidity: 'sol' }[language?.toLowerCase()] || 'txt';
+      await runOnDGX(`mkdir -p ${tmpDir} && cat > ${tmpDir}/code.${ext} << 'SEMGREP_EOF'\n${code.substring(0, 50000)}\nSEMGREP_EOF`);
+      targetPath = tmpDir;
+    }
+
+    // Determine ruleset
+    const ruleMap = {
+      auto: 'auto',
+      security: 'p/security-audit',
+      owasp: 'p/owasp-top-ten',
+      python: 'p/python',
+      javascript: 'p/javascript',
+      java: 'p/java',
+      go: 'p/golang',
+    };
+    const semgrepRules = ruleMap[rules] || ruleMap[language] || 'auto';
+
+    // Run semgrep on DGX
+    const { stdout } = await runOnDGX(
+      `semgrep --config ${semgrepRules} ${targetPath} --json --timeout 60 --max-memory 512 2>/dev/null || echo '{"results":[],"errors":[]}'`,
+      90000
+    );
+
+    // Cleanup
+    await runOnDGX(`rm -rf ${tmpDir}`).catch(() => {});
+
+    let parsed = { results: [], errors: [] };
+    try { parsed = JSON.parse(stdout.trim()); } catch (_) {}
+
+    const findings = (parsed.results || []).map(r => ({
+      ruleId: r.check_id || 'unknown',
+      severity: (r.extra?.severity || 'INFO').toUpperCase(),
+      category: r.extra?.metadata?.category || 'security',
+      message: r.extra?.message || r.message || '',
+      file: r.path?.replace(tmpDir + '/', '') || 'code',
+      line: r.start?.line || 0,
+      endLine: r.end?.line || 0,
+      cwe: r.extra?.metadata?.cwe || [],
+      owasp: r.extra?.metadata?.owasp || [],
+      fix: r.extra?.fix || null,
+    }));
+
+    const stats = {
+      total: findings.length,
+      critical: findings.filter(f => f.severity === 'ERROR').length,
+      high: findings.filter(f => f.severity === 'WARNING').length,
+      medium: findings.filter(f => f.severity === 'INFO').length,
+    };
+
+    return res.json({
+      success: true,
+      scanId,
+      language,
+      rules: semgrepRules,
+      findings,
+      stats,
+      summary: findings.length === 0
+        ? 'No issues found by Semgrep — code appears clean for selected ruleset.'
+        : `Semgrep found ${stats.total} issue(s): ${stats.critical} errors, ${stats.high} warnings, ${stats.medium} info.`
+    });
+
+  } catch (err) {
+    console.error('[Semgrep] Error:', err.message);
+    // Cleanup on error
+    runOnDGX(`rm -rf ${tmpDir}`).catch(() => {});
+    return res.status(500).json({ success: false, error: 'Semgrep scan failed: ' + err.message });
+  }
+});
+
+// ─── TRUFFLEHOG SECRETS SCAN ──────────────────────────────────────────────
+// POST /api/secrets-scan
+// Body: { code, repoUrl, scanDepth } — code paste or git repo
+// Returns: { success, secrets[], stats, summary }
+app.post('/api/secrets-scan', async (req, res) => {
+  const { code, repoUrl, scanDepth = 30 } = req.body;
+
+  if (!code && !repoUrl) {
+    return res.status(400).json({ success: false, error: 'code or repoUrl required' });
+  }
+
+  const scanId = crypto.randomBytes(6).toString('hex');
+  const tmpDir = `/tmp/trufflehog-${scanId}`;
+
+  try {
+    let findings = [];
+
+    if (repoUrl) {
+      // TruffleHog git scan on DGX
+      const depth = Math.min(parseInt(scanDepth) || 30, 100);
+      const { stdout } = await runOnDGX(
+        `trufflehog git "${repoUrl}" --json --max-depth=${depth} 2>/dev/null | head -500 || echo ''`,
+        120000
+      );
+      const lines = stdout.trim().split('\n').filter(Boolean);
+      findings = lines.map(line => {
+        try { return JSON.parse(line); } catch (_) { return null; }
+      }).filter(Boolean);
+    } else {
+      // Paste mode — write code to file, scan with filesystem detector
+      await runOnDGX(`mkdir -p ${tmpDir} && cat > ${tmpDir}/code.txt << 'TH_EOF'\n${code.substring(0, 50000)}\nTH_EOF`);
+      const { stdout } = await runOnDGX(
+        `trufflehog filesystem ${tmpDir} --json 2>/dev/null | head -200 || echo ''`,
+        60000
+      );
+      await runOnDGX(`rm -rf ${tmpDir}`).catch(() => {});
+      const lines = stdout.trim().split('\n').filter(Boolean);
+      findings = lines.map(line => {
+        try { return JSON.parse(line); } catch (_) { return null; }
+      }).filter(Boolean);
+    }
+
+    const secrets = findings.map(f => ({
+      detector: f.DetectorName || f.detector_name || 'unknown',
+      type: f.DetectorType || 'secret',
+      verified: f.Verified ?? false,
+      severity: f.Verified ? 'CRITICAL' : 'HIGH',
+      raw: f.Raw ? f.Raw.substring(0, 20) + '...' : '[redacted]',
+      file: f.SourceMetadata?.Data?.Filesystem?.file || f.SourceMetadata?.Data?.Git?.file || 'unknown',
+      line: f.SourceMetadata?.Data?.Filesystem?.line || f.SourceMetadata?.Data?.Git?.line || 0,
+      commit: f.SourceMetadata?.Data?.Git?.commit || null,
+    }));
+
+    const stats = {
+      total: secrets.length,
+      verified: secrets.filter(s => s.verified).length,
+      unverified: secrets.filter(s => !s.verified).length,
+    };
+
+    return res.json({
+      success: true,
+      scanId,
+      secrets,
+      stats,
+      summary: secrets.length === 0
+        ? 'No secrets detected — code appears clean.'
+        : `TruffleHog found ${stats.total} secret(s): ${stats.verified} verified, ${stats.unverified} unverified.`
+    });
+
+  } catch (err) {
+    console.error('[TruffleHog] Error:', err.message);
+    runOnDGX(`rm -rf ${tmpDir}`).catch(() => {});
+    return res.status(500).json({ success: false, error: 'Secrets scan failed: ' + err.message });
+  }
+});
+
+// ─── OWASP DEPENDENCY-CHECK SCA ───────────────────────────────────────────
+// POST /api/sca-scan
+// Body: { repoUrl, projectName } — scans dependencies for known CVEs
+// Returns: { success, vulnerabilities[], stats, summary }
+app.post('/api/sca-scan', async (req, res) => {
+  const { repoUrl, projectName = 'project' } = req.body;
+
+  if (!repoUrl) {
+    return res.status(400).json({ success: false, error: 'repoUrl required for SCA scan' });
+  }
+
+  const scanId = crypto.randomBytes(6).toString('hex');
+  const tmpDir = `/tmp/sca-${scanId}`;
+  const reportDir = `${tmpDir}/report`;
+
+  try {
+    // Clone repo and run dependency-check on DGX
+    await runOnDGX(`git clone --depth=1 "${repoUrl}" ${tmpDir}/src 2>&1 | tail -3`, 60000);
+
+    const { stdout } = await runOnDGX(
+      `mkdir -p ${reportDir} && \
+       dependency-check.sh --project "${projectName}" --scan ${tmpDir}/src \
+         --out ${reportDir} --format JSON --noupdate 2>/dev/null | tail -5; \
+       cat ${reportDir}/dependency-check-report.json 2>/dev/null || echo '{}'`,
+      180000
+    );
+
+    await runOnDGX(`rm -rf ${tmpDir}`).catch(() => {});
+
+    // Parse the JSON report
+    const jsonStart = stdout.indexOf('{');
+    let parsed = { dependencies: [] };
+    if (jsonStart >= 0) {
+      try { parsed = JSON.parse(stdout.substring(jsonStart)); } catch (_) {}
+    }
+
+    const vulnerabilities = [];
+    for (const dep of (parsed.dependencies || [])) {
+      if (!dep.vulnerabilities?.length) continue;
+      for (const vuln of dep.vulnerabilities) {
+        vulnerabilities.push({
+          dependency: dep.fileName || dep.filePath || 'unknown',
+          cve: vuln.name || '',
+          severity: vuln.severity?.toUpperCase() || 'UNKNOWN',
+          cvssScore: vuln.cvssv3?.baseScore || vuln.cvssv2?.score || 0,
+          description: vuln.description?.substring(0, 300) || '',
+          fixedIn: vuln.fixedIn || null,
+        });
+      }
+    }
+
+    // Sort by CVSS score descending
+    vulnerabilities.sort((a, b) => b.cvssScore - a.cvssScore);
+
+    const stats = {
+      total: vulnerabilities.length,
+      critical: vulnerabilities.filter(v => v.severity === 'CRITICAL').length,
+      high: vulnerabilities.filter(v => v.severity === 'HIGH').length,
+      medium: vulnerabilities.filter(v => v.severity === 'MEDIUM').length,
+      low: vulnerabilities.filter(v => v.severity === 'LOW').length,
+      depsScanned: (parsed.dependencies || []).length,
+    };
+
+    return res.json({
+      success: true,
+      scanId,
+      projectName,
+      vulnerabilities,
+      stats,
+      summary: vulnerabilities.length === 0
+        ? `No known CVEs found in ${stats.depsScanned} dependencies.`
+        : `Found ${stats.total} CVE(s) across ${stats.depsScanned} dependencies: ${stats.critical} critical, ${stats.high} high.`
+    });
+
+  } catch (err) {
+    console.error('[SCA] Error:', err.message);
+    runOnDGX(`rm -rf ${tmpDir}`).catch(() => {});
+    return res.status(500).json({ success: false, error: 'SCA scan failed: ' + err.message });
+  }
+});
