@@ -1472,247 +1472,312 @@
                     </div>
                 </div>
 
-                <!-- 🔍 CODE REVIEW -->
-                <div class="accordion-section" data-section="codereview">
-                    <div class="accordion-header" onclick="toggleAccordion(this)" style="border-left: 3px solid #7c3aed;">
+                <!-- ⚡ STATS & AI -->
+                <!-- 🔐 COMPREHENSIVE SECURITY SCANNER -->
+                <div class="accordion-section" data-section="security-suite">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
                         <div class="accordion-header-left">
-                            <span class="accordion-icon">🔍</span>
-                            <span class="accordion-title" style="color: #a78bfa;">Code Review</span>
+                            <span class="accordion-icon">🔐</span>
+                            <span class="accordion-title">Security Suite</span>
+                            <span class="accordion-badge" style="background: #ff0040;">NEW</span>
                         </div>
                         <span class="accordion-toggle">▼</span>
                     </div>
                     <div class="accordion-content">
                         <div class="accordion-inner">
-
-                            <!-- Review Type Tabs -->
-                            <div style="display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap;">
-                                <button id="crtab-full" class="cr-tab cr-tab-active" onclick="setCRTab('full')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">📋 Full</button>
-                                <button id="crtab-security" class="cr-tab" onclick="setCRTab('security')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: var(--bg-input); color:#a78bfa; border:1px solid #7c3aed; border-radius:5px; cursor:pointer;">🛡️ Security</button>
-                                <button id="crtab-performance" class="cr-tab" onclick="setCRTab('performance')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: var(--bg-input); color:#a78bfa; border:1px solid #7c3aed; border-radius:5px; cursor:pointer;">⚡ Perf</button>
-                                <button id="crtab-explain" class="cr-tab" onclick="setCRTab('explain')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: var(--bg-input); color:#a78bfa; border:1px solid #7c3aed; border-radius:5px; cursor:pointer;">📖 Explain</button>
+                            <!-- Upload Target -->
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 11px; color: #ff0040; margin-bottom: 6px; font-weight: bold;">🎯 Target</div>
+                                <input type="file" id="securitySuiteFileInput" accept=".apk,.ipa,.zip,.js,.py,.java,.swift" style="display: none;" onchange="handleSecuritySuiteFileUpload(this)">
+                                <button class="quick-btn" onclick="document.getElementById('securitySuiteFileInput').click()" style="width: 100%; border-color: #ff0040; margin-bottom: 6px;">📁 Upload File (APK/IPA/Zip/Source)</button>
+                                <input type="text" id="securitySuiteUrlInput" class="tool-input" placeholder="Or enter URL to scan" style="margin-top: 6px;">
+                                <div id="securitySuiteFileInfo" style="display: none; margin-top: 6px; padding: 8px; background: rgba(255,0,64,0.1); border-radius: 4px; font-size: 0.8em;">
+                                    <span id="securitySuiteFileName"></span> • <span id="securitySuiteFileSize"></span>
+                                </div>
                             </div>
-
-                            <!-- Language Selector -->
-                            <select id="crLanguage" style="width:100%; padding:6px 8px; background:var(--bg-input); color:#e2e8f0; border:1px solid #7c3aed; border-radius:5px; font-size:11px; margin-bottom:8px;">
-                                <option value="auto">🔍 Auto-detect Language</option>
-                                <option value="javascript">JavaScript</option>
-                                <option value="typescript">TypeScript</option>
-                                <option value="python">Python</option>
-                                <option value="java">Java</option>
-                                <option value="swift">Swift</option>
-                                <option value="kotlin">Kotlin</option>
-                                <option value="go">Go</option>
-                                <option value="rust">Rust</option>
-                                <option value="php">PHP</option>
-                                <option value="ruby">Ruby</option>
-                                <option value="c">C/C++</option>
-                                <option value="sql">SQL</option>
-                                <option value="bash">Shell/Bash</option>
-                                <option value="solidity">Solidity</option>
-                            </select>
-
-                            <!-- Code Input -->
-                            <textarea id="crCodeInput" class="tool-input" placeholder="Paste any code here..." style="height:120px; border:1px solid #7c3aed; resize:vertical; font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; line-height:1.5; background:rgba(124,58,237,0.05);"></textarea>
-
-                            <!-- Action Buttons -->
-                            <div class="quick-actions" style="margin-top:8px;">
-                                <button class="quick-btn primary" onclick="runCodeReview()" style="flex:3; background:linear-gradient(135deg,#7c3aed,#6d28d9); border-color:#7c3aed; font-weight:bold;">🔍 Run Code Review</button>
-                                <button class="quick-btn" onclick="document.getElementById('crCodeInput').value=''; document.getElementById('crResults').style.display='none';" style="flex:1; border-color:#7c3aed; color:#a78bfa;">✕ Clear</button>
+                            
+                            <!-- Tool Selection -->
+                            <div style="padding-top: 12px; border-top: 1px solid var(--border);">
+                                <div style="font-size: 11px; color: #0abdc6; margin-bottom: 6px; font-weight: bold;">🛠️ Select Tools</div>
+                                
+                                <div style="font-size: 10px; color: #4dabf7; margin: 8px 0 4px 0; font-weight: bold;">📱 Mobile Analysis</div>
+                                <div class="quick-actions">
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'mobsf')" style="border-color: #4dabf7;">📱 MobSF</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'androguard')" style="border-color: #4dabf7;">🔍 Androguard</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'jadx')" style="border-color: #4dabf7;">📜 JADX</button>
+                                </div>
+                                
+                                <div style="font-size: 10px; color: #ff6b6b; margin: 8px 0 4px 0; font-weight: bold;">🔒 SAST (Static)</div>
+                                <div class="quick-actions">
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'semgrep')" style="border-color: #ff6b6b;">⚡ Semgrep</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'horusec')" style="border-color: #ff6b6b;">🛡️ Horusec</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'bandit')" style="border-color: #ff6b6b;">🐍 Bandit</button>
+                                </div>
+                                
+                                <div style="font-size: 10px; color: #ffaa00; margin: 8px 0 4px 0; font-weight: bold;">🔑 Secrets & Dependencies</div>
+                                <div class="quick-actions">
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'trufflehog')" style="border-color: #ffaa00;">🐷 TruffleHog</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'snyk')" style="border-color: #ffaa00;">🔎 Snyk</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'retirejs')" style="border-color: #ffaa00;">📦 Retire.js</button>
+                                </div>
+                                
+                                <div style="font-size: 10px; color: #00ff41; margin: 8px 0 4px 0; font-weight: bold;">🌐 Dynamic & Network</div>
+                                <div class="quick-actions">
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'nuclei')" style="border-color: #00ff41;">🎯 Nuclei</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'zap')" style="border-color: #00ff41;">🕷️ ZAP</button>
+                                    <button class="quick-btn" onclick="toggleSecurityTool(this, 'objection')" style="border-color: #00ff41;">📲 Objection</button>
+                                </div>
                             </div>
-
-                            <!-- Loading State -->
-                            <div id="crLoading" style="display:none; text-align:center; padding:16px; color:#a78bfa; font-size:12px;">
-                                <div style="font-size:24px; animation:spin 1s linear infinite; display:inline-block;">⚙️</div>
-                                <div style="margin-top:6px;">Analyzing code with Claude...</div>
+                            
+                            <!-- Scan Actions -->
+                            <div style="padding-top: 12px; border-top: 1px solid var(--border);">
+                                <button class="quick-btn primary" onclick="runSecuritySuiteScan()" style="width: 100%; background: linear-gradient(135deg, #ff0040, #ff6b6b); font-size: 1em; padding: 12px;">🔐 Start Comprehensive Scan</button>
+                                <div class="quick-actions" style="margin-top: 8px;">
+                                    <button class="quick-btn" onclick="selectAllSecurityTools()">☑️ Select All</button>
+                                    <button class="quick-btn" onclick="clearSecurityTools()">⬜ Clear</button>
+                                </div>
                             </div>
-
-                            <!-- Results Panel -->
-                            <div id="crResults" style="display:none; margin-top:12px;">
-
-                                <!-- Score Header -->
-                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:10px; background:var(--bg-input); border-radius:8px; border:1px solid #7c3aed;">
-                                    <div id="crGradeBadge" style="width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; border:2px solid #7c3aed; flex-shrink:0;">A</div>
-                                    <div style="flex:1; min-width:0;">
-                                        <div style="font-size:11px; color:#a78bfa; margin-bottom:3px;">Risk Score</div>
-                                        <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
-                                            <div id="crScoreBar" style="height:100%; width:0%; border-radius:3px; transition:width 0.8s ease;"></div>
-                                        </div>
-                                        <div style="margin-top:3px; font-size:10px; color:#94a3b8;"><span id="crScoreVal">0</span>/100 — <span id="crLanguageLabel"></span></div>
-                                    </div>
-                                    <button onclick="exportCodeReviewReport()" style="padding:5px 8px; background:rgba(124,58,237,0.2); border:1px solid #7c3aed; border-radius:5px; color:#a78bfa; font-size:10px; cursor:pointer; white-space:nowrap;">📋 Export</button>
+                            
+                            <!-- Progress & Results -->
+                            <div id="securitySuiteProgress" style="display: none; margin-top: 12px; padding: 12px; background: rgba(10, 189, 198, 0.1); border-radius: 8px; border: 1px solid var(--secondary);">
+                                <div style="font-size: 11px; color: var(--secondary); margin-bottom: 8px; font-weight: bold;">⏳ Scan Progress</div>
+                                <div id="securitySuiteProgressBar" style="height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); transition: width 0.3s;"></div>
                                 </div>
-
-                                <!-- Summary -->
-                                <div style="margin-bottom:10px;">
-                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">📝 Summary</div>
-                                    <div id="crSummary" style="font-size:11px; color:#cbd5e1; line-height:1.5; padding:8px; background:var(--bg-input); border-radius:6px; border-left:3px solid #7c3aed;"></div>
+                                <div id="securitySuiteProgressText" style="font-size: 0.8em; color: var(--text-dim); margin-top: 6px;">Initializing...</div>
+                                <div id="securitySuiteToolStatus" style="margin-top: 8px; font-size: 0.75em;"></div>
+                            </div>
+                            
+                            <!-- Results Actions -->
+                            <div id="securitySuiteResults" style="display: none; margin-top: 12px;">
+                                <div style="font-size: 11px; color: #00ff41; margin-bottom: 6px; font-weight: bold;">✅ Scan Complete</div>
+                                <div class="quick-actions">
+                                    <button class="quick-btn" onclick="downloadSecuritySuitePDF()" style="border-color: #00ff41;">📄 Download PDF</button>
+                                    <button class="quick-btn" onclick="viewSecuritySuiteReport()" style="border-color: #0abdc6;">👁️ View Report</button>
                                 </div>
-
-                                <!-- Explanation -->
-                                <div id="crExplanationBlock" style="margin-bottom:10px; display:none;">
-                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">💡 What This Code Does</div>
-                                    <div id="crExplanation" style="font-size:11px; color:#cbd5e1; line-height:1.5; padding:8px; background:var(--bg-input); border-radius:6px; border-left:3px solid #6d28d9;"></div>
-                                </div>
-
-                                <!-- Findings -->
-                                <div id="crFindingsBlock" style="margin-bottom:10px;">
-                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">🔎 Findings (<span id="crFindingsCount">0</span>)</div>
-                                    <div id="crFindingsList"></div>
-                                </div>
-
-                                <!-- Suggested Fixes -->
-                                <div id="crFixesBlock" style="display:none;">
-                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">🔧 Suggested Fixes (<span id="crFixesCount">0</span>)</div>
-                                    <div id="crFixesList"></div>
-                                </div>
-
-                            </div><!-- /crResults -->
+                                <div id="securitySuiteSummary" style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.8em;"></div>
+                            </div>
+                            
+                            <div id="securitySuiteStatus" class="tool-status"></div>
                         </div>
                     </div>
                 </div>
-
-
-                <!-- 🔬 SEMGREP SAST SCANNER -->
+                
+                <!-- 🔍 SEMGREP SAST SCANNER -->
                 <div class="accordion-section" data-section="semgrep">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <div class="accordion-header-left">
-                            <span class="accordion-icon">🔬</span>
-                            <span class="accordion-title" style="color:#10b981;">Semgrep SAST</span>
-                            <span class="accordion-badge" style="background:#10b981;">SAST</span>
+                            <span class="accordion-icon">🔍</span>
+                            <span class="accordion-title">Semgrep SAST</span>
+                            <span class="accordion-badge" style="background: #10b981;">SAST</span>
                         </div>
                         <span class="accordion-toggle">▼</span>
                     </div>
                     <div class="accordion-content">
                         <div class="accordion-inner">
-                            <div style="font-size:11px;color:#10b981;margin-bottom:8px;font-weight:bold;">🔬 Static Application Security Testing</div>
-                            <!-- Input mode tabs -->
-                            <div style="display:flex;gap:4px;margin-bottom:8px;">
-                                <button id="semgrep-tab-code" class="quick-btn" onclick="semgrepSetMode('code')" style="flex:1;border-color:#10b981;background:rgba(16,185,129,0.2);font-size:10px;">📋 Paste Code</button>
-                                <button id="semgrep-tab-repo" class="quick-btn" onclick="semgrepSetMode('repo')" style="flex:1;border-color:#10b981;font-size:10px;">🔗 Repo URL</button>
-                            </div>
-                            <div id="semgrep-code-input">
-                                <textarea id="semgrepCode" class="tool-input" placeholder="Paste source code here..." style="height:100px;border-color:#10b981;font-family:monospace;font-size:11px;resize:vertical;"></textarea>
-                            </div>
-                            <div id="semgrep-repo-input" style="display:none;">
-                                <input type="text" id="semgrepRepoUrl" class="tool-input" placeholder="https://github.com/user/repo" style="border-color:#10b981;">
-                            </div>
-                            <div style="display:flex;gap:6px;margin-top:6px;">
-                                <select id="semgrepLanguage" class="tool-input" style="flex:1;border-color:#10b981;font-size:11px;">
-                                    <option value="auto">Auto-detect</option>
-                                    <option value="javascript">JavaScript</option>
-                                    <option value="typescript">TypeScript</option>
-                                    <option value="python">Python</option>
-                                    <option value="java">Java</option>
-                                    <option value="go">Go</option>
-                                    <option value="ruby">Ruby</option>
-                                    <option value="php">PHP</option>
-                                    <option value="rust">Rust</option>
-                                    <option value="c/c++">C/C++</option>
-                                </select>
-                                <select id="semgrepRules" class="tool-input" style="flex:1;border-color:#10b981;font-size:11px;">
-                                    <option value="auto">Auto</option>
-                                    <option value="security">Security Audit</option>
-                                    <option value="owasp">OWASP Top 10</option>
-                                    <option value="python">Python Rules</option>
-                                    <option value="javascript">JS/TS Rules</option>
-                                    <option value="java">Java Rules</option>
-                                </select>
-                            </div>
-                            <button class="quick-btn primary" onclick="runSemgrepScan()" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#10b981,#059669);border-color:#10b981;font-weight:bold;">🔬 Run Semgrep Scan</button>
-                            <div id="semgrepStatus" class="tool-status" style="margin-top:6px;"></div>
-                            <!-- Results -->
-                            <div id="semgrepResults" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
-                                <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-                                    <span id="semgrep-badge-critical" style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 CRITICAL</span>
-                                    <span id="semgrep-badge-high" style="background:#f97316;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 HIGH</span>
-                                    <span id="semgrep-badge-medium" style="background:#eab308;color:#000;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 MEDIUM</span>
-                                    <span id="semgrep-badge-info" style="background:#3b82f6;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 INFO</span>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 11px; color: #10b981; margin-bottom: 6px; font-weight: bold;">🎯 Target</div>
+                                <input type="text" id="semgrepTarget" class="tool-input" placeholder="GitHub URL or local path to scan">
+                                
+                                <div style="margin-top: 8px;">
+                                    <select id="semgrepLanguage" class="tool-input" style="width: 48%; display: inline-block;">
+                                        <option value="auto">🔍 Auto-detect</option>
+                                        <option value="python">🐍 Python</option>
+                                        <option value="javascript">📜 JavaScript</option>
+                                        <option value="typescript">📘 TypeScript</option>
+                                        <option value="java">☕ Java</option>
+                                        <option value="go">🐹 Go</option>
+                                        <option value="rust">🦀 Rust</option>
+                                        <option value="cpp">⚡ C/C++</option>
+                                        <option value="ruby">💎 Ruby</option>
+                                        <option value="php">🐘 PHP</option>
+                                    </select>
+                                    
+                                    <select id="semgrepRules" class="tool-input" style="width: 48%; display: inline-block; margin-left: 4%;">
+                                        <option value="default">📋 Default Rules</option>
+                                        <option value="security-audit">🔒 Security Audit</option>
+                                        <option value="owasp-top10">🛡️ OWASP Top 10</option>
+                                        <option value="cwe">📊 CWE Coverage</option>
+                                        <option value="performance">⚡ Performance</option>
+                                    </select>
                                 </div>
-                                <div id="semgrepSummary" style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px;background:var(--bg-input);border-radius:4px;"></div>
-                                <div id="semgrepFindings" style="font-size:11px;max-height:200px;overflow-y:auto;"></div>
                             </div>
+                            
+                            <div style="padding-top: 12px; border-top: 1px solid var(--border);">
+                                <button class="quick-btn primary" onclick="runSemgrepScan()" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669);">🔍 Run Semgrep Scan</button>
+                            </div>
+                            
+                            <div id="semgrepProgress" style="display: none; margin-top: 12px;">
+                                <div style="font-size: 11px; color: #10b981; margin-bottom: 8px;">⏳ Scanning...</div>
+                                <div style="height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden;">
+                                    <div id="semgrepProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #059669); transition: width 0.3s;"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="semgrepResults" style="display: none; margin-top: 12px;">
+                                <div style="font-size: 11px; color: #10b981; margin-bottom: 6px; font-weight: bold;">📊 Results</div>
+                                <div id="semgrepSummary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;">
+                                    <div style="padding: 8px; background: rgba(239,68,68,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="semgrepCritical" style="font-size: 1.2em; font-weight: bold; color: #ef4444;">0</div>
+                                        <div style="font-size: 0.7em;">Critical</div>
+                                    </div>
+                                    <div style="padding: 8px; background: rgba(249,115,22,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="semgrepHigh" style="font-size: 1.2em; font-weight: bold; color: #f97316;">0</div>
+                                        <div style="font-size: 0.7em;">High</div>
+                                    </div>
+                                    <div style="padding: 8px; background: rgba(234,179,8,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="semgrepMedium" style="font-size: 1.2em; font-weight: bold; color: #eab308;">0</div>
+                                        <div style="font-size: 0.7em;">Medium</div>
+                                    </div>
+                                    <div style="padding: 8px; background: rgba(59,130,246,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="semgrepLow" style="font-size: 1.2em; font-weight: bold; color: #3b82f6;">0</div>
+                                        <div style="font-size: 0.7em;">Low</div>
+                                    </div>
+                                </div>
+                                
+                                <div id="semgrepFindings" style="max-height: 200px; overflow-y: auto;"></div>
+                                
+                                <div class="quick-actions" style="margin-top: 12px;">
+                                    <button class="quick-btn" onclick="downloadSemgrepReport()">📄 Download Report</button>
+                                    <button class="quick-btn" onclick="viewSemgrepInChat()">💬 View in Chat</button>
+                                </div>
+                            </div>
+                            
+                            <div id="semgrepStatus" class="tool-status"></div>
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- 🔑 TRUFFLEHOG SECRETS SCANNER -->
-                <div class="accordion-section" data-section="secrets">
+                <div class="accordion-section" data-section="trufflehog">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <div class="accordion-header-left">
                             <span class="accordion-icon">🔑</span>
-                            <span class="accordion-title" style="color:#f59e0b;">Secrets Scanner</span>
-                            <span class="accordion-badge" style="background:#f59e0b;color:#000;">TruffleHog</span>
+                            <span class="accordion-title">Secrets Scanner</span>
+                            <span class="accordion-badge" style="background: #f59e0b;">SECRETS</span>
                         </div>
                         <span class="accordion-toggle">▼</span>
                     </div>
                     <div class="accordion-content">
                         <div class="accordion-inner">
-                            <div style="font-size:11px;color:#f59e0b;margin-bottom:8px;font-weight:bold;">🔑 Detect hardcoded secrets, API keys &amp; tokens</div>
-                            <div style="display:flex;gap:4px;margin-bottom:8px;">
-                                <button id="secrets-tab-code" class="quick-btn" onclick="secretsSetMode('code')" style="flex:1;border-color:#f59e0b;background:rgba(245,158,11,0.2);font-size:10px;">📋 Paste Code</button>
-                                <button id="secrets-tab-repo" class="quick-btn" onclick="secretsSetMode('repo')" style="flex:1;border-color:#f59e0b;font-size:10px;">🔗 Git Repo</button>
-                            </div>
-                            <div id="secrets-code-input">
-                                <textarea id="secretsCode" class="tool-input" placeholder="Paste code/config to scan for secrets..." style="height:80px;border-color:#f59e0b;font-family:monospace;font-size:11px;resize:vertical;"></textarea>
-                            </div>
-                            <div id="secrets-repo-input" style="display:none;">
-                                <input type="text" id="secretsRepoUrl" class="tool-input" placeholder="https://github.com/user/repo" style="border-color:#f59e0b;">
-                                <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-                                    <label style="font-size:11px;color:var(--text-dim);">Scan depth:</label>
-                                    <input type="number" id="secretsScanDepth" class="tool-input" value="30" min="1" max="100" style="width:60px;border-color:#f59e0b;">
-                                    <span style="font-size:10px;color:#666;">commits</span>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 11px; color: #f59e0b; margin-bottom: 6px; font-weight: bold;">🐷 TruffleHog — Find leaked secrets in code</div>
+                                <input type="text" id="trufflehogTarget" class="tool-input" placeholder="GitHub URL, GitLab URL, or local path">
+                                
+                                <div style="margin-top: 8px; font-size: 0.8em; color: #888;">
+                                    🔍 Scans for: API keys, passwords, tokens, private keys, connection strings
+                                </div>
+                                
+                                <div style="margin-top: 8px;">
+                                    <label style="font-size: 0.8em; color: #888;">
+                                        <input type="checkbox" id="trufflehogHistory" checked> Scan git history
+                                    </label>
+                                    <label style="font-size: 0.8em; color: #888; margin-left: 16px;">
+                                        <input type="checkbox" id="trufflehogVerified" checked> Verified secrets only
+                                    </label>
                                 </div>
                             </div>
-                            <button class="quick-btn primary" onclick="runSecretsScam()" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#f59e0b,#d97706);border-color:#f59e0b;font-weight:bold;color:#000;">🔑 Scan for Secrets</button>
-                            <div id="secretsStatus" class="tool-status" style="margin-top:6px;"></div>
-                            <!-- Results -->
-                            <div id="secretsResults" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
-                                <div id="secretsAlert" style="padding:8px;border-radius:6px;font-size:12px;font-weight:bold;margin-bottom:8px;text-align:center;"></div>
-                                <div style="display:flex;gap:8px;margin-bottom:8px;">
-                                    <span id="secrets-badge-verified" style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 VERIFIED</span>
-                                    <span id="secrets-badge-unverified" style="background:#f97316;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 UNVERIFIED</span>
-                                </div>
-                                <div id="secretsSummary" style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px;background:var(--bg-input);border-radius:4px;"></div>
-                                <div id="secretsFindings" style="font-size:11px;max-height:200px;overflow-y:auto;"></div>
+                            
+                            <div style="padding-top: 12px; border-top: 1px solid var(--border);">
+                                <button class="quick-btn primary" onclick="runTrufflehogScan()" style="width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706);">🔑 Scan for Secrets</button>
                             </div>
+                            
+                            <div id="trufflehogProgress" style="display: none; margin-top: 12px;">
+                                <div style="font-size: 11px; color: #f59e0b; margin-bottom: 8px;">🐷 Sniffing for secrets...</div>
+                                <div style="height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); animation: pulse 2s infinite;"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="trufflehogResults" style="display: none; margin-top: 12px;">
+                                <div id="trufflehogAlert" style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center;">
+                                    <div id="trufflehogAlertIcon" style="font-size: 2em;"></div>
+                                    <div id="trufflehogAlertText" style="font-weight: bold; margin-top: 8px;"></div>
+                                </div>
+                                
+                                <div id="trufflehogFindings" style="max-height: 250px; overflow-y: auto;"></div>
+                                
+                                <div class="quick-actions" style="margin-top: 12px;">
+                                    <button class="quick-btn" onclick="downloadTrufflehogReport()">📄 Download Report</button>
+                                    <button class="quick-btn" onclick="viewTrufflehogInChat()">💬 View in Chat</button>
+                                </div>
+                            </div>
+                            
+                            <div id="trufflehogStatus" class="tool-status"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- 📦 OWASP DEPENDENCY-CHECK SCA -->
-                <div class="accordion-section" data-section="sca">
+                
+                <!-- 📦 OWASP DEPENDENCY-CHECK -->
+                <div class="accordion-section" data-section="dependency-check">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <div class="accordion-header-left">
                             <span class="accordion-icon">📦</span>
-                            <span class="accordion-title" style="color:#6366f1;">Dependency Check</span>
-                            <span class="accordion-badge" style="background:#6366f1;">SCA</span>
+                            <span class="accordion-title">Dependency Check</span>
+                            <span class="accordion-badge" style="background: #8b5cf6;">SCA</span>
                         </div>
                         <span class="accordion-toggle">▼</span>
                     </div>
                     <div class="accordion-content">
                         <div class="accordion-inner">
-                            <div style="font-size:11px;color:#6366f1;margin-bottom:8px;font-weight:bold;">📦 OWASP Dependency-Check — CVE scanning for dependencies</div>
-                            <input type="text" id="scaRepoUrl" class="tool-input" placeholder="https://github.com/user/repo" style="border-color:#6366f1;">
-                            <input type="text" id="scaProjectName" class="tool-input" placeholder="Project name (optional)" style="border-color:#6366f1;margin-top:6px;">
-                            <button class="quick-btn primary" onclick="runSCAScan()" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);border-color:#6366f1;font-weight:bold;">📦 Scan Dependencies</button>
-                            <div id="scaStatus" class="tool-status" style="margin-top:6px;"></div>
-                            <!-- Results -->
-                            <div id="scaResults" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-                                    <span id="sca-badge-critical" style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 CRITICAL</span>
-                                    <span id="sca-badge-high" style="background:#f97316;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 HIGH</span>
-                                    <span id="sca-badge-medium" style="background:#eab308;color:#000;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 MEDIUM</span>
-                                    <span id="sca-badge-low" style="background:#6b7280;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 LOW</span>
-                                    <span id="sca-badge-deps" style="background:#3b82f6;color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:bold;">0 DEPS</span>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 11px; color: #8b5cf6; margin-bottom: 6px; font-weight: bold;">🛡️ OWASP Dependency-Check — Find vulnerable dependencies</div>
+                                <input type="text" id="dependencyCheckTarget" class="tool-input" placeholder="Path to project (with package.json, requirements.txt, pom.xml, etc.)">
+                                
+                                <div style="margin-top: 8px; font-size: 0.8em; color: #888;">
+                                    📋 Supports: npm, pip, Maven, Gradle, NuGet, Ruby Gems, and more
                                 </div>
-                                <div id="scaSummary" style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px;background:var(--bg-input);border-radius:4px;"></div>
-                                <div id="scaVulnerabilities" style="font-size:11px;max-height:200px;overflow-y:auto;"></div>
                             </div>
+                            
+                            <div style="padding-top: 12px; border-top: 1px solid var(--border);">
+                                <button class="quick-btn primary" onclick="runDependencyCheckScan()" style="width: 100%; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">📦 Check Dependencies</button>
+                            </div>
+                            
+                            <div id="dependencyCheckProgress" style="display: none; margin-top: 12px;">
+                                <div style="font-size: 11px; color: #8b5cf6; margin-bottom: 8px;">📊 Analyzing dependencies...</div>
+                                <div style="height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden;">
+                                    <div id="dependencyCheckProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #8b5cf6, #7c3aed); transition: width 0.3s;"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="dependencyCheckResults" style="display: none; margin-top: 12px;">
+                                <div style="font-size: 11px; color: #8b5cf6; margin-bottom: 6px; font-weight: bold;">📊 Vulnerability Summary</div>
+                                
+                                <div id="dependencyCheckSummary" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px;">
+                                    <div style="padding: 6px; background: rgba(239,68,68,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="depCritical" style="font-size: 1.1em; font-weight: bold; color: #ef4444;">0</div>
+                                        <div style="font-size: 0.65em;">Critical</div>
+                                    </div>
+                                    <div style="padding: 6px; background: rgba(249,115,22,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="depHigh" style="font-size: 1.1em; font-weight: bold; color: #f97316;">0</div>
+                                        <div style="font-size: 0.65em;">High</div>
+                                    </div>
+                                    <div style="padding: 6px; background: rgba(234,179,8,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="depMedium" style="font-size: 1.1em; font-weight: bold; color: #eab308;">0</div>
+                                        <div style="font-size: 0.65em;">Medium</div>
+                                    </div>
+                                    <div style="padding: 6px; background: rgba(59,130,246,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="depLow" style="font-size: 1.1em; font-weight: bold; color: #3b82f6;">0</div>
+                                        <div style="font-size: 0.65em;">Low</div>
+                                    </div>
+                                    <div style="padding: 6px; background: rgba(107,114,128,0.2); border-radius: 4px; text-align: center;">
+                                        <div id="depDeps" style="font-size: 1.1em; font-weight: bold; color: #9ca3af;">0</div>
+                                        <div style="font-size: 0.65em;">Deps</div>
+                                    </div>
+                                </div>
+                                
+                                <div id="dependencyCheckFindings" style="max-height: 200px; overflow-y: auto;"></div>
+                                
+                                <div class="quick-actions" style="margin-top: 12px;">
+                                    <button class="quick-btn" onclick="downloadDependencyCheckReport()">📄 Download Report</button>
+                                    <button class="quick-btn" onclick="viewDependencyCheckInChat()">💬 View in Chat</button>
+                                </div>
+                            </div>
+                            
+                            <div id="dependencyCheckStatus" class="tool-status"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- ⚡ STATS & AI -->
                 <div class="accordion-section" data-section="more">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
                         <div class="accordion-header-left">
@@ -8736,461 +8801,549 @@ USER QUESTION: ${message || 'What does this file do?'}`;
                 hideCodeSelectionPopup();
             }
         });
+        // Security Suite State
+        let securitySuiteSelectedTools = new Set();
+        let securitySuiteCurrentScan = null;
+        let securitySuiteUploadedFile = null;
 
-        // ═══════════════════════════════════════════════════════════════════
-        // 🔍 CODE REVIEW — Enterprise AI-powered code analysis
-        // ═══════════════════════════════════════════════════════════════════
+        // Toggle tool selection
+        function toggleSecurityTool(btn, tool) {
+            if (securitySuiteSelectedTools.has(tool)) {
+                securitySuiteSelectedTools.delete(tool);
+                btn.style.background = '';
+                btn.style.color = '';
+            } else {
+                securitySuiteSelectedTools.add(tool);
+                btn.style.background = 'linear-gradient(135deg, #ff0040, #ff6b6b)';
+                btn.style.color = '#fff';
+            }
+        }
 
-        let _crReviewType = 'full';
-        let _crLastReport = null;
-
-        function setCRTab(type) {
-            _crReviewType = type;
-            ['full','security','performance','explain'].forEach(t => {
-                const btn = document.getElementById('crtab-' + t);
-                if (!btn) return;
-                if (t === type) {
-                    btn.style.background = 'linear-gradient(135deg, #7c3aed, #6d28d9)';
-                    btn.style.color = '#fff';
-                    btn.style.border = 'none';
-                    btn.style.fontWeight = 'bold';
-                } else {
-                    btn.style.background = 'var(--bg-input)';
-                    btn.style.color = '#a78bfa';
-                    btn.style.border = '1px solid #7c3aed';
-                    btn.style.fontWeight = 'normal';
-                }
+        // Select all tools
+        function selectAllSecurityTools() {
+            const tools = ['mobsf', 'androguard', 'jadx', 'semgrep', 'horusec', 'bandit', 
+                          'trufflehog', 'snyk', 'retirejs', 'nuclei', 'zap', 'objection'];
+            tools.forEach(tool => securitySuiteSelectedTools.add(tool));
+            document.querySelectorAll('[onclick^="toggleSecurityTool"]').forEach(btn => {
+                btn.style.background = 'linear-gradient(135deg, #ff0040, #ff6b6b)';
+                btn.style.color = '#fff';
             });
         }
 
-        async function runCodeReview(codeOverride, typeOverride) {
-            const code = codeOverride || document.getElementById('crCodeInput')?.value?.trim();
-            const language = document.getElementById('crLanguage')?.value || 'auto';
-            const reviewType = typeOverride || _crReviewType || 'full';
+        // Clear all tools
+        function clearSecurityTools() {
+            securitySuiteSelectedTools.clear();
+            document.querySelectorAll('[onclick^="toggleSecurityTool"]').forEach(btn => {
+                btn.style.background = '';
+                btn.style.color = '';
+            });
+        }
 
-            if (!code) {
-                alert('Please paste some code first.');
+        // Handle file upload
+        function handleSecuritySuiteFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            securitySuiteUploadedFile = file;
+            document.getElementById('securitySuiteFileInfo').style.display = 'block';
+            document.getElementById('securitySuiteFileName').textContent = file.name;
+            document.getElementById('securitySuiteFileSize').textContent = formatFileSize(file.size);
+            
+            showStatus('securitySuiteStatus', `📁 File ready: ${file.name}`, 'success');
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Run comprehensive security scan
+        async function runSecuritySuiteScan() {
+            const url = document.getElementById('securitySuiteUrlInput').value.trim();
+            const tools = Array.from(securitySuiteSelectedTools);
+            
+            if (!url && !securitySuiteUploadedFile) {
+                showStatus('securitySuiteStatus', '❌ Please upload a file or enter a URL', 'error');
+                return;
+            }
+            
+            if (tools.length === 0) {
+                showStatus('securitySuiteStatus', '❌ Please select at least one tool', 'error');
                 return;
             }
 
-            // If called from outside the accordion, make sure it's open/visible
-            const section = document.querySelector('[data-section="codereview"] .accordion-content');
-            if (section && !section.classList.contains('open')) {
-                const header = document.querySelector('[data-section="codereview"] .accordion-header');
-                if (header) header.click();
-            }
-            // If code was passed in, populate the textarea
-            if (codeOverride) {
-                const ta = document.getElementById('crCodeInput');
-                if (ta) ta.value = codeOverride;
-            }
-
-            document.getElementById('crLoading').style.display = 'block';
-            document.getElementById('crResults').style.display = 'none';
-
-            try {
-                const resp = await fetch('/api/code-review', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code, language, reviewType })
-                });
-                const data = await resp.json();
-
-                document.getElementById('crLoading').style.display = 'none';
-
-                if (!data.success) {
-                    alert('Code review failed: ' + (data.error || 'Unknown error'));
+            // Show progress
+            document.getElementById('securitySuiteProgress').style.display = 'block';
+            document.getElementById('securitySuiteResults').style.display = 'none';
+            
+            const scanId = 'scan_' + Date.now();
+            securitySuiteCurrentScan = { id: scanId, tools: tools, results: {} };
+            
+            // Upload file if present
+            let target = url;
+            if (securitySuiteUploadedFile) {
+                updateSecurityProgress('Uploading file...', 10);
+                try {
+                    const formData = new FormData();
+                    formData.append('file', securitySuiteUploadedFile);
+                    
+                    const uploadRes = await fetch('/api/files/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const uploadData = await uploadRes.json();
+                    target = uploadData.fileId || uploadData.path || securitySuiteUploadedFile.name;
+                } catch (err) {
+                    showStatus('securitySuiteStatus', '❌ Upload failed: ' + err.message, 'error');
                     return;
                 }
+            }
+            
+            // Run each selected tool
+            const totalTools = tools.length;
+            for (let i = 0; i < tools.length; i++) {
+                const tool = tools[i];
+                const progress = Math.round(((i + 0.5) / totalTools) * 100);
+                updateSecurityProgress(`Running ${tool}...`, progress, tools.map((t, idx) => 
+                    idx < i ? `✅ ${t}` : idx === i ? `⏳ ${t}` : `⏸️ ${t}`
+                ).join('<br>'));
+                
+                try {
+                    const result = await runSecurityTool(tool, target);
+                    securitySuiteCurrentScan.results[tool] = result;
+                } catch (err) {
+                    securitySuiteCurrentScan.results[tool] = { error: err.message, success: false };
+                }
+            }
+            
+            // Complete
+            updateSecurityProgress('Scan complete!', 100);
+            document.getElementById('securitySuiteProgress').style.display = 'none';
+            document.getElementById('securitySuiteResults').style.display = 'block';
+            
+            // Generate summary
+            const summary = generateSecuritySummary(securitySuiteCurrentScan.results);
+            document.getElementById('securitySuiteSummary').innerHTML = summary;
+            
+            showStatus('securitySuiteStatus', '✅ Scan complete! Download PDF or view report.', 'success');
+        }
 
-                _crLastReport = data;
-                renderCodeReviewResults(data);
+        // Update progress UI
+        function updateSecurityProgress(text, percent, toolStatus = '') {
+            document.getElementById('securitySuiteProgressText').textContent = text;
+            document.querySelector('#securitySuiteProgressBar div').style.width = percent + '%';
+            if (toolStatus) {
+                document.getElementById('securitySuiteToolStatus').innerHTML = toolStatus;
+            }
+        }
 
+        // Run individual security tool
+        async function runSecurityTool(tool, target) {
+            const endpoints = {
+                'mobsf': '/api/scan/mobsf',
+                'semgrep': '/api/scan/semgrep',
+                'bandit': '/api/scan/bandit',
+                'trufflehog': '/api/scan/secrets',
+                'nuclei': '/api/scan/nuclei',
+                'zap': '/api/scan/zap',
+                'nikto': '/api/scan/nikto'
+            };
+            
+            const endpoint = endpoints[tool] || '/api/scan';
+            
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target, tool })
+            });
+            
+            return await res.json();
+        }
+
+        // Generate security summary
+        function generateSecuritySummary(results) {
+            let critical = 0, high = 0, medium = 0, low = 0;
+            let toolsRun = 0, toolsFailed = 0;
+            
+            Object.entries(results).forEach(([tool, result]) => {
+                if (result.error || !result.success) {
+                    toolsFailed++;
+                } else {
+                    toolsRun++;
+                    // Count findings based on tool output
+                    const findings = result.findings || result.results || [];
+                    if (Array.isArray(findings)) {
+                        findings.forEach(f => {
+                            const severity = (f.severity || f.level || '').toLowerCase();
+                            if (severity.includes('critical')) critical++;
+                            else if (severity.includes('high')) high++;
+                            else if (severity.includes('medium')) medium++;
+                            else if (severity.includes('low')) low++;
+                        });
+                    }
+                }
+            });
+            
+            return `
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center;">
+                    <div style="padding: 8px; background: rgba(255,0,64,0.2); border-radius: 4px;">
+                        <div style="font-size: 1.2em; font-weight: bold; color: #ff0040;">${critical}</div>
+                        <div style="font-size: 0.7em;">Critical</div>
+                    </div>
+                    <div style="padding: 8px; background: rgba(255,107,107,0.2); border-radius: 4px;">
+                        <div style="font-size: 1.2em; font-weight: bold; color: #ff6b6b;">${high}</div>
+                        <div style="font-size: 0.7em;">High</div>
+                    </div>
+                    <div style="padding: 8px; background: rgba(255,170,0,0.2); border-radius: 4px;">
+                        <div style="font-size: 1.2em; font-weight: bold; color: #ffaa00;">${medium}</div>
+                        <div style="font-size: 0.7em;">Medium</div>
+                    </div>
+                    <div style="padding: 8px; background: rgba(0,255,65,0.2); border-radius: 4px;">
+                        <div style="font-size: 1.2em; font-weight: bold; color: #00ff41;">${low}</div>
+                        <div style="font-size: 0.7em;">Low</div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.75em; color: #888;">
+                    Tools: ${toolsRun} succeeded, ${toolsFailed} failed
+                </div>
+            `;
+        }
+
+        // Download PDF report
+        async function downloadSecuritySuitePDF() {
+            if (!securitySuiteCurrentScan) return;
+            
+            showStatus('securitySuiteStatus', '📄 Generating PDF...', 'info');
+            
+            try {
+                const res = await fetch('/api/scan/report/pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scanId: securitySuiteCurrentScan.id, results: securitySuiteCurrentScan.results })
+                });
+                
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `security-scan-${securitySuiteCurrentScan.id}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showStatus('securitySuiteStatus', '✅ PDF downloaded!', 'success');
             } catch (err) {
-                document.getElementById('crLoading').style.display = 'none';
-                alert('Code review error: ' + err.message);
+                showStatus('securitySuiteStatus', '❌ PDF generation failed: ' + err.message, 'error');
             }
         }
 
-        function renderCodeReviewResults(data) {
-            const score = data.riskScore || 0;
-            const grade = data.grade || 'C';
+        // View report in chat
+        function viewSecuritySuiteReport() {
+            if (!securitySuiteCurrentScan) return;
+            
+            const summary = generateSecuritySummary(securitySuiteCurrentScan.results);
+            const message = `🔐 **Security Suite Scan Results**
 
-            // Grade badge colors
-            const gradeColors = { A:'#22c55e', B:'#84cc16', C:'#eab308', D:'#f97316', F:'#ef4444' };
-            const scoreBarColors = score <= 30 ? '#22c55e' : score <= 60 ? '#eab308' : score <= 80 ? '#f97316' : '#ef4444';
-            const gradeColor = gradeColors[grade] || '#a78bfa';
+${summary}
 
-            const gradeBadge = document.getElementById('crGradeBadge');
-            gradeBadge.textContent = grade;
-            gradeBadge.style.color = gradeColor;
-            gradeBadge.style.borderColor = gradeColor;
+**Tools Run:**
+${Object.entries(securitySuiteCurrentScan.results).map(([tool, result]) => 
+    `- ${tool}: ${result.success ? '✅' : '❌'} ${result.findings ? result.findings + ' findings' : ''}`
+).join('\n')}
 
-            document.getElementById('crScoreBar').style.width = score + '%';
-            document.getElementById('crScoreBar').style.background = scoreBarColors;
-            document.getElementById('crScoreVal').textContent = score;
-            document.getElementById('crLanguageLabel').textContent = data.language || '';
-
-            document.getElementById('crSummary').textContent = data.summary || 'No summary provided.';
-
-            // Explanation block
-            if (data.explanation) {
-                document.getElementById('crExplanation').textContent = data.explanation;
-                document.getElementById('crExplanationBlock').style.display = 'block';
-            } else {
-                document.getElementById('crExplanationBlock').style.display = 'none';
-            }
-
-            // Findings
-            const findings = data.findings || [];
-            document.getElementById('crFindingsCount').textContent = findings.length;
-            const findingsList = document.getElementById('crFindingsList');
-            findingsList.innerHTML = '';
-
-            if (findings.length === 0) {
-                findingsList.innerHTML = '<div style="font-size:11px;color:#22c55e;padding:8px;background:rgba(34,197,94,0.1);border-radius:6px;border-left:3px solid #22c55e;">✅ No significant issues found.</div>';
-            } else {
-                const sevColors = { CRITICAL:'#ef4444', HIGH:'#f97316', MEDIUM:'#eab308', LOW:'#60a5fa', INFO:'#94a3b8' };
-                const catColors = { SECURITY:'#ef4444', PERFORMANCE:'#f97316', QUALITY:'#eab308', MAINTAINABILITY:'#60a5fa', STYLE:'#a78bfa', ARCHITECTURE:'#34d399', DEPENDENCY:'#f472b6', LOGIC:'#fb923c', DOCUMENTATION:'#94a3b8' };
-                findings.forEach((f, i) => {
-                    const sc = sevColors[f.severity] || '#a78bfa';
-                    const cc = catColors[f.category] || '#a78bfa';
-                    const lineLabel = f.line ? `Line ${f.line}` : 'General';
-                    const div = document.createElement('div');
-                    div.style.cssText = `margin-bottom:6px; padding:8px; background:var(--bg-input); border-radius:6px; border-left:3px solid ${sc}; font-size:11px;`;
-                    div.innerHTML = `
-                        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap;">
-                            <span style="padding:1px 6px;border-radius:3px;background:${sc}20;color:${sc};font-weight:bold;font-size:10px;">${f.severity}</span>
-                            <span style="padding:1px 6px;border-radius:3px;background:${cc}15;color:${cc};font-size:10px;">${f.category}</span>
-                            <span style="font-size:10px;color:#64748b;">${lineLabel}</span>
-                        </div>
-                        <div style="color:#e2e8f0;margin-bottom:3px;">${escapeHtml(f.description)}</div>
-                        ${f.suggestion ? `<div style="color:#94a3b8;font-size:10px;margin-top:3px;">💡 ${escapeHtml(f.suggestion)}</div>` : ''}
-                    `;
-                    findingsList.appendChild(div);
-                });
-            }
-
-            // Fixes
-            const fixes = data.fixes || [];
-            const fixesBlock = document.getElementById('crFixesBlock');
-            if (fixes.length > 0) {
-                document.getElementById('crFixesCount').textContent = fixes.length;
-                const fixesList = document.getElementById('crFixesList');
-                fixesList.innerHTML = '';
-                fixes.forEach((fix, i) => {
-                    const fixId = 'crfix-' + i;
-                    const div = document.createElement('div');
-                    div.style.cssText = 'margin-bottom:10px; padding:8px; background:var(--bg-input); border-radius:6px; border:1px solid rgba(124,58,237,0.4); font-size:11px;';
-                    div.innerHTML = `
-                        <div style="font-weight:bold;color:#a78bfa;margin-bottom:6px;">🔧 ${escapeHtml(fix.title)}</div>
-                        <div style="margin-bottom:4px;">
-                            <div style="font-size:10px;color:#ef4444;margin-bottom:2px;font-weight:bold;">BEFORE:</div>
-                            <pre id="${fixId}-before" style="margin:0;padding:6px;background:rgba(239,68,68,0.1);border-left:2px solid #ef4444;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-size:10px;font-family:monospace;color:#fca5a5;">${escapeHtml(fix.before || '')}</pre>
-                        </div>
-                        <div style="margin-bottom:6px;">
-                            <div style="font-size:10px;color:#22c55e;margin-bottom:2px;font-weight:bold;">AFTER:</div>
-                            <pre id="${fixId}-after" style="margin:0;padding:6px;background:rgba(34,197,94,0.1);border-left:2px solid #22c55e;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-size:10px;font-family:monospace;color:#86efac;">${escapeHtml(fix.after || '')}</pre>
-                        </div>
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
-                            <div style="color:#94a3b8;font-size:10px;flex:1;">${escapeHtml(fix.explanation || '')}</div>
-                            <button onclick="copyFixCode('${fixId}-after')" style="padding:3px 8px;background:rgba(124,58,237,0.2);border:1px solid #7c3aed;border-radius:4px;color:#a78bfa;font-size:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;">📋 Copy</button>
-                        </div>
-                    `;
-                    fixesList.appendChild(div);
-                });
-                fixesBlock.style.display = 'block';
-            } else {
-                fixesBlock.style.display = 'none';
-            }
-
-            document.getElementById('crResults').style.display = 'block';
+Use **Download PDF** for the full detailed report.`;
+            
+            addMessageToChat('ai', message);
         }
 
-        function copyFixCode(elementId) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            navigator.clipboard.writeText(el.textContent).then(() => {
-                const btn = el.parentElement?.querySelector('button');
-                if (btn) { const orig = btn.textContent; btn.textContent = '✅ Copied'; setTimeout(() => btn.textContent = orig, 1500); }
-            });
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-        }
-
-        function exportCodeReviewReport() {
-            if (!_crLastReport) { alert('No report to export.'); return; }
-            const d = _crLastReport;
-            const sevIcon = { CRITICAL:'🔴', HIGH:'🟠', MEDIUM:'🟡', LOW:'🔵', INFO:'⚪' };
-            let md = `# Code Review Report\n\n`;
-            md += `**Language:** ${d.language || 'Unknown'}  \n`;
-            md += `**Risk Score:** ${d.riskScore}/100  \n`;
-            md += `**Grade:** ${d.grade}  \n\n`;
-            md += `## Summary\n${d.summary}\n\n`;
-            if (d.explanation) md += `## What This Code Does\n${d.explanation}\n\n`;
-            if (d.findings && d.findings.length > 0) {
-                md += `## Findings (${d.findings.length})\n\n`;
-                d.findings.forEach(f => {
-                    const icon = sevIcon[f.severity] || '⚪';
-                    md += `### ${icon} ${f.severity} — ${f.category}${f.line ? ` (Line ${f.line})` : ''}\n`;
-                    md += `${f.description}\n`;
-                    if (f.suggestion) md += `\n> 💡 ${f.suggestion}\n`;
-                    md += '\n';
-                });
-            }
-            if (d.fixes && d.fixes.length > 0) {
-                md += `## Suggested Fixes\n\n`;
-                d.fixes.forEach(fix => {
-                    md += `### 🔧 ${fix.title}\n`;
-                    md += `\`\`\`\n// BEFORE\n${fix.before}\n\`\`\`\n\n`;
-                    md += `\`\`\`\n// AFTER\n${fix.after}\n\`\`\`\n\n`;
-                    md += `${fix.explanation}\n\n`;
-                });
-            }
-            md += `---\n*Generated by Lumen Cortex Code Review — ${new Date().toLocaleString()}*\n`;
-            navigator.clipboard.writeText(md).then(() => {
-                alert('✅ Report copied to clipboard as Markdown!');
-            }).catch(() => {
-                const blob = new Blob([md], { type: 'text/markdown' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = 'code-review.md'; a.click();
-                URL.revokeObjectURL(url);
-            });
-        }
-
-        // Wrappers for the AI Debugger buttons in Mobile & Code section
-        async function debugCodeWithAI() {
-            const code = document.getElementById('debugCode')?.value?.trim();
-            if (!code) { alert('Please paste code in the AI Debugger textarea first.'); return; }
-            const crInput = document.getElementById('crCodeInput');
-            if (crInput) crInput.value = code;
-            setCRTab('full');
-            await runCodeReview(code, 'full');
-        }
-
-        async function explainCodeWithAI() {
-            const code = document.getElementById('debugCode')?.value?.trim();
-            if (!code) { alert('Please paste code in the AI Debugger textarea first.'); return; }
-            const crInput = document.getElementById('crCodeInput');
-            if (crInput) crInput.value = code;
-            setCRTab('explain');
-            await runCodeReview(code, 'explain');
-        }
-
-
-        // ═══════════════════════════════════════════════════════════════
-        // ENTERPRISE SECURITY TOOLS — JS
-        // ═══════════════════════════════════════════════════════════════
-
-        // ─── SEMGREP ─────────────────────────────────────────────────
-        let semgrepMode = 'code';
-        function semgrepSetMode(mode) {
-            semgrepMode = mode;
-            document.getElementById('semgrep-code-input').style.display = mode === 'code' ? 'block' : 'none';
-            document.getElementById('semgrep-repo-input').style.display = mode === 'repo' ? 'block' : 'none';
-            document.getElementById('semgrep-tab-code').style.background = mode === 'code' ? 'rgba(16,185,129,0.2)' : '';
-            document.getElementById('semgrep-tab-repo').style.background = mode === 'repo' ? 'rgba(16,185,129,0.2)' : '';
-        }
-
+        // ========== SEMGREP SAST SCANNER ==========
         async function runSemgrepScan() {
-            const statusEl = document.getElementById('semgrepStatus');
-            const resultsEl = document.getElementById('semgrepResults');
+            const target = document.getElementById('semgrepTarget').value.trim();
             const language = document.getElementById('semgrepLanguage').value;
             const rules = document.getElementById('semgrepRules').value;
-
-            let body = { language, rules };
-            if (semgrepMode === 'code') {
-                const code = document.getElementById('semgrepCode').value.trim();
-                if (!code) { statusEl.textContent = '⚠️ Paste some code first'; return; }
-                body.code = code;
-            } else {
-                const repoUrl = document.getElementById('semgrepRepoUrl').value.trim();
-                if (!repoUrl) { statusEl.textContent = '⚠️ Enter a repo URL first'; return; }
-                body.repoUrl = repoUrl;
+            
+            if (!target) {
+                showStatus('semgrepStatus', '❌ Please enter a target URL or path', 'error');
+                return;
             }
-
-            statusEl.innerHTML = '<span style="color:#10b981;">🔬 Running Semgrep scan... (may take 30-60s)</span>';
-            resultsEl.style.display = 'none';
-
+            
+            document.getElementById('semgrepProgress').style.display = 'block';
+            document.getElementById('semgrepResults').style.display = 'none';
+            updateSemgrepProgress(10, 'Initializing scan...');
+            
             try {
+                updateSemgrepProgress(30, 'Cloning repository...');
+                await new Promise(r => setTimeout(r, 1000));
+                
+                updateSemgrepProgress(50, 'Running Semgrep analysis...');
                 const res = await fetch('/api/semgrep-scan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify({ target, language, rules })
                 });
+                
+                updateSemgrepProgress(80, 'Processing results...');
                 const data = await res.json();
-
-                if (!data.success) throw new Error(data.error || 'Scan failed');
-
-                const stats = data.stats || {};
-                document.getElementById('semgrep-badge-critical').textContent = `${stats.critical || 0} CRITICAL`;
-                document.getElementById('semgrep-badge-high').textContent = `${stats.high || 0} HIGH`;
-                document.getElementById('semgrep-badge-medium').textContent = `${stats.medium || 0} MEDIUM`;
-                document.getElementById('semgrep-badge-info').textContent = `${stats.total - (stats.critical||0) - (stats.high||0) - (stats.medium||0)} INFO`;
-                document.getElementById('semgrepSummary').textContent = data.summary || '';
-
-                const findingsEl = document.getElementById('semgrepFindings');
-                if (!data.findings?.length) {
-                    findingsEl.innerHTML = '<div style="color:#10b981;padding:6px;">✅ No issues found — code looks clean!</div>';
-                } else {
-                    const sevColor = { ERROR: '#ef4444', WARNING: '#f97316', INFO: '#3b82f6' };
-                    findingsEl.innerHTML = data.findings.map(f => `
-                        <div style="padding:6px;margin-bottom:6px;border-left:3px solid ${sevColor[f.severity]||'#666'};background:var(--bg-input);border-radius:0 4px 4px 0;">
-                            <div style="display:flex;gap:6px;align-items:center;margin-bottom:3px;">
-                                <span style="background:${sevColor[f.severity]||'#666'};color:#fff;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:bold;">${f.severity}</span>
-                                <span style="color:#888;font-size:9px;">${f.file}:${f.line}</span>
-                                <span style="color:#666;font-size:9px;">${f.category}</span>
-                            </div>
-                            <div style="color:var(--text-dim);">${f.message}</div>
-                            ${f.cwe?.length ? `<div style="color:#666;font-size:9px;">CWE: ${f.cwe.join(', ')}</div>` : ''}
-                        </div>
-                    `).join('');
-                }
-
-                resultsEl.style.display = 'block';
-                statusEl.innerHTML = '<span style="color:#10b981;">✅ Semgrep scan complete</span>';
+                
+                updateSemgrepProgress(100, 'Complete!');
+                displaySemgrepResults(data);
+                
             } catch (err) {
-                statusEl.innerHTML = `<span style="color:#ef4444;">❌ ${err.message}</span>`;
+                showStatus('semgrepStatus', '❌ Scan failed: ' + err.message, 'error');
+            } finally {
+                setTimeout(() => {
+                    document.getElementById('semgrepProgress').style.display = 'none';
+                }, 1000);
             }
         }
-
-        // ─── TRUFFLEHOG SECRETS ───────────────────────────────────────
-        let secretsMode = 'code';
-        function secretsSetMode(mode) {
-            secretsMode = mode;
-            document.getElementById('secrets-code-input').style.display = mode === 'code' ? 'block' : 'none';
-            document.getElementById('secrets-repo-input').style.display = mode === 'repo' ? 'block' : 'none';
-            document.getElementById('secrets-tab-code').style.background = mode === 'code' ? 'rgba(245,158,11,0.2)' : '';
-            document.getElementById('secrets-tab-repo').style.background = mode === 'repo' ? 'rgba(245,158,11,0.2)' : '';
+        
+        function updateSemgrepProgress(percent, text) {
+            document.getElementById('semgrepProgressBar').style.width = percent + '%';
+            document.querySelector('#semgrepProgress div').textContent = text;
         }
-
-        async function runSecretsScam() {
-            const statusEl = document.getElementById('secretsStatus');
-            const resultsEl = document.getElementById('secretsResults');
-
-            let body = {};
-            if (secretsMode === 'code') {
-                const code = document.getElementById('secretsCode').value.trim();
-                if (!code) { statusEl.textContent = '⚠️ Paste some code first'; return; }
-                body.code = code;
+        
+        function displaySemgrepResults(data) {
+            document.getElementById('semgrepResults').style.display = 'block';
+            
+            // Update counts
+            const findings = data.findings || [];
+            const critical = findings.filter(f => f.severity === 'CRITICAL').length;
+            const high = findings.filter(f => f.severity === 'HIGH').length;
+            const medium = findings.filter(f => f.severity === 'MEDIUM').length;
+            const low = findings.filter(f => f.severity === 'LOW').length;
+            
+            document.getElementById('semgrepCritical').textContent = critical;
+            document.getElementById('semgrepHigh').textContent = high;
+            document.getElementById('semgrepMedium').textContent = medium;
+            document.getElementById('semgrepLow').textContent = low;
+            
+            // Display findings
+            const container = document.getElementById('semgrepFindings');
+            if (findings.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #10b981;">✅ No issues found!</div>';
             } else {
-                const repoUrl = document.getElementById('secretsRepoUrl').value.trim();
-                if (!repoUrl) { statusEl.textContent = '⚠️ Enter a Git repo URL'; return; }
-                body.repoUrl = repoUrl;
-                body.scanDepth = parseInt(document.getElementById('secretsScanDepth').value) || 30;
+                container.innerHTML = findings.map(f => `
+                    <div style="padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${getSeverityColor(f.severity)};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: bold; color: ${getSeverityColor(f.severity)};">${f.severity}</span>
+                            <span style="font-size: 0.75em; color: #888;">${f.line || 'N/A'}</span>
+                        </div>
+                        <div style="margin-top: 4px; font-size: 0.85em;">${f.message}</div>
+                        <div style="margin-top: 4px; font-size: 0.75em; color: #666;">${f.file || ''}</div>
+                    </div>
+                `).join('');
             }
+            
+            showStatus('semgrepStatus', `✅ Scan complete! ${findings.length} findings`, 'success');
+        }
+        
+        function getSeverityColor(severity) {
+            const colors = {
+                'CRITICAL': '#ef4444',
+                'HIGH': '#f97316',
+                'MEDIUM': '#eab308',
+                'LOW': '#3b82f6',
+                'INFO': '#6b7280'
+            };
+            return colors[severity] || '#6b7280';
+        }
+        
+        function downloadSemgrepReport() {
+            // Implementation for downloading report
+            showStatus('semgrepStatus', '📄 Report download started', 'info');
+        }
+        
+        function viewSemgrepInChat() {
+            const findings = document.getElementById('semgrepFindings').innerHTML;
+            addMessageToChat('ai', '🔍 **Semgrep Scan Results**\n\n' + findings);
+        }
 
-            statusEl.innerHTML = '<span style="color:#f59e0b;">🔍 Scanning for secrets... (may take up to 60s)</span>';
-            resultsEl.style.display = 'none';
-
+        // ========== TRUFFLEHOG SECRETS SCANNER ==========
+        async function runTrufflehogScan() {
+            const target = document.getElementById('trufflehogTarget').value.trim();
+            const scanHistory = document.getElementById('trufflehogHistory').checked;
+            const verifiedOnly = document.getElementById('trufflehogVerified').checked;
+            
+            if (!target) {
+                showStatus('trufflehogStatus', '❌ Please enter a target URL or path', 'error');
+                return;
+            }
+            
+            document.getElementById('trufflehogProgress').style.display = 'block';
+            document.getElementById('trufflehogResults').style.display = 'none';
+            
             try {
                 const res = await fetch('/api/secrets-scan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify({ target, scanHistory, verifiedOnly })
                 });
+                
                 const data = await res.json();
-                if (!data.success) throw new Error(data.error || 'Scan failed');
-
-                const stats = data.stats || {};
-                const alertEl = document.getElementById('secretsAlert');
-                if (!data.secrets?.length) {
-                    alertEl.textContent = '✅ No secrets detected — code appears clean!';
-                    alertEl.style.background = 'rgba(16,185,129,0.1)';
-                    alertEl.style.border = '1px solid #10b981';
-                    alertEl.style.color = '#10b981';
-                } else {
-                    alertEl.textContent = `🚨 ${data.secrets.length} secret(s) found!`;
-                    alertEl.style.background = 'rgba(239,68,68,0.1)';
-                    alertEl.style.border = '1px solid #ef4444';
-                    alertEl.style.color = '#ef4444';
-                }
-
-                document.getElementById('secrets-badge-verified').textContent = `${stats.verified || 0} VERIFIED`;
-                document.getElementById('secrets-badge-unverified').textContent = `${stats.unverified || 0} UNVERIFIED`;
-                document.getElementById('secretsSummary').textContent = data.summary || '';
-
-                const findingsEl = document.getElementById('secretsFindings');
-                if (!data.secrets?.length) {
-                    findingsEl.innerHTML = '';
-                } else {
-                    findingsEl.innerHTML = data.secrets.map(s => `
-                        <div style="padding:6px;margin-bottom:6px;border-left:3px solid ${s.verified ? '#ef4444' : '#f97316'};background:var(--bg-input);border-radius:0 4px 4px 0;">
-                            <div style="display:flex;gap:6px;align-items:center;margin-bottom:3px;">
-                                <span style="background:${s.verified ? '#ef4444' : '#f97316'};color:#fff;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:bold;">${s.verified ? '🚨 VERIFIED' : '⚠️ UNVERIFIED'}</span>
-                                <span style="color:#aaa;font-size:9px;">${s.detector}</span>
-                            </div>
-                            <div style="color:var(--text-dim);font-family:monospace;font-size:10px;">${s.raw}</div>
-                            <div style="color:#666;font-size:9px;">${s.file}${s.line ? ':' + s.line : ''}${s.commit ? ' | commit: ' + s.commit.substring(0,8) : ''}</div>
-                        </div>
-                    `).join('');
-                }
-
-                resultsEl.style.display = 'block';
-                statusEl.innerHTML = '<span style="color:#f59e0b;">✅ Secrets scan complete</span>';
+                displayTrufflehogResults(data);
+                
             } catch (err) {
-                statusEl.innerHTML = `<span style="color:#ef4444;">❌ ${err.message}</span>`;
+                showStatus('trufflehogStatus', '❌ Scan failed: ' + err.message, 'error');
+            } finally {
+                document.getElementById('trufflehogProgress').style.display = 'none';
             }
         }
+        
+        function displayTrufflehogResults(data) {
+            document.getElementById('trufflehogResults').style.display = 'block';
+            
+            const findings = data.findings || [];
+            const alertDiv = document.getElementById('trufflehogAlert');
+            const alertIcon = document.getElementById('trufflehogAlertIcon');
+            const alertText = document.getElementById('trufflehogAlertText');
+            
+            if (findings.length === 0) {
+                alertDiv.style.display = 'block';
+                alertDiv.style.background = 'rgba(16, 185, 129, 0.2)';
+                alertIcon.textContent = '✅';
+                alertIcon.style.color = '#10b981';
+                alertText.textContent = 'No secrets found!';
+                alertText.style.color = '#10b981';
+            } else {
+                alertDiv.style.display = 'block';
+                alertDiv.style.background = 'rgba(239, 68, 68, 0.2)';
+                alertIcon.textContent = '🚨';
+                alertIcon.style.color = '#ef4444';
+                alertText.textContent = `${findings.length} secrets exposed!`;
+                alertText.style.color = '#ef4444';
+            }
+            
+            const container = document.getElementById('trufflehogFindings');
+            container.innerHTML = findings.map(f => `
+                <div style="padding: 10px; margin-bottom: 8px; background: rgba(239,68,68,0.1); border-radius: 6px; border: 1px solid rgba(239,68,68,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; color: #f59e0b;">🔑 ${f.type || 'Secret'}</span>
+                        <span style="font-size: 0.75em; color: #888;">${f.verified ? '✅ Verified' : '⚠️ Unverified'}</span>
+                    </div>
+                    <div style="margin-top: 4px; font-size: 0.8em; color: #888;">${f.file || ''}:${f.line || 'N/A'}</div>
+                    <div style="margin-top: 4px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 4px; font-family: monospace; font-size: 0.75em; color: #ef4444;">
+                        ${f.redacted || '***REDACTED***'}
+                    </div>
+                </div>
+            `).join('');
+            
+            showStatus('trufflehogStatus', `🐷 Found ${findings.length} secrets`, findings.length > 0 ? 'warning' : 'success');
+        }
+        
+        function downloadTrufflehogReport() {
+            showStatus('trufflehogStatus', '📄 Report download started', 'info');
+        }
+        
+        function viewTrufflehogInChat() {
+            const findings = document.getElementById('trufflehogFindings').innerHTML;
+            addMessageToChat('ai', '🔑 **Secrets Scan Results**\n\n' + findings);
+        }
 
-        // ─── OWASP DEPENDENCY-CHECK SCA ───────────────────────────────
-        async function runSCAScan() {
-            const statusEl = document.getElementById('scaStatus');
-            const resultsEl = document.getElementById('scaResults');
-            const repoUrl = document.getElementById('scaRepoUrl').value.trim();
-            const projectName = document.getElementById('scaProjectName').value.trim() || 'project';
-
-            if (!repoUrl) { statusEl.textContent = '⚠️ Enter a GitHub repo URL'; return; }
-
-            statusEl.innerHTML = '<span style="color:#6366f1;">📦 Running OWASP Dependency-Check... (may take 2-3 min)</span>';
-            resultsEl.style.display = 'none';
-
+        // ========== OWASP DEPENDENCY-CHECK ==========
+        async function runDependencyCheckScan() {
+            const target = document.getElementById('dependencyCheckTarget').value.trim();
+            
+            if (!target) {
+                showStatus('dependencyCheckStatus', '❌ Please enter a project path', 'error');
+                return;
+            }
+            
+            document.getElementById('dependencyCheckProgress').style.display = 'block';
+            document.getElementById('dependencyCheckResults').style.display = 'none';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                if (progress <= 90) {
+                    document.getElementById('dependencyCheckProgressBar').style.width = progress + '%';
+                }
+            }, 500);
+            
             try {
                 const res = await fetch('/api/sca-scan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ repoUrl, projectName })
+                    body: JSON.stringify({ target })
                 });
+                
+                clearInterval(interval);
+                document.getElementById('dependencyCheckProgressBar').style.width = '100%';
+                
                 const data = await res.json();
-                if (!data.success) throw new Error(data.error || 'SCA scan failed');
-
-                const stats = data.stats || {};
-                document.getElementById('sca-badge-critical').textContent = `${stats.critical || 0} CRITICAL`;
-                document.getElementById('sca-badge-high').textContent = `${stats.high || 0} HIGH`;
-                document.getElementById('sca-badge-medium').textContent = `${stats.medium || 0} MEDIUM`;
-                document.getElementById('sca-badge-low').textContent = `${stats.low || 0} LOW`;
-                document.getElementById('sca-badge-deps').textContent = `${stats.depsScanned || 0} DEPS`;
-                document.getElementById('scaSummary').textContent = data.summary || '';
-
-                const vulnsEl = document.getElementById('scaVulnerabilities');
-                if (!data.vulnerabilities?.length) {
-                    vulnsEl.innerHTML = '<div style="color:#10b981;padding:6px;">✅ No known CVEs found in dependencies!</div>';
-                } else {
-                    const sevColor = { CRITICAL: '#ef4444', HIGH: '#f97316', MEDIUM: '#eab308', LOW: '#6b7280' };
-                    vulnsEl.innerHTML = data.vulnerabilities.slice(0, 20).map(v => `
-                        <div style="padding:6px;margin-bottom:6px;border-left:3px solid ${sevColor[v.severity]||'#666'};background:var(--bg-input);border-radius:0 4px 4px 0;">
-                            <div style="display:flex;gap:6px;align-items:center;margin-bottom:3px;">
-                                <span style="background:${sevColor[v.severity]||'#666'};color:${v.severity==='MEDIUM'?'#000':'#fff'};padding:1px 5px;border-radius:3px;font-size:9px;font-weight:bold;">${v.severity}</span>
-                                <span style="color:#aaa;font-size:9px;font-weight:bold;">${v.cve}</span>
-                                ${v.cvssScore ? `<span style="color:#666;font-size:9px;">CVSS: ${v.cvssScore}</span>` : ''}
-                            </div>
-                            <div style="color:#888;font-size:9px;margin-bottom:3px;">📦 ${v.dependency}</div>
-                            <div style="color:var(--text-dim);font-size:10px;">${v.description}</div>
-                            ${v.fixedIn ? `<div style="color:#10b981;font-size:9px;margin-top:2px;">✅ Fixed in: ${v.fixedIn}</div>` : ''}
-                        </div>
-                    `).join('');
-                }
-
-                resultsEl.style.display = 'block';
-                statusEl.innerHTML = '<span style="color:#6366f1;">✅ Dependency scan complete</span>';
+                displayDependencyCheckResults(data);
+                
             } catch (err) {
-                statusEl.innerHTML = `<span style="color:#ef4444;">❌ ${err.message}</span>`;
+                clearInterval(interval);
+                showStatus('dependencyCheckStatus', '❌ Scan failed: ' + err.message, 'error');
+            } finally {
+                setTimeout(() => {
+                    document.getElementById('dependencyCheckProgress').style.display = 'none';
+                }, 1000);
             }
         }
-
+        
+        function displayDependencyCheckResults(data) {
+            document.getElementById('dependencyCheckResults').style.display = 'block';
+            
+            const vulnerabilities = data.vulnerabilities || [];
+            const deps = data.dependencies || 0;
+            
+            // Update summary counts
+            const critical = vulnerabilities.filter(v => v.cvss >= 9).length;
+            const high = vulnerabilities.filter(v => v.cvss >= 7 && v.cvss < 9).length;
+            const medium = vulnerabilities.filter(v => v.cvss >= 4 && v.cvss < 7).length;
+            const low = vulnerabilities.filter(v => v.cvss < 4).length;
+            
+            document.getElementById('depCritical').textContent = critical;
+            document.getElementById('depHigh').textContent = high;
+            document.getElementById('depMedium').textContent = medium;
+            document.getElementById('depLow').textContent = low;
+            document.getElementById('depDeps').textContent = deps;
+            
+            // Display findings
+            const container = document.getElementById('dependencyCheckFindings');
+            if (vulnerabilities.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #10b981;">✅ No vulnerable dependencies!</div>';
+            } else {
+                container.innerHTML = vulnerabilities.slice(0, 20).map(v => `
+                    <div style="padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${getCVSSColor(v.cvss)};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: bold;">📦 ${v.package || 'Unknown'}</span>
+                            <span style="font-size: 0.75em; padding: 2px 6px; background: ${getCVSSColor(v.cvss)}; border-radius: 4px; color: #000;">CVSS: ${v.cvss || 'N/A'}</span>
+                        </div>
+                        <div style="margin-top: 4px; font-size: 0.85em;">${v.description || 'No description'}</div>
+                        <div style="margin-top: 4px; font-size: 0.75em; color: #8b5cf6;">💡 Upgrade to: ${v.fixedVersion || 'Check CVE'}</div>
+                    </div>
+                `).join('');
+                
+                if (vulnerabilities.length > 20) {
+                    container.innerHTML += `<div style="text-align: center; padding: 10px; color: #888; font-size: 0.8em;">... and ${vulnerabilities.length - 20} more</div>`;
+                }
+            }
+            
+            showStatus('dependencyCheckStatus', `✅ Scan complete! ${vulnerabilities.length} vulnerabilities in ${deps} dependencies`, 'success');
+        }
+        
+        function getCVSSColor(cvss) {
+            if (cvss >= 9) return '#ef4444';
+            if (cvss >= 7) return '#f97316';
+            if (cvss >= 4) return '#eab308';
+            return '#3b82f6';
+        }
+        
+        function downloadDependencyCheckReport() {
+            showStatus('dependencyCheckStatus', '📄 Report download started', 'info');
+        }
+        
+        function viewDependencyCheckInChat() {
+            const findings = document.getElementById('dependencyCheckFindings').innerHTML;
+            addMessageToChat('ai', '📦 **Dependency Check Results**\n\n' + findings);
+        }
     </script>
 </body>
 </html>

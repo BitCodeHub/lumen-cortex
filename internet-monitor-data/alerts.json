@@ -1,5 +1,25 @@
 [
   {
+    "timestamp": "2026-03-11T20:28:40.094Z",
+    "type": "recovery",
+    "message": "✅ **Internet Restored!**\n\n📡 Your internet is back online.\n\n⏱️ **Outage Duration:** 44s\n🕐 **Down at:** 1:27:55 PM\n🕐 **Up at:** 1:28:39 PM\n\n📊 Current latency: N/A"
+  },
+  {
+    "timestamp": "2026-03-11T20:27:55.607Z",
+    "type": "outage",
+    "message": "🔴 **Internet Outage Detected!**\n\n📡 Your home internet appears to be down.\n\n🕐 **Started:** 1:27:55 PM\n📍 **Location:** Home Network (192.168.1.x)\n\n**Targets checked:**\n• Google DNS: ❌\n• Cloudflare DNS: ❌\n• Google: ❌\n\nI'll alert you when it's back online."
+  },
+  {
+    "timestamp": "2026-03-11T20:23:42.962Z",
+    "type": "recovery",
+    "message": "✅ **Internet Restored!**\n\n📡 Your internet is back online.\n\n⏱️ **Outage Duration:** 21s\n🕐 **Down at:** 1:23:21 PM\n🕐 **Up at:** 1:23:42 PM\n\n📊 Current latency: 8188ms"
+  },
+  {
+    "timestamp": "2026-03-11T20:23:22.075Z",
+    "type": "outage",
+    "message": "🔴 **Internet Outage Detected!**\n\n📡 Your home internet appears to be down.\n\n🕐 **Started:** 1:23:21 PM\n📍 **Location:** Home Network (192.168.1.x)\n\n**Targets checked:**\n• Google DNS: ❌\n• Cloudflare DNS: ❌\n• Google: ❌\n\nI'll alert you when it's back online."
+  },
+  {
     "timestamp": "2026-02-22T12:03:13.326Z",
     "type": "recovery",
     "message": "✅ **Internet Restored!**\n\n📡 Your internet is back online.\n\n⏱️ **Outage Duration:** 1m 17s\n🕐 **Down at:** 4:01:55 AM\n🕐 **Up at:** 4:03:13 AM\n\n📊 Current latency: N/A"
