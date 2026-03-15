@@ -1472,6 +1472,105 @@
                     </div>
                 </div>
 
+                <!-- 🔍 CODE REVIEW -->
+                <div class="accordion-section" data-section="codereview">
+                    <div class="accordion-header" onclick="toggleAccordion(this)" style="border-left: 3px solid #7c3aed;">
+                        <div class="accordion-header-left">
+                            <span class="accordion-icon">🔍</span>
+                            <span class="accordion-title" style="color: #a78bfa;">Code Review</span>
+                        </div>
+                        <span class="accordion-toggle">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+
+                            <!-- Review Type Tabs -->
+                            <div style="display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap;">
+                                <button id="crtab-full" class="cr-tab cr-tab-active" onclick="setCRTab('full')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">📋 Full</button>
+                                <button id="crtab-security" class="cr-tab" onclick="setCRTab('security')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: var(--bg-input); color:#a78bfa; border:1px solid #7c3aed; border-radius:5px; cursor:pointer;">🛡️ Security</button>
+                                <button id="crtab-performance" class="cr-tab" onclick="setCRTab('performance')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: var(--bg-input); color:#a78bfa; border:1px solid #7c3aed; border-radius:5px; cursor:pointer;">⚡ Perf</button>
+                                <button id="crtab-explain" class="cr-tab" onclick="setCRTab('explain')" style="flex:1; min-width:60px; padding:5px 4px; font-size:10px; background: var(--bg-input); color:#a78bfa; border:1px solid #7c3aed; border-radius:5px; cursor:pointer;">📖 Explain</button>
+                            </div>
+
+                            <!-- Language Selector -->
+                            <select id="crLanguage" style="width:100%; padding:6px 8px; background:var(--bg-input); color:#e2e8f0; border:1px solid #7c3aed; border-radius:5px; font-size:11px; margin-bottom:8px;">
+                                <option value="auto">🔍 Auto-detect Language</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="typescript">TypeScript</option>
+                                <option value="python">Python</option>
+                                <option value="java">Java</option>
+                                <option value="swift">Swift</option>
+                                <option value="kotlin">Kotlin</option>
+                                <option value="go">Go</option>
+                                <option value="rust">Rust</option>
+                                <option value="php">PHP</option>
+                                <option value="ruby">Ruby</option>
+                                <option value="c">C/C++</option>
+                                <option value="sql">SQL</option>
+                                <option value="bash">Shell/Bash</option>
+                                <option value="solidity">Solidity</option>
+                            </select>
+
+                            <!-- Code Input -->
+                            <textarea id="crCodeInput" class="tool-input" placeholder="Paste any code here..." style="height:120px; border:1px solid #7c3aed; resize:vertical; font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px; line-height:1.5; background:rgba(124,58,237,0.05);"></textarea>
+
+                            <!-- Action Buttons -->
+                            <div class="quick-actions" style="margin-top:8px;">
+                                <button class="quick-btn primary" onclick="runCodeReview()" style="flex:3; background:linear-gradient(135deg,#7c3aed,#6d28d9); border-color:#7c3aed; font-weight:bold;">🔍 Run Code Review</button>
+                                <button class="quick-btn" onclick="document.getElementById('crCodeInput').value=''; document.getElementById('crResults').style.display='none';" style="flex:1; border-color:#7c3aed; color:#a78bfa;">✕ Clear</button>
+                            </div>
+
+                            <!-- Loading State -->
+                            <div id="crLoading" style="display:none; text-align:center; padding:16px; color:#a78bfa; font-size:12px;">
+                                <div style="font-size:24px; animation:spin 1s linear infinite; display:inline-block;">⚙️</div>
+                                <div style="margin-top:6px;">Analyzing code with Claude...</div>
+                            </div>
+
+                            <!-- Results Panel -->
+                            <div id="crResults" style="display:none; margin-top:12px;">
+
+                                <!-- Score Header -->
+                                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:10px; background:var(--bg-input); border-radius:8px; border:1px solid #7c3aed;">
+                                    <div id="crGradeBadge" style="width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; border:2px solid #7c3aed; flex-shrink:0;">A</div>
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-size:11px; color:#a78bfa; margin-bottom:3px;">Risk Score</div>
+                                        <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                                            <div id="crScoreBar" style="height:100%; width:0%; border-radius:3px; transition:width 0.8s ease;"></div>
+                                        </div>
+                                        <div style="margin-top:3px; font-size:10px; color:#94a3b8;"><span id="crScoreVal">0</span>/100 — <span id="crLanguageLabel"></span></div>
+                                    </div>
+                                    <button onclick="exportCodeReviewReport()" style="padding:5px 8px; background:rgba(124,58,237,0.2); border:1px solid #7c3aed; border-radius:5px; color:#a78bfa; font-size:10px; cursor:pointer; white-space:nowrap;">📋 Export</button>
+                                </div>
+
+                                <!-- Summary -->
+                                <div style="margin-bottom:10px;">
+                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">📝 Summary</div>
+                                    <div id="crSummary" style="font-size:11px; color:#cbd5e1; line-height:1.5; padding:8px; background:var(--bg-input); border-radius:6px; border-left:3px solid #7c3aed;"></div>
+                                </div>
+
+                                <!-- Explanation -->
+                                <div id="crExplanationBlock" style="margin-bottom:10px; display:none;">
+                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">💡 What This Code Does</div>
+                                    <div id="crExplanation" style="font-size:11px; color:#cbd5e1; line-height:1.5; padding:8px; background:var(--bg-input); border-radius:6px; border-left:3px solid #6d28d9;"></div>
+                                </div>
+
+                                <!-- Findings -->
+                                <div id="crFindingsBlock" style="margin-bottom:10px;">
+                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">🔎 Findings (<span id="crFindingsCount">0</span>)</div>
+                                    <div id="crFindingsList"></div>
+                                </div>
+
+                                <!-- Suggested Fixes -->
+                                <div id="crFixesBlock" style="display:none;">
+                                    <div style="font-size:11px; color:#7c3aed; font-weight:bold; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">🔧 Suggested Fixes (<span id="crFixesCount">0</span>)</div>
+                                    <div id="crFixesList"></div>
+                                </div>
+
+                            </div><!-- /crResults -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ⚡ STATS & AI -->
                 <div class="accordion-section" data-section="more">
                     <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -8496,6 +8595,250 @@ USER QUESTION: ${message || 'What does this file do?'}`;
                 hideCodeSelectionPopup();
             }
         });
+
+        // ═══════════════════════════════════════════════════════════════════
+        // 🔍 CODE REVIEW — Enterprise AI-powered code analysis
+        // ═══════════════════════════════════════════════════════════════════
+
+        let _crReviewType = 'full';
+        let _crLastReport = null;
+
+        function setCRTab(type) {
+            _crReviewType = type;
+            ['full','security','performance','explain'].forEach(t => {
+                const btn = document.getElementById('crtab-' + t);
+                if (!btn) return;
+                if (t === type) {
+                    btn.style.background = 'linear-gradient(135deg, #7c3aed, #6d28d9)';
+                    btn.style.color = '#fff';
+                    btn.style.border = 'none';
+                    btn.style.fontWeight = 'bold';
+                } else {
+                    btn.style.background = 'var(--bg-input)';
+                    btn.style.color = '#a78bfa';
+                    btn.style.border = '1px solid #7c3aed';
+                    btn.style.fontWeight = 'normal';
+                }
+            });
+        }
+
+        async function runCodeReview(codeOverride, typeOverride) {
+            const code = codeOverride || document.getElementById('crCodeInput')?.value?.trim();
+            const language = document.getElementById('crLanguage')?.value || 'auto';
+            const reviewType = typeOverride || _crReviewType || 'full';
+
+            if (!code) {
+                alert('Please paste some code first.');
+                return;
+            }
+
+            // If called from outside the accordion, make sure it's open/visible
+            const section = document.querySelector('[data-section="codereview"] .accordion-content');
+            if (section && !section.classList.contains('open')) {
+                const header = document.querySelector('[data-section="codereview"] .accordion-header');
+                if (header) header.click();
+            }
+            // If code was passed in, populate the textarea
+            if (codeOverride) {
+                const ta = document.getElementById('crCodeInput');
+                if (ta) ta.value = codeOverride;
+            }
+
+            document.getElementById('crLoading').style.display = 'block';
+            document.getElementById('crResults').style.display = 'none';
+
+            try {
+                const resp = await fetch('/api/code-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, language, reviewType })
+                });
+                const data = await resp.json();
+
+                document.getElementById('crLoading').style.display = 'none';
+
+                if (!data.success) {
+                    alert('Code review failed: ' + (data.error || 'Unknown error'));
+                    return;
+                }
+
+                _crLastReport = data;
+                renderCodeReviewResults(data);
+
+            } catch (err) {
+                document.getElementById('crLoading').style.display = 'none';
+                alert('Code review error: ' + err.message);
+            }
+        }
+
+        function renderCodeReviewResults(data) {
+            const score = data.riskScore || 0;
+            const grade = data.grade || 'C';
+
+            // Grade badge colors
+            const gradeColors = { A:'#22c55e', B:'#84cc16', C:'#eab308', D:'#f97316', F:'#ef4444' };
+            const scoreBarColors = score <= 30 ? '#22c55e' : score <= 60 ? '#eab308' : score <= 80 ? '#f97316' : '#ef4444';
+            const gradeColor = gradeColors[grade] || '#a78bfa';
+
+            const gradeBadge = document.getElementById('crGradeBadge');
+            gradeBadge.textContent = grade;
+            gradeBadge.style.color = gradeColor;
+            gradeBadge.style.borderColor = gradeColor;
+
+            document.getElementById('crScoreBar').style.width = score + '%';
+            document.getElementById('crScoreBar').style.background = scoreBarColors;
+            document.getElementById('crScoreVal').textContent = score;
+            document.getElementById('crLanguageLabel').textContent = data.language || '';
+
+            document.getElementById('crSummary').textContent = data.summary || 'No summary provided.';
+
+            // Explanation block
+            if (data.explanation) {
+                document.getElementById('crExplanation').textContent = data.explanation;
+                document.getElementById('crExplanationBlock').style.display = 'block';
+            } else {
+                document.getElementById('crExplanationBlock').style.display = 'none';
+            }
+
+            // Findings
+            const findings = data.findings || [];
+            document.getElementById('crFindingsCount').textContent = findings.length;
+            const findingsList = document.getElementById('crFindingsList');
+            findingsList.innerHTML = '';
+
+            if (findings.length === 0) {
+                findingsList.innerHTML = '<div style="font-size:11px;color:#22c55e;padding:8px;background:rgba(34,197,94,0.1);border-radius:6px;border-left:3px solid #22c55e;">✅ No significant issues found.</div>';
+            } else {
+                const sevColors = { CRITICAL:'#ef4444', HIGH:'#f97316', MEDIUM:'#eab308', LOW:'#60a5fa', INFO:'#94a3b8' };
+                const catColors = { SECURITY:'#ef4444', PERFORMANCE:'#f97316', QUALITY:'#eab308', MAINTAINABILITY:'#60a5fa', STYLE:'#a78bfa', ARCHITECTURE:'#34d399', DEPENDENCY:'#f472b6', LOGIC:'#fb923c', DOCUMENTATION:'#94a3b8' };
+                findings.forEach((f, i) => {
+                    const sc = sevColors[f.severity] || '#a78bfa';
+                    const cc = catColors[f.category] || '#a78bfa';
+                    const lineLabel = f.line ? `Line ${f.line}` : 'General';
+                    const div = document.createElement('div');
+                    div.style.cssText = `margin-bottom:6px; padding:8px; background:var(--bg-input); border-radius:6px; border-left:3px solid ${sc}; font-size:11px;`;
+                    div.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap;">
+                            <span style="padding:1px 6px;border-radius:3px;background:${sc}20;color:${sc};font-weight:bold;font-size:10px;">${f.severity}</span>
+                            <span style="padding:1px 6px;border-radius:3px;background:${cc}15;color:${cc};font-size:10px;">${f.category}</span>
+                            <span style="font-size:10px;color:#64748b;">${lineLabel}</span>
+                        </div>
+                        <div style="color:#e2e8f0;margin-bottom:3px;">${escapeHtml(f.description)}</div>
+                        ${f.suggestion ? `<div style="color:#94a3b8;font-size:10px;margin-top:3px;">💡 ${escapeHtml(f.suggestion)}</div>` : ''}
+                    `;
+                    findingsList.appendChild(div);
+                });
+            }
+
+            // Fixes
+            const fixes = data.fixes || [];
+            const fixesBlock = document.getElementById('crFixesBlock');
+            if (fixes.length > 0) {
+                document.getElementById('crFixesCount').textContent = fixes.length;
+                const fixesList = document.getElementById('crFixesList');
+                fixesList.innerHTML = '';
+                fixes.forEach((fix, i) => {
+                    const fixId = 'crfix-' + i;
+                    const div = document.createElement('div');
+                    div.style.cssText = 'margin-bottom:10px; padding:8px; background:var(--bg-input); border-radius:6px; border:1px solid rgba(124,58,237,0.4); font-size:11px;';
+                    div.innerHTML = `
+                        <div style="font-weight:bold;color:#a78bfa;margin-bottom:6px;">🔧 ${escapeHtml(fix.title)}</div>
+                        <div style="margin-bottom:4px;">
+                            <div style="font-size:10px;color:#ef4444;margin-bottom:2px;font-weight:bold;">BEFORE:</div>
+                            <pre id="${fixId}-before" style="margin:0;padding:6px;background:rgba(239,68,68,0.1);border-left:2px solid #ef4444;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-size:10px;font-family:monospace;color:#fca5a5;">${escapeHtml(fix.before || '')}</pre>
+                        </div>
+                        <div style="margin-bottom:6px;">
+                            <div style="font-size:10px;color:#22c55e;margin-bottom:2px;font-weight:bold;">AFTER:</div>
+                            <pre id="${fixId}-after" style="margin:0;padding:6px;background:rgba(34,197,94,0.1);border-left:2px solid #22c55e;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-size:10px;font-family:monospace;color:#86efac;">${escapeHtml(fix.after || '')}</pre>
+                        </div>
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
+                            <div style="color:#94a3b8;font-size:10px;flex:1;">${escapeHtml(fix.explanation || '')}</div>
+                            <button onclick="copyFixCode('${fixId}-after')" style="padding:3px 8px;background:rgba(124,58,237,0.2);border:1px solid #7c3aed;border-radius:4px;color:#a78bfa;font-size:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;">📋 Copy</button>
+                        </div>
+                    `;
+                    fixesList.appendChild(div);
+                });
+                fixesBlock.style.display = 'block';
+            } else {
+                fixesBlock.style.display = 'none';
+            }
+
+            document.getElementById('crResults').style.display = 'block';
+        }
+
+        function copyFixCode(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            navigator.clipboard.writeText(el.textContent).then(() => {
+                const btn = el.parentElement?.querySelector('button');
+                if (btn) { const orig = btn.textContent; btn.textContent = '✅ Copied'; setTimeout(() => btn.textContent = orig, 1500); }
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function exportCodeReviewReport() {
+            if (!_crLastReport) { alert('No report to export.'); return; }
+            const d = _crLastReport;
+            const sevIcon = { CRITICAL:'🔴', HIGH:'🟠', MEDIUM:'🟡', LOW:'🔵', INFO:'⚪' };
+            let md = `# Code Review Report\n\n`;
+            md += `**Language:** ${d.language || 'Unknown'}  \n`;
+            md += `**Risk Score:** ${d.riskScore}/100  \n`;
+            md += `**Grade:** ${d.grade}  \n\n`;
+            md += `## Summary\n${d.summary}\n\n`;
+            if (d.explanation) md += `## What This Code Does\n${d.explanation}\n\n`;
+            if (d.findings && d.findings.length > 0) {
+                md += `## Findings (${d.findings.length})\n\n`;
+                d.findings.forEach(f => {
+                    const icon = sevIcon[f.severity] || '⚪';
+                    md += `### ${icon} ${f.severity} — ${f.category}${f.line ? ` (Line ${f.line})` : ''}\n`;
+                    md += `${f.description}\n`;
+                    if (f.suggestion) md += `\n> 💡 ${f.suggestion}\n`;
+                    md += '\n';
+                });
+            }
+            if (d.fixes && d.fixes.length > 0) {
+                md += `## Suggested Fixes\n\n`;
+                d.fixes.forEach(fix => {
+                    md += `### 🔧 ${fix.title}\n`;
+                    md += `\`\`\`\n// BEFORE\n${fix.before}\n\`\`\`\n\n`;
+                    md += `\`\`\`\n// AFTER\n${fix.after}\n\`\`\`\n\n`;
+                    md += `${fix.explanation}\n\n`;
+                });
+            }
+            md += `---\n*Generated by Lumen Cortex Code Review — ${new Date().toLocaleString()}*\n`;
+            navigator.clipboard.writeText(md).then(() => {
+                alert('✅ Report copied to clipboard as Markdown!');
+            }).catch(() => {
+                const blob = new Blob([md], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'code-review.md'; a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        // Wrappers for the AI Debugger buttons in Mobile & Code section
+        async function debugCodeWithAI() {
+            const code = document.getElementById('debugCode')?.value?.trim();
+            if (!code) { alert('Please paste code in the AI Debugger textarea first.'); return; }
+            const crInput = document.getElementById('crCodeInput');
+            if (crInput) crInput.value = code;
+            setCRTab('full');
+            await runCodeReview(code, 'full');
+        }
+
+        async function explainCodeWithAI() {
+            const code = document.getElementById('debugCode')?.value?.trim();
+            if (!code) { alert('Please paste code in the AI Debugger textarea first.'); return; }
+            const crInput = document.getElementById('crCodeInput');
+            if (crInput) crInput.value = code;
+            setCRTab('explain');
+            await runCodeReview(code, 'explain');
+        }
+
     </script>
 </body>
 </html>
