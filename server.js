@@ -7256,7 +7256,7 @@ app.post('/api/semgrep-scan', async (req, res) => {
 
     // Run semgrep on DGX
     const { stdout } = await runOnDGX(
-      `semgrep --config ${semgrepRules} ${targetPath} --json --timeout 60 --max-memory 512 2>/dev/null || echo '{"results":[],"errors":[]}'`,
+      `~/.local/bin/semgrep --config ${semgrepRules} ${targetPath} --json --timeout 60 --max-memory 512 2>/dev/null || echo '{"results":[],"errors":[]}'`,
       90000
     );
 
@@ -7327,7 +7327,7 @@ app.post('/api/secrets-scan', async (req, res) => {
       // TruffleHog git scan on DGX
       const depth = Math.min(parseInt(scanDepth) || 30, 100);
       const { stdout } = await runOnDGX(
-        `trufflehog git "${repoUrl}" --json --max-depth=${depth} 2>/dev/null | head -500 || echo ''`,
+        `~/bin/trufflehog git "${repoUrl}" --json --max-depth=${depth} 2>/dev/null | head -500 || echo ''`,
         120000
       );
       const lines = stdout.trim().split('\n').filter(Boolean);
@@ -7338,7 +7338,7 @@ app.post('/api/secrets-scan', async (req, res) => {
       // Paste mode — write code to file, scan with filesystem detector
       await runOnDGX(`mkdir -p ${tmpDir} && cat > ${tmpDir}/code.txt << 'TH_EOF'\n${code.substring(0, 50000)}\nTH_EOF`);
       const { stdout } = await runOnDGX(
-        `trufflehog filesystem ${tmpDir} --json 2>/dev/null | head -200 || echo ''`,
+        `~/bin/trufflehog filesystem ${tmpDir} --json 2>/dev/null | head -200 || echo ''`,
         60000
       );
       await runOnDGX(`rm -rf ${tmpDir}`).catch(() => {});
@@ -7403,8 +7403,8 @@ app.post('/api/sca-scan', async (req, res) => {
 
     const { stdout } = await runOnDGX(
       `mkdir -p ${reportDir} && \
-       dependency-check.sh --project "${projectName}" --scan ${tmpDir}/src \
-         --out ${reportDir} --format JSON --noupdate 2>/dev/null | tail -5; \
+       docker run --rm -v ${tmpDir}/src:/src -v ${reportDir}:/report owasp/dependency-check --project "${projectName}" --scan ${tmpDir}/src \
+         --scan /src --out /report --format JSON 2>/dev/null; cat ${reportDir}/dependency-check-report.json 2>/dev/null 2>/dev/null | tail -5; \
        cat ${reportDir}/dependency-check-report.json 2>/dev/null || echo '{}'`,
       180000
     );
