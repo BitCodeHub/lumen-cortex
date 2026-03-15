@@ -7047,6 +7047,141 @@ app.post('/api/network/mitmproxy', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 🔍 CODE REVIEW ENDPOINT — Enterprise AI-powered code analysis
+// ═══════════════════════════════════════════════════════════════════════════
+
+app.post('/api/code-review', async (req, res) => {
+  const { code, language = 'auto', reviewType = 'full' } = req.body;
+
+  if (!code || !code.trim()) {
+    return res.status(400).json({ success: false, error: 'No code provided.' });
+  }
+
+  const reviewFocus = {
+    full: 'Perform a FULL comprehensive review covering all dimensions: explanation, security, quality, performance, and style.',
+    security: 'Focus PRIMARILY on security vulnerabilities: OWASP Top 10, injection risks, authentication flaws, hardcoded secrets, unsafe functions, insecure dependencies. Still provide a brief explanation and risk score.',
+    performance: 'Focus PRIMARILY on performance issues: N+1 queries, memory leaks, inefficient algorithms, blocking I/O, unnecessary re-renders, CPU-heavy operations. Still provide a brief explanation and risk score.',
+    explain: 'Focus PRIMARILY on explaining what the code does in plain English for a developer unfamiliar with this codebase. Break down each section, what it accomplishes, edge cases, and dependencies. Still note any CRITICAL security issues found.'
+  };
+
+  const systemPrompt = `You are a Senior Staff Engineer and Application Security Expert with 15+ years of experience across backend, frontend, mobile, and security domains. You have deep expertise in OWASP Top 10, SANS Top 25, secure coding practices, software architecture, and code quality.
+
+Your job is to perform expert-level code reviews. You are direct, precise, and actionable. You do not sugarcoat findings.
+
+SEVERITY LEVELS (use exactly these strings):
+- CRITICAL: Exploitable vulnerability, data loss risk, or severe security flaw. Must be fixed immediately.
+- HIGH: Significant security or reliability issue. Should be fixed before production.
+- MEDIUM: Code quality, minor security concern, or performance issue affecting scalability.
+- LOW: Best practice violation, style issue, or minor inefficiency.
+- INFO: Informational note, suggestion, or observation with no risk.
+
+CATEGORIES (use exactly these strings):
+- SECURITY, PERFORMANCE, QUALITY, MAINTAINABILITY, STYLE, ARCHITECTURE, DEPENDENCY, LOGIC, DOCUMENTATION
+
+RISK SCORE (0–100):
+- 0–30: Low risk (Grade A)
+- 31–60: Moderate risk (Grade B or C)
+- 61–80: High risk (Grade D)
+- 81–100: Critical risk (Grade F)
+
+You MUST respond with ONLY valid JSON — no markdown fences, no preamble, no explanation outside the JSON. The JSON must match this exact structure:
+{
+  "explanation": "Plain English summary of what the code does (2–4 sentences)",
+  "language": "detected or confirmed language name",
+  "riskScore": <integer 0-100>,
+  "grade": "A|B|C|D|F",
+  "summary": "One-paragraph overall assessment of code health and key concerns",
+  "findings": [
+    {
+      "line": <integer or null if not line-specific>,
+      "severity": "CRITICAL|HIGH|MEDIUM|LOW|INFO",
+      "category": "SECURITY|PERFORMANCE|QUALITY|MAINTAINABILITY|STYLE|ARCHITECTURE|DEPENDENCY|LOGIC|DOCUMENTATION",
+      "description": "Clear description of the issue",
+      "suggestion": "Specific actionable recommendation to fix or improve"
+    }
+  ],
+  "fixes": [
+    {
+      "title": "Short title of the fix",
+      "before": "// code snippet showing the problematic code",
+      "after": "// code snippet showing the corrected code",
+      "explanation": "Why this fix resolves the issue"
+    }
+  ]
+}
+
+For the "fixes" array: only include fixes for CRITICAL and HIGH severity findings. Limit to 5 most important fixes. Keep code snippets concise but complete enough to be actionable.
+For "findings": be thorough but avoid noise — every finding must have a real impact. Order by severity descending.`;
+
+  const userPrompt = `${reviewFocus[reviewType] || reviewFocus.full}
+
+${language !== 'auto' ? `Language: ${language}` : 'Auto-detect the programming language.'}
+
+Code to review:
+\`\`\`
+${code.slice(0, 12000)}
+\`\`\`
+
+Return ONLY valid JSON matching the schema above. No markdown. No commentary outside JSON.`;
+
+  try {
+    console.log(`[CodeReview] Analyzing ${language} code, type: ${reviewType}, length: ${code.length} chars`);
+
+    const response = await fetch(AZURE_CLAUDE_CONFIG.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': AZURE_CLAUDE_CONFIG.apiKey,
+        'anthropic-version': AZURE_CLAUDE_CONFIG.version
+      },
+      body: JSON.stringify({
+        model: AZURE_CLAUDE_CONFIG.model,
+        max_tokens: 6000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('[CodeReview] Azure Claude error:', response.status, errText);
+      return res.status(502).json({ success: false, error: `AI service error: ${response.status}` });
+    }
+
+    const data = await response.json();
+    const rawText = data.content?.[0]?.text || '';
+
+    // Robustly parse JSON — strip any accidental markdown fences
+    let parsed;
+    try {
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      parsed = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.error('[CodeReview] JSON parse error:', parseErr.message);
+      console.error('[CodeReview] Raw response:', rawText.slice(0, 500));
+      return res.status(500).json({ success: false, error: 'Failed to parse AI response as JSON. Try again.' });
+    }
+
+    console.log(`[CodeReview] ✅ Done — riskScore: ${parsed.riskScore}, grade: ${parsed.grade}, findings: ${parsed.findings?.length || 0}`);
+
+    return res.json({
+      success: true,
+      explanation: parsed.explanation || '',
+      language: parsed.language || language,
+      riskScore: typeof parsed.riskScore === 'number' ? parsed.riskScore : 50,
+      grade: parsed.grade || 'C',
+      summary: parsed.summary || '',
+      findings: Array.isArray(parsed.findings) ? parsed.findings : [],
+      fixes: Array.isArray(parsed.fixes) ? parsed.fixes : []
+    });
+
+  } catch (err) {
+    console.error('[CodeReview] Fatal error:', err.message);
+    return res.status(500).json({ success: false, error: 'Code review service error: ' + err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 // Add wafw00f to available tools
 if (!AI_TOOLS.wafw00f) {
@@ -7061,3 +7196,84 @@ if (!AI_TOOLS.wafw00f) {
     }
   };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ENTERPRISE SECURITY TOOLS — Phase 1
+// Routes to DGX Scanner API (https://lumen-scanner.ngrok.app)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const execAsync = util.promisify(exec);
+const crypto = require('crypto');
+
+const DGX_SCANNER_URL = 'https://lumen-scanner.ngrok.app';
+const DGX_SCANNER_KEY = 'lumen-scanner-2026';
+
+async function callDGXScanner(endpoint, body, timeoutMs = 180000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${DGX_SCANNER_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': DGX_SCANNER_KEY },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error(`DGX Scanner HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
+// ─── SEMGREP SAST SCAN ────────────────────────────────────────────────────
+// POST /api/semgrep-scan
+// Body: { code, language, rules } or { repoUrl, language, rules }
+app.post('/api/semgrep-scan', async (req, res) => {
+  const { code, language = 'auto', rules = 'auto', repoUrl } = req.body;
+  if (!code && !repoUrl) {
+    return res.status(400).json({ success: false, error: 'code or repoUrl required' });
+  }
+  try {
+    const result = await callDGXScanner('/semgrep', { code, language, rules, repoUrl });
+    return res.json(result);
+  } catch (err) {
+    console.error('[Semgrep] Error:', err.message);
+    return res.status(500).json({ success: false, error: 'Semgrep scan failed: ' + err.message });
+  }
+});
+
+// ─── TRUFFLEHOG SECRETS SCAN ──────────────────────────────────────────────
+// POST /api/secrets-scan
+// Body: { code } or { repoUrl, scanDepth }
+app.post('/api/secrets-scan', async (req, res) => {
+  const { code, repoUrl, scanDepth = 30 } = req.body;
+  if (!code && !repoUrl) {
+    return res.status(400).json({ success: false, error: 'code or repoUrl required' });
+  }
+  try {
+    const result = await callDGXScanner('/secrets', { code, repoUrl, scanDepth });
+    return res.json(result);
+  } catch (err) {
+    console.error('[TruffleHog] Error:', err.message);
+    return res.status(500).json({ success: false, error: 'Secrets scan failed: ' + err.message });
+  }
+});
+
+// ─── OWASP DEPENDENCY-CHECK SCA ───────────────────────────────────────────
+// POST /api/sca-scan
+// Body: { repoUrl, projectName }
+app.post('/api/sca-scan', async (req, res) => {
+  const { repoUrl, projectName = 'project' } = req.body;
+  if (!repoUrl) {
+    return res.status(400).json({ success: false, error: 'repoUrl required for SCA scan' });
+  }
+  try {
+    const result = await callDGXScanner('/sca', { repoUrl, projectName });
+    return res.json(result);
+  } catch (err) {
+    console.error('[SCA] Error:', err.message);
+    return res.status(500).json({ success: false, error: 'SCA scan failed: ' + err.message });
+  }
+});
