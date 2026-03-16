@@ -16,7 +16,8 @@
     "form-data": "^4.0.5",
     "multer": "^2.0.2",
     "node-fetch": "^2.7.0",
-    "pptxgenjs": "^4.0.1"
+    "pptxgenjs": "^4.0.1",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"

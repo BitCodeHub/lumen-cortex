@@ -6708,6 +6708,19 @@ Would you like me to explain any of these in more detail?`;
 console.log('🔍 SEO Analyzer module loaded');
 
 // ═══════════════════════════════════════════════════════════════════════════
+// CYBERSTRIKE AI — Security Module Integration
+// Ports CyberStrikeAI's tool orchestration layer into Lumen Cortex.
+// Adds: /api/security/tools, /api/security/scan, /api/security/vulnerabilities,
+//       /api/security/mcp/tools, /api/security/mcp/call
+// ═══════════════════════════════════════════════════════════════════════════
+try {
+  const registerSecurityModule = require('./security-module');
+  registerSecurityModule(app);
+} catch (e) {
+  console.error('⚠️ Security Module failed to load:', e.message);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 app.listen(PORT, () => {
   const aiCount = Object.values(AI_TOOLS).filter(t => t.ai).length;
