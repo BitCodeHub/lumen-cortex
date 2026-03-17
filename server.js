@@ -6327,6 +6327,27 @@ aiAttackChain.setupRoutes(app);
 console.log('⛓️ AI Attack Chain Analysis loaded (connects vulns into exploit paths)');
 
 // ═══════════════════════════════════════════════════════════════════════════
+// AI BUSINESS RISK SCORING - Lumen Cortex v2.0
+// ═══════════════════════════════════════════════════════════════════════════
+const aiBusinessRisk = require('./ai-business-risk');
+aiBusinessRisk.setupRoutes(app);
+console.log('💰 AI Business Risk Scoring loaded (contextualizes vulns to business impact)');
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AI COMPLIANCE MAPPER - Lumen Cortex v2.0
+// ═══════════════════════════════════════════════════════════════════════════
+const aiComplianceMapper = require('./ai-compliance-mapper');
+aiComplianceMapper.setupRoutes(app);
+console.log('📋 AI Compliance Mapper loaded (PCI-DSS, SOC2, HIPAA, GDPR, ISO27001)');
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AI TREND ANALYSIS - Lumen Cortex v2.0
+// ═══════════════════════════════════════════════════════════════════════════
+const aiTrendAnalysis = require('./ai-trend-analysis');
+aiTrendAnalysis.setupRoutes(app);
+console.log('📈 AI Trend Analysis loaded (security posture tracking over time)');
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MOBSF MOBILE SECURITY MODULE
 // ═══════════════════════════════════════════════════════════════════════════
 const mobsf = require('./mobsf');
