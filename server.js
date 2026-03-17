@@ -116,6 +116,14 @@ const monitoringState = {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
+// GitHub Integration for PR security scanning
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+const githubIntegration = require('./github-integration');
+githubIntegration.setupOAuthRoutes(app);
+githubIntegration.setupWebhookRoute(app);
+
 // File upload handling with multer
 const multer = require('multer');
 const chatFileUpload = multer({ 
