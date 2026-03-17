@@ -6320,6 +6320,13 @@ aiFalsePositiveFilter.setupRoutes(app);
 console.log('🎯 AI False Positive Filter loaded (reduces noise 60-80%)');
 
 // ═══════════════════════════════════════════════════════════════════════════
+// AI ATTACK CHAIN ANALYSIS - Lumen Cortex v2.0
+// ═══════════════════════════════════════════════════════════════════════════
+const aiAttackChain = require('./ai-attack-chain');
+aiAttackChain.setupRoutes(app);
+console.log('⛓️ AI Attack Chain Analysis loaded (connects vulns into exploit paths)');
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MOBSF MOBILE SECURITY MODULE
 // ═══════════════════════════════════════════════════════════════════════════
 const mobsf = require('./mobsf');
