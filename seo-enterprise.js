@@ -957,7 +957,7 @@ class EnterpriseSEOAnalyzer {
     }
     
     checkMixedContent($) {
-        const http Resources = $('[src^="http:"], [href^="http:"]').length;
+        const httpResources = $('[src^="http:"], [href^="http:"]').length;
         return {
             hasIssues: httpResources > 0,
             count: httpResources
