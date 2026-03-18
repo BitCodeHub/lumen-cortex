@@ -10,9 +10,16 @@ const { Pool } = require('pg');
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-const dbPool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/lumen_cortex_v2'
-});
+// Optional PostgreSQL connection (graceful degradation if not configured)
+let dbPool = null;
+if (process.env.DATABASE_URL) {
+  dbPool = new Pool({
+    connectionString: process.env.DATABASE_URL
+  });
+  console.log('✅ Attack Chain Analysis: PostgreSQL connected');
+} else {
+  console.log('⚠️ Attack Chain Analysis: DATABASE_URL not set - feature disabled');
+}
 
 // Exploit type enumeration
 const ExploitType = {
@@ -59,6 +66,17 @@ class AttackChainAnalyzer {
   // ═══════════════════════════════════════════════════════════════════════════
 
   async analyzeScan(scanId) {
+    // Check if database is available
+    if (!dbPool) {
+      return {
+        error: 'Database not configured',
+        message: 'Set DATABASE_URL environment variable to enable attack chain analysis',
+        scan_id: scanId,
+        chains_detected: 0,
+        chains: []
+      };
+    }
+
     try {
       // 1. Load vulnerabilities
       const vulns = await this.loadVulnerabilities(scanId);
