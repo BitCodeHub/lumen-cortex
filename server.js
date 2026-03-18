@@ -6358,6 +6358,7 @@ mobsf.setupRoutes(app);
 // 🔍 SEO ANALYZER MODULE - Enterprise-Grade SEO Analysis
 // ═══════════════════════════════════════════════════════════════════════════
 const SEOAnalyzer = require('./seo-analyzer');
+const EnterpriseSEOAnalyzer = require('./seo-analyzer-enterprise');
 
 // Store active SEO analyses
 const seoAnalyses = new Map();
@@ -6586,6 +6587,40 @@ app.post('/api/seo/analyze', async (req, res) => {
         });
     } catch (error) {
         console.error('[SEO] Analysis error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/seo/enterprise - Enterprise-grade comprehensive SEO audit
+app.post('/api/seo/enterprise', async (req, res) => {
+    const { url } = req.body;
+    
+    if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+    }
+    
+    // Validate URL
+    try {
+        new URL(url.startsWith('http') ? url : 'https://' + url);
+    } catch (e) {
+        return res.status(400).json({ error: 'Invalid URL format' });
+    }
+    
+    const targetUrl = url.startsWith('http') ? url : 'https://' + url;
+    console.log(`🏢 [ENTERPRISE SEO] Starting comprehensive analysis for: ${targetUrl}`);
+    
+    try {
+        const analyzer = new EnterpriseSEOAnalyzer();
+        const results = await analyzer.analyze(targetUrl);
+        
+        console.log(`✅ [ENTERPRISE SEO] Analysis complete - Score: ${results.overallScore}/100`);
+        
+        res.json({
+            success: true,
+            results
+        });
+    } catch (error) {
+        console.error('[ENTERPRISE SEO] Analysis error:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
