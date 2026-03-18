@@ -6358,7 +6358,6 @@ mobsf.setupRoutes(app);
 // 🔍 SEO ANALYZER MODULE - Enterprise-Grade SEO Analysis
 // ═══════════════════════════════════════════════════════════════════════════
 const SEOAnalyzer = require('./seo-analyzer');
-const EnterpriseSEOAnalyzer = require('./seo-analyzer-enterprise');
 
 // Store active SEO analyses
 const seoAnalyses = new Map();
