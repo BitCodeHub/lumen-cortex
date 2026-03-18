@@ -4614,18 +4614,20 @@ ${data.localKeywords.slice(0, 6).join(' • ')}`;
                 url = 'https://' + url;
             }
             
-            const modeText = quickMode ? '⚡ Quick Analysis' : '🔬 Full Analysis (with PageSpeed)';
-            const timeText = quickMode ? '3-5 seconds' : '30-60 seconds';
+            const modeText = quickMode ? '⚡ Quick Analysis' : '🏆 Enterprise Deep Dive';
+            const timeText = quickMode ? '3-5 seconds' : '60-90 seconds';
             
             statusEl.innerHTML = `<span style="color: #8b5cf6;">🔍 ${modeText}... (${timeText})</span>`;
             exportEl.style.display = 'none';
             updateLastScanTime();
             
             // Add message to chat
-            addMessage(`🔍 <strong>Starting ${modeText}</strong><br>URL: ${url}<br><span style="color: #666;">${quickMode ? 'Quick scan of meta tags, content, and structure...' : 'Full scan including Google PageSpeed Insights (this takes 30-60 seconds)...'}</span>`, true);
+            addMessage(`${quickMode ? '⚡' : '🏆'} <strong>Starting ${modeText}</strong><br>URL: ${url}<br><span style="color: #666;">${quickMode ? 'Quick scan of meta tags, content, and structure...' : 'Enterprise-grade analysis: 7-phase deep dive including technical foundation, content quality, Core Web Vitals, mobile optimization, schema markup, and competitive intelligence...'}</span>`, true);
             
             try {
-                const response = await fetch('/api/seo/analyze', {
+                // Use enterprise analyzer for full scan, basic analyzer for quick scan
+                const endpoint = quickMode ? '/api/seo/analyze' : '/api/seo/enterprise';
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url, quick: quickMode })
@@ -4643,13 +4645,17 @@ ${data.localKeywords.slice(0, 6).join(' • ')}`;
                 // Update status
                 const scoreColor = data.results.scores.overall >= 80 ? '#00ff41' : 
                                    data.results.scores.overall >= 60 ? '#ffaa00' : '#ff6b6b';
-                statusEl.innerHTML = `<span style="color: ${scoreColor};">Score: ${data.results.scores.overall}/100</span>`;
+                statusEl.innerHTML = `<span style="color: ${scoreColor};">Score: ${data.results.scores.overall}/100 (Grade: ${data.results.grade || 'N/A'})</span>`;
                 
                 // Show export options
                 exportEl.style.display = 'block';
                 
-                // Display results in chat
-                displaySEOResults(data.results);
+                // Display results in chat (use different display for enterprise)
+                if (quickMode) {
+                    displaySEOResults(data.results);
+                } else {
+                    displayEnterpriseSEOResults(data.results);
+                }
                 
             } catch (error) {
                 statusEl.innerHTML = `<span style="color: #ff6b6b;">Error: ${error.message}</span>`;
@@ -4764,6 +4770,162 @@ ${data.localKeywords.slice(0, 6).join(' • ')}`;
             input.value = 'Explain my SEO results and what I should fix first';
             input.focus();
             setInputMode('chat');
+        }
+        
+        function displayEnterpriseSEOResults(results) {
+            const gradeColor = results.grade.startsWith('A') ? '#00ff41' : 
+                              results.grade.startsWith('B') ? '#0abdc6' :
+                              results.grade.startsWith('C') ? '#ffaa00' : '#ff6b6b';
+            
+            let html = `
+                <div style="background: linear-gradient(135deg, #1a1a25, #12121a); border: 2px solid ${gradeColor}; border-radius: 12px; padding: 25px; margin-top: 10px; box-shadow: 0 0 30px ${gradeColor}33;">
+                    <div style="font-family: 'Orbitron', sans-serif; font-size: 1.5em; color: ${gradeColor}; margin-bottom: 10px; text-align: center;">
+                        🏆 ENTERPRISE SEO ANALYSIS REPORT
+                    </div>
+                    <div style="text-align: center; margin-bottom: 20px; color: #666; font-size: 0.9em;">
+                        ${results.url} • Analyzed in ${results.durationFormatted}
+                    </div>
+                    
+                    <!-- Overall Score Card -->
+                    <div style="display: flex; justify-content: center; margin-bottom: 30px;">
+                        <div style="background: linear-gradient(135deg, #0a0a0f, #1a1a25); border: 2px solid ${gradeColor}; border-radius: 12px; padding: 20px 40px; text-align: center;">
+                            <div style="font-size: 48px; font-weight: bold; color: ${gradeColor}; line-height: 1;">${results.scores.overall}</div>
+                            <div style="font-size: 14px; color: #888; margin-top: 5px;">Overall Score</div>
+                            <div style="font-size: 32px; font-weight: bold; color: ${gradeColor}; margin-top: 10px;">${results.grade}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Executive Summary -->
+                    <div style="background: #0a0a0f; border-left: 3px solid #0abdc6; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                        <div style="font-weight: bold; color: #0abdc6; margin-bottom: 8px;">📊 Executive Summary</div>
+                        <div style="color: #ccc; font-size: 13px; line-height: 1.6;">${results.executiveSummary}</div>
+                    </div>
+                    
+                    <!-- Category Scores -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px;">
+                        <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${results.scores.technical >= 80 ? '#00ff41' : results.scores.technical >= 60 ? '#ffaa00' : '#ff6b6b'};">${results.scores.technical}</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Technical SEO</div>
+                        </div>
+                        <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${results.scores.onPage >= 80 ? '#00ff41' : results.scores.onPage >= 60 ? '#ffaa00' : '#ff6b6b'};">${results.scores.onPage}</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">On-Page SEO</div>
+                        </div>
+                        <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${results.scores.content >= 80 ? '#00ff41' : results.scores.content >= 60 ? '#ffaa00' : '#ff6b6b'};">${results.scores.content}</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Content Quality</div>
+                        </div>
+                        <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${results.scores.performance >= 80 ? '#00ff41' : results.scores.performance >= 60 ? '#ffaa00' : '#ff6b6b'};">${results.scores.performance || 'N/A'}</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Performance</div>
+                        </div>
+                        <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${results.scores.mobile >= 80 ? '#00ff41' : results.scores.mobile >= 60 ? '#ffaa00' : '#ff6b6b'};">${results.scores.mobile}</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Mobile & A11y</div>
+                        </div>
+                        <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: ${results.scores.schema >= 80 ? '#00ff41' : results.scores.schema >= 60 ? '#ffaa00' : '#ff6b6b'};">${results.scores.schema}</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Schema Markup</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Critical Issues -->
+                    ${results.criticalIssues.length > 0 ? `
+                    <div style="background: rgba(255, 0, 64, 0.1); border-left: 3px solid #ff0040; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                        <div style="font-weight: bold; color: #ff0040; margin-bottom: 10px;">🚨 CRITICAL ISSUES (${results.criticalIssues.length})</div>
+                        ${results.criticalIssues.map(issue => `
+                            <div style="margin-bottom: 12px; padding: 10px; background: #0a0a0f; border-radius: 4px;">
+                                <div style="color: #ff0040; font-weight: bold; font-size: 12px; margin-bottom: 4px;">${issue.issue}</div>
+                                <div style="color: #ccc; font-size: 11px; margin-bottom: 6px;">${issue.action}</div>
+                                <div style="display: flex; gap: 10px; font-size: 10px;">
+                                    <span style="background: #ff004022; color: #ff6b6b; padding: 2px 6px; border-radius: 3px;">Impact: ${issue.impact}</span>
+                                    <span style="background: #0abdc622; color: #0abdc6; padding: 2px 6px; border-radius: 3px;">Effort: ${issue.effort}</span>
+                                    <span style="background: #00ff4122; color: #00ff41; padding: 2px 6px; border-radius: 3px;">${issue.estimatedScore}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Quick Wins -->
+                    ${results.quickWins.length > 0 ? `
+                    <div style="background: rgba(0, 255, 65, 0.1); border-left: 3px solid #00ff41; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                        <div style="font-weight: bold; color: #00ff41; margin-bottom: 10px;">⚡ QUICK WINS (${results.quickWins.length})</div>
+                        <div style="font-size: 11px; color: #888; margin-bottom: 10px;">Low-effort improvements you can implement today:</div>
+                        ${results.quickWins.slice(0, 5).map(issue => `
+                            <div style="margin-bottom: 10px; padding: 8px; background: #0a0a0f; border-radius: 4px;">
+                                <div style="color: #00ff41; font-weight: bold; font-size: 11px; margin-bottom: 3px;">${issue.issue}</div>
+                                <div style="color: #ccc; font-size: 10px;">${issue.action}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Core Web Vitals -->
+                    ${results.performance && results.performance.coreWebVitals ? `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-weight: bold; color: #8b5cf6; margin-bottom: 10px;">⚡ Core Web Vitals</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 6px; padding: 10px;">
+                                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">LCP (Largest Contentful Paint)</div>
+                                <div style="font-size: 18px; font-weight: bold; color: ${results.performance.coreWebVitals.lcp.rating === 'good' ? '#00ff41' : results.performance.coreWebVitals.lcp.rating === 'needs-improvement' ? '#ffaa00' : '#ff6b6b'};">
+                                    ${results.performance.coreWebVitals.lcp.displayValue}
+                                </div>
+                                <div style="font-size: 9px; color: #666; margin-top: 2px;">Target: <2.5s</div>
+                            </div>
+                            <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 6px; padding: 10px;">
+                                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">FID (First Input Delay)</div>
+                                <div style="font-size: 18px; font-weight: bold; color: ${results.performance.coreWebVitals.fid.rating === 'good' ? '#00ff41' : results.performance.coreWebVitals.fid.rating === 'needs-improvement' ? '#ffaa00' : '#ff6b6b'};">
+                                    ${results.performance.coreWebVitals.fid.displayValue}
+                                </div>
+                                <div style="font-size: 9px; color: #666; margin-top: 2px;">Target: <100ms</div>
+                            </div>
+                            <div style="background: #0a0a0f; border: 1px solid #2a2a3a; border-radius: 6px; padding: 10px;">
+                                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">CLS (Cumulative Layout Shift)</div>
+                                <div style="font-size: 18px; font-weight: bold; color: ${results.performance.coreWebVitals.cls.rating === 'good' ? '#00ff41' : results.performance.coreWebVitals.cls.rating === 'needs-improvement' ? '#ffaa00' : '#ff6b6b'};">
+                                    ${results.performance.coreWebVitals.cls.displayValue}
+                                </div>
+                                <div style="font-size: 9px; color: #666; margin-top: 2px;">Target: <0.1</div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Full Action Plan -->
+                    <div style="margin-top: 20px;">
+                        <div style="font-weight: bold; color: #0abdc6; margin-bottom: 10px;">📋 Complete Action Plan (${results.actionPlan.length} items)</div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${results.actionPlan.map((action, i) => {
+                                const priorityColor = action.priority === 'CRITICAL' ? '#ff0040' : 
+                                                     action.priority === 'HIGH' ? '#ff9900' : 
+                                                     action.priority === 'MEDIUM' ? '#ffaa00' : '#0abdc6';
+                                return `
+                                    <div style="margin-bottom: 10px; padding: 12px; background: #0a0a0f; border-left: 3px solid ${priorityColor}; border-radius: 4px;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                            <span style="font-weight: bold; color: ${priorityColor}; font-size: 11px;">#${i+1} ${action.priority}</span>
+                                            <span style="font-size: 10px; color: #666;">${action.category}</span>
+                                        </div>
+                                        <div style="color: #ccc; font-size: 12px; margin-bottom: 6px;">${action.issue}</div>
+                                        <div style="color: #888; font-size: 11px; margin-bottom: 8px;">${action.action}</div>
+                                        <div style="display: flex; gap: 8px; font-size: 10px;">
+                                            <span style="background: ${priorityColor}22; color: ${priorityColor}; padding: 2px 6px; border-radius: 3px;">Impact: ${action.impact}</span>
+                                            <span style="background: #0abdc622; color: #0abdc6; padding: 2px 6px; border-radius: 3px;">Effort: ${action.effort}</span>
+                                            <span style="background: #00ff4122; color: #00ff41; padding: 2px 6px; border-radius: 3px;">${action.estimatedScore}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #2a2a3a; text-align: center; font-size: 11px; color: #666;">
+                        Enterprise SEO Analysis by Lumen Cortex • Powered by Industry Best Practices
+                    </div>
+                </div>
+            `;
+            
+            addMessage(html, false);
         }
         
         function askSEOTopic(topic) {

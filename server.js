@@ -6656,6 +6656,57 @@ app.get('/api/seo/summary/:id', (req, res) => {
     });
 });
 
+// POST /api/seo/enterprise - Enterprise-grade deep dive analysis
+app.post('/api/seo/enterprise', async (req, res) => {
+    const { url } = req.body;
+    
+    if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+    }
+    
+    try {
+        new URL(url.startsWith('http') ? url : 'https://' + url);
+    } catch (e) {
+        return res.status(400).json({ error: 'Invalid URL format' });
+    }
+    
+    const targetUrl = url.startsWith('http') ? url : 'https://' + url;
+    const analysisId = 'seo-enterprise-' + Date.now();
+    
+    console.log(`\n🏆 [SEO Enterprise] Starting deep dive analysis for: ${targetUrl}`);
+    
+    try {
+        const EnterpriseSEOAnalyzer = require('./seo-enterprise');
+        const analyzer = new EnterpriseSEOAnalyzer();
+        const results = await analyzer.analyze(targetUrl);
+        
+        // Store results
+        seoAnalyses.set(analysisId, {
+            results,
+            analyzer,
+            createdAt: new Date(),
+            type: 'enterprise'
+        });
+        
+        // Clean up old analyses (keep last 50)
+        if (seoAnalyses.size > 50) {
+            const oldest = [...seoAnalyses.keys()][0];
+            seoAnalyses.delete(oldest);
+        }
+        
+        console.log(`✅ [SEO Enterprise] Analysis complete: ${results.scores.overall}/100 (Grade: ${results.grade})`);
+        
+        res.json({
+            success: true,
+            analysisId,
+            results
+        });
+    } catch (error) {
+        console.error('[SEO Enterprise] Analysis error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // POST /api/seo/chat - AI coaching about SEO results
 app.post('/api/seo/chat', async (req, res) => {
     const { question, analysisId, context } = req.body;
