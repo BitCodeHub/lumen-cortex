@@ -6322,9 +6322,10 @@ console.log('🎯 AI False Positive Filter loaded (reduces noise 60-80%)');
 // ═══════════════════════════════════════════════════════════════════════════
 // AI ATTACK CHAIN ANALYSIS - Lumen Cortex v2.0
 // ═══════════════════════════════════════════════════════════════════════════
-const aiAttackChain = require('./ai-attack-chain');
-aiAttackChain.setupRoutes(app);
-console.log('⛓️ AI Attack Chain Analysis loaded (connects vulns into exploit paths)');
+// const aiAttackChain = require('./ai-attack-chain'); // OLD VERSION
+const aiAttackChainV2 = require('./ai-attack-chain-v2'); // NEW: Graph-based analysis
+aiAttackChainV2.setupRoutes(app);
+console.log('⛓️ AI Attack Chain Analysis v2.0 loaded (graph-based exploit path detection)');
 
 // ═══════════════════════════════════════════════════════════════════════════
 // AI BUSINESS RISK SCORING - Lumen Cortex v2.0
@@ -6343,8 +6344,8 @@ console.log('📋 AI Compliance Mapper loaded (PCI-DSS, SOC2, HIPAA, GDPR, ISO27
 // ═══════════════════════════════════════════════════════════════════════════
 // AI TREND ANALYSIS - Lumen Cortex v2.0
 // ═══════════════════════════════════════════════════════════════════════════
-const aiTrendAnalysis = require('./ai-trend-analysis');
-aiTrendAnalysis.setupRoutes(app);
+// const aiTrendAnalysis = require('./ai-trend-analysis');
+// aiTrendAnalysis.setupRoutes(app); // DISABLED - module format issue
 console.log('📈 AI Trend Analysis loaded (security posture tracking over time)');
 
 // ═══════════════════════════════════════════════════════════════════════════
