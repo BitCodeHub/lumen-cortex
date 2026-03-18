@@ -71,6 +71,8 @@
             margin: 0 auto;
             padding: 20px 30px;
             width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
             position: relative;
             z-index: 1;
         }
@@ -145,6 +147,14 @@
             display: none;
             animation: popupFadeIn 0.2s ease;
             max-width: 300px;
+        }
+        
+        @media (max-width: 768px) {
+            .code-selection-popup {
+                max-width: calc(100vw - 40px);
+                left: 50% !important;
+                transform: translateX(-50%);
+            }
         }
         
         @keyframes popupFadeIn {
@@ -939,60 +949,112 @@
             }
             .container {
                 padding: 10px;
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
+            .side-panel {
+                max-height: none;
+                position: relative;
+                top: 0;
             }
         }
 
         @media (max-width: 768px) {
+            html, body {
+                overflow-x: hidden;
+                max-width: 100vw;
+            }
+            .container {
+                padding: 10px 15px;
+                max-width: 100vw;
+                overflow-x: hidden;
+            }
             .ascii-art {
                 display: none;
             }
             .logo {
                 font-size: 1.5rem !important;
+                letter-spacing: 2px;
             }
             .tagline {
-                font-size: 0.8rem !important;
+                font-size: 0.75rem !important;
+                letter-spacing: 1px;
+            }
+            .footnote {
+                font-size: 0.7rem !important;
             }
             header {
                 padding: 15px 10px !important;
             }
-            .chat-panel, .side-panel {
-                padding: 10px !important;
+            .main-grid {
+                gap: 15px;
             }
-            .chat-input {
-                font-size: 14px !important;
+            .chat-panel {
+                height: 60vh;
+                max-width: 100%;
+                overflow-x: hidden;
             }
-            .btn {
-                padding: 8px 12px !important;
-                font-size: 12px !important;
-            }
-            .tool-btn {
-                padding: 8px 10px !important;
-                font-size: 11px !important;
-            }
-            .tools-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 8px !important;
-            }
-            .module-grid {
-                grid-template-columns: 1fr !important;
-            }
-            .stat-box {
-                padding: 10px !important;
-            }
-            .stat-value {
-                font-size: 1.2rem !important;
+            .chat-messages {
+                padding: 15px;
             }
             .message-content {
-                font-size: 13px !important;
+                font-size: 14px !important;
+                max-width: 90%;
             }
-            .footnote {
-                font-size: 10px !important;
+            .chat-input-area {
+                padding: 15px;
             }
-            #deviceDashboard, #monitoringSection, #reportSection {
-                padding: 0 10px !important;
+            .chat-input {
+                font-size: 16px !important; /* Prevents iOS zoom on focus */
+                padding: 12px;
             }
-            .device-card {
-                padding: 12px !important;
+            .input-wrapper {
+                flex-wrap: wrap;
+            }
+            .voice-btn {
+                padding: 12px;
+            }
+            .send-btn {
+                padding: 12px 20px;
+                font-size: 13px;
+            }
+            .input-hints {
+                gap: 6px;
+            }
+            .input-hints span {
+                font-size: 0.7em;
+                padding: 4px 8px;
+            }
+            .side-panel {
+                padding-right: 0;
+                max-height: none;
+            }
+            .accordion-header {
+                padding: 10px 12px;
+            }
+            .accordion-title {
+                font-size: 0.75rem;
+            }
+            .accordion-content {
+                padding: 0 12px;
+            }
+            .accordion-section.active .accordion-content {
+                padding: 0 12px 12px 12px;
+            }
+            .tool-input {
+                font-size: 14px;
+                padding: 10px;
+            }
+            .quick-btn {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+            .panel-card {
+                padding: 12px;
+            }
+            #reportSection {
+                padding: 0 15px;
+                margin: 15px auto;
             }
             h2 {
                 font-size: 1.1rem !important;
@@ -1003,19 +1065,58 @@
         }
 
         @media (max-width: 480px) {
+            .container {
+                padding: 8px 10px;
+            }
             .logo {
                 font-size: 1.2rem !important;
+                letter-spacing: 1px;
             }
-            .tools-grid {
-                grid-template-columns: 1fr !important;
+            .tagline {
+                font-size: 0.65rem !important;
+            }
+            .footnote {
+                font-size: 0.6rem !important;
+            }
+            .chat-panel {
+                height: 55vh;
             }
             .chat-messages {
-                min-height: 200px !important;
-                max-height: 300px !important;
+                padding: 10px;
             }
-            .btn {
-                width: 100%;
-                margin-bottom: 5px;
+            .message-content {
+                max-width: 95%;
+                font-size: 13px !important;
+                padding: 10px 14px;
+            }
+            .chat-input-area {
+                padding: 10px;
+            }
+            .input-wrapper {
+                gap: 6px;
+            }
+            .voice-btn {
+                padding: 10px;
+                font-size: 1.1em;
+            }
+            .send-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+            .input-hints span {
+                font-size: 0.65em;
+                padding: 3px 6px;
+            }
+            .accordion-title {
+                font-size: 0.7rem;
+            }
+            .accordion-badge {
+                font-size: 0.6rem;
+                padding: 1px 4px;
+            }
+            .quick-btn {
+                padding: 6px 8px;
+                font-size: 10px;
             }
             /* Enhanced mobile fixes */
             body {
