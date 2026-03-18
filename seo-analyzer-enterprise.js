@@ -528,6 +528,7 @@ class EnterpriseSEOAnalyzer {
     async analyzeCompetitiveFactors() {
         const url = this.baseUrl;
         const $ = this.$;
+        const html = this.html;
         const domain = new URL(url).hostname;
 
         return {
