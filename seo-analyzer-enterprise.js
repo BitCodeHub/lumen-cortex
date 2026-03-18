@@ -78,11 +78,16 @@ class EnterpriseSEOAnalyzer {
                 structuredData,
                 competitiveInsights,
 
-                // Prioritized action items
-                criticalIssues: this.identifyCriticalIssues(),
-                highPriorityRecommendations: this.generatePrioritizedRecommendations(),
-                quickWins: this.identifyQuickWins()
+                // Prioritized action items (will be added after this.results is set)
+                criticalIssues: [],
+                highPriorityRecommendations: [],
+                quickWins: []
             };
+
+            // Now generate recommendations based on completed results
+            this.results.criticalIssues = this.identifyCriticalIssues();
+            this.results.highPriorityRecommendations = this.generatePrioritizedRecommendations();
+            this.results.quickWins = this.identifyQuickWins();
 
             console.log(`✅ [ENTERPRISE SEO] Analysis complete in ${this.results.duration}ms`);
             console.log(`📊 Overall Score: ${this.results.overallScore}/100`);
@@ -381,6 +386,7 @@ class EnterpriseSEOAnalyzer {
 
     async analyzeMobileOptimization() {
         const $ = this.$;
+        const html = this.html;
 
         const viewport = $('meta[name="viewport"]').attr('content') || '';
 
