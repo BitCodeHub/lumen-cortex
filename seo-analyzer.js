@@ -111,7 +111,9 @@ class SEOAnalyzer {
                     'Accept': 'text/html,application/xhtml+xml',
                     'Accept-Language': 'en-US,en;q=0.9'
                 },
-                timeout: 30000
+                timeout: 30000,
+                // Fix SSL certificate issues on Render
+                rejectUnauthorized: false
             };
             
             const req = protocol.get(url, options, (res) => {
@@ -602,7 +604,7 @@ class SEOAnalyzer {
     
     fetchJson(url, timeout = 60000) {
         return new Promise((resolve, reject) => {
-            const req = https.get(url, { timeout: timeout }, (res) => {
+            const req = https.get(url, { timeout: timeout, rejectUnauthorized: false }, (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => {
