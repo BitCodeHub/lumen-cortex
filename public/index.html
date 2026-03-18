@@ -1017,6 +1017,38 @@
                 width: 100%;
                 margin-bottom: 5px;
             }
+            /* Enhanced mobile fixes */
+            body {
+                overflow-x: hidden !important;
+            }
+            .container, .main-container {
+                max-width: 100vw !important;
+                padding: 0 10px !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }
+            header {
+                padding: 10px !important;
+                flex-wrap: wrap !important;
+            }
+            .header-content {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            table {
+                display: block !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+            }
+            pre, code {
+                word-wrap: break-word !important;
+                white-space: pre-wrap !important;
+                overflow-x: auto !important;
+            }
+            input, textarea, select {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
         }
     </style>
 </head>
