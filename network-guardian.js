@@ -110,7 +110,7 @@ async function arpScan() {
     
     return new Promise((resolve) => {
         // Use sudo for arp-scan (requires permission)
-        exec(`sudo arp-scan --interface=${networkInfo.interface} --localnet 2>/dev/null || /usr/sbin/arp -a`, 
+        exec(`sudo arp-scan --interface=${networkInfo.interface} --localnet 2>/dev/null || /usr/sbin/arp -an`, 
             { timeout: 30000 }, 
             (error, stdout, stderr) => {
                 const devices = [];
