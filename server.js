@@ -6131,10 +6131,13 @@ app.post('/api/internet-monitor/test-alert', async (req, res) => {
   res.json({ success: true, message: 'Test alert sent to WhatsApp and iMessage' });
 });
 
-// Auto-start monitoring when server starts
-internetMonitor.startMonitoring();
-
-console.log('🌐 Internet Outage Monitor loaded and started');
+// Auto-start monitoring when server starts (not on Render - no local network to monitor)
+if (!isRender) {
+  internetMonitor.startMonitoring();
+  console.log('🌐 Internet Outage Monitor loaded and started');
+} else {
+  console.log('🌐 Internet Outage Monitor loaded (monitoring disabled on Render)');
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DEVICE ACTIVITY MONITOR - AI-Powered Real-Time Device Tracking
@@ -6243,16 +6246,20 @@ console.log('📱 Device Activity Monitor loaded');
 // GLOBAL NETWORK MONITORING - Captures ALL network traffic
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Auto-start global network monitoring
-setTimeout(() => {
-  console.log('🌐 [Global Monitor] Auto-starting network-wide monitoring...');
-  const result = deviceMonitor.startGlobalMonitor();
-  if (result.success) {
-    console.log('🌐 [Global Monitor] ✅ Network monitoring active - capturing all device activity');
-  } else {
-    console.log('🌐 [Global Monitor] ⚠️ Could not start - run setup-network-monitor.sh for real-time monitoring');
-  }
-}, 2000);
+// Auto-start global network monitoring (only on local machines, not Render)
+if (!isRender) {
+  setTimeout(() => {
+    console.log('🌐 [Global Monitor] Auto-starting network-wide monitoring...');
+    const result = deviceMonitor.startGlobalMonitor();
+    if (result.success) {
+      console.log('🌐 [Global Monitor] ✅ Network monitoring active - capturing all device activity');
+    } else {
+      console.log('🌐 [Global Monitor] ⚠️ Could not start - run setup-network-monitor.sh for real-time monitoring');
+    }
+  }, 2000);
+} else {
+  console.log('🌐 [Global Monitor] Skipping network monitoring on Render');
+}
 
 // Get network summary (for AI chat context)
 app.get('/api/network/summary', (req, res) => {

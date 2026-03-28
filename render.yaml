@@ -5,10 +5,12 @@ services:
     region: oregon
     plan: free
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node --max-old-space-size=450 server.js
     envVars:
       - key: NODE_ENV
         value: production
+      - key: RENDER
+        value: "true"
       - key: AZURE_ANTHROPIC_API_KEY
         sync: false
       - key: MOBSF_API_KEY
