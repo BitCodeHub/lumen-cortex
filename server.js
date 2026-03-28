@@ -6864,6 +6864,19 @@ try {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PENTAGY AI — Autonomous Penetration Testing Integration
+// Connects to PentAGI-compatible API on DGX Spark (100.79.93.27:7443).
+// Adds: /api/pentest/*, /security/pentest (UI panel)
+// Built by: Elim 🦋 — 2026-03-27
+// ═══════════════════════════════════════════════════════════════════════════
+try {
+  const { registerPentestRoutes } = require('./pentest');
+  registerPentestRoutes(app);
+} catch (e) {
+  console.error('⚠️ PentAGI Module failed to load:', e.message);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 
 app.listen(PORT, () => {
   const aiCount = Object.values(AI_TOOLS).filter(t => t.ai).length;
