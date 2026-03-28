@@ -48,11 +48,26 @@ initFiles();
  */
 function getNetworkInfo() {
     try {
-        const interfaceResult = execSync('route get default 2>/dev/null | grep interface', { encoding: 'utf8' });
-        const interfaceName = interfaceResult.split(':')[1]?.trim() || 'en0';
-        
-        const ipResult = execSync(`ipconfig getifaddr ${interfaceName} 2>/dev/null`, { encoding: 'utf8' }).trim();
-        const subnetResult = execSync(`ifconfig ${interfaceName} | grep "inet " | awk '{print $4}'`, { encoding: 'utf8' }).trim();
+        // Try route get default first, fall back to os.networkInterfaces()
+        let interfaceName = 'en0';
+        try {
+            const routeOut = execSync('route get default 2>/dev/null', { encoding: 'utf8', timeout: 3000 });
+            const ifMatch = routeOut.match(/interface:\s*(\S+)/);
+            if (ifMatch) interfaceName = ifMatch[1];
+        } catch (_) {
+            // Fall back: find first en* interface with an IPv4 address
+            const { networkInterfaces } = require('os');
+            const nets = networkInterfaces();
+            for (const [name, addrs] of Object.entries(nets)) {
+                if (/^(en|eth)\d+/.test(name)) {
+                    const v4 = (addrs || []).find(a => a.family === 'IPv4' && !a.internal);
+                    if (v4) { interfaceName = name; break; }
+                }
+            }
+        }
+
+        const ipResult = execSync(`ipconfig getifaddr ${interfaceName} 2>/dev/null`, { encoding: 'utf8', timeout: 3000 }).trim();
+        const subnetResult = execSync(`ifconfig ${interfaceName} | grep "inet " | awk '{print $4}'`, { encoding: 'utf8', timeout: 3000 }).trim();
         
         // Calculate network range (assuming /24 for most home networks)
         const ipParts = ipResult.split('.');
@@ -65,6 +80,23 @@ function getNetworkInfo() {
             subnet: subnetResult || '255.255.255.0'
         };
     } catch (error) {
+        // Last resort: use os.networkInterfaces() directly
+        try {
+            const { networkInterfaces } = require('os');
+            const nets = networkInterfaces();
+            for (const [name, addrs] of Object.entries(nets)) {
+                const v4 = (addrs || []).find(a => a.family === 'IPv4' && !a.internal);
+                if (v4) {
+                    const ipParts = v4.address.split('.');
+                    return {
+                        interface: name,
+                        localIP: v4.address,
+                        networkRange: `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.0/24`,
+                        subnet: v4.netmask || '255.255.255.0'
+                    };
+                }
+            }
+        } catch (_) {}
         return { error: error.message };
     }
 }
@@ -78,7 +110,7 @@ async function arpScan() {
     
     return new Promise((resolve) => {
         // Use sudo for arp-scan (requires permission)
-        exec(`sudo arp-scan --interface=${networkInfo.interface} --localnet 2>/dev/null || arp -a`, 
+        exec(`sudo arp-scan --interface=${networkInfo.interface} --localnet 2>/dev/null || /usr/sbin/arp -a`, 
             { timeout: 30000 }, 
             (error, stdout, stderr) => {
                 const devices = [];

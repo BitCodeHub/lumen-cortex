@@ -1,6 +1,18 @@
 {
   "outages": [
     {
+      "start": "2026-03-18T06:08:16.917Z",
+      "end": "2026-03-22T22:32:56.316Z",
+      "durationMs": 404679398,
+      "durationFormatted": "112h 24m"
+    },
+    {
+      "start": "2026-03-18T06:08:16.917Z",
+      "end": "2026-03-18T06:08:47.175Z",
+      "durationMs": 30257,
+      "durationFormatted": "30s"
+    },
+    {
       "start": "2026-03-11T20:27:55.506Z",
       "end": "2026-03-11T20:28:39.921Z",
       "durationMs": 44414,
